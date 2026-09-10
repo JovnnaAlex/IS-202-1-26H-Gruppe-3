@@ -1,0 +1,17 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.3">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>e9d0b786-9a2b-40ba-96f9-6b17e744a14c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kriseportal.ApiService\Kriseportal.ApiService.csproj" />
+    <ProjectReference Include="..\Kriseportal.Web\Kriseportal.Web.csproj" />
+  </ItemGroup>
+
+</Project>
