@@ -1,5 +1,4 @@
 using Kriseportal.Web;
-using Kriseportal.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,13 +38,10 @@ app.UseOutputCache();
 
 app.MapStaticAssets();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-// Map MVC controller routes.
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapDefaultEndpoints();
 

@@ -1,12 +1,59 @@
 @model Kriseportal.Web.Models.ResourceViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Ressurs registrert";
+    var lat = Model.Latitude.ToString(CultureInfo.InvariantCulture);
+    var lng = Model.Longitude.ToString(CultureInfo.InvariantCulture);
+}
 
-<h1>Ressurs registrert</h1>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="~/css/details.css" asp-append-version="true" />
 
-<p><strong>Navn:</strong> @Model.Name</p>
-<p><strong>Ressurstype:</strong> @Model.ResourceType</p>
-<p><strong>Beskrivelse:</strong> @Model.Description</p>
-<p><strong>Tilgjengelig:</strong> @Model.Available</p>
-<p><strong>Latitude:</strong> @Model.Latitude</p>
-<p><strong>Longitude:</strong> @Model.Longitude</p>
+<main class="result" style="--accent:var(--c-resource)">
+    <div class="result__banner" role="status">
+        <h1>Ressursen er registrert</h1>
+    </div>
 
-<a asp-controller="Resource" asp-action="Create">Registrer ny ressurs</a>
+    <div class="result__grid">
+        <dl class="result__facts">
+            <dt>Navn</dt>
+            <dd>@Model.Name</dd>
+            <dt>Type ressurs</dt>
+            <dd>@Model.ResourceType</dd>
+            <dt>Beskrivelse</dt>
+            <dd>@Model.Description</dd>
+            <dt>Status</dt>
+            <dd>
+                <span class="badge @(Model.Available ? "badge--available" : "badge--unavailable")">
+                    @(Model.Available ? "Tilgjengelig" : "Ikke tilgjengelig")
+                </span>
+            </dd>
+        </dl>
+
+        <section aria-label="Plassering på kart">
+            <div id="map" class="result__map"></div>
+            <p class="result__coords">Posisjon: @lat, @lng</p>
+        </section>
+    </div>
+
+    <div class="result__actions">
+        <a class="primary" asp-controller="Resource" asp-action="Create">Registrer ny ressurs</a>
+        <a asp-controller="Home" asp-action="Index">Til forsiden</a>
+    </div>
+</main>
+
+<input type="hidden" id="Latitude" value="@lat" />
+<input type="hidden" id="Longitude" value="@lng" />
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const lat = parseFloat(document.getElementById("Latitude").value);
+        const lng = parseFloat(document.getElementById("Longitude").value);
+        const map = L.map("map").setView([lat, lng], 13);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19, attribution: "&copy; OpenStreetMap"
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map);
+    </script>
+}

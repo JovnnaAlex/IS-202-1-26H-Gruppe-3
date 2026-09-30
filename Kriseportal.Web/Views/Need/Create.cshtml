@@ -1,36 +1,63 @@
-@model Kriseportal.Web.Models.NeedViewModel
+﻿@model Kriseportal.Web.Models.NeedViewModel
 
-<h1>Registrer behov</h1>
+<!-- Page heading -->
+<h1> Register Need</h1>
 
-<form asp-controller="Need" asp-action="Create" method="post">
+ 
+<form asp-action="Create" method="post">
+
+    <!-- Need type input -->
     <div>
-        <label>Type behov:</label>
+        <label asp-for="Type">Need Type</label>
         <input asp-for="Type" />
+        <!-- Validation message for Need Type: "span" displays the validation error -->
+        <span asp-validation-for="Type"></span>
     </div>
 
+    <!-- Description input -->
     <div>
-        <label>Beskrivelse:</label>
-        <input asp-for="Description" />
+        <label asp-for="Description">Description</label>
+        <textarea asp-for="Description"></textarea>
+        <!--Validation message for Description: "span" displays the validation error -->
+        <span asp-validation-for="Description"></span>
     </div>
 
+    <!-- Priority Selection -->
     <div>
-        <label>Prioritet:</label>
+        <label asp-for="Priority">Priority</label>
+
         <select asp-for="Priority">
-            <option value="Lav">Lav</option>
+            <option value="">Select Priority</option>
+            <option value="Low">Low</option>
             <option value="Medium">Medium</option>
-            <option value="Høy">Høy</option>
+            <option value="High">High</option>
         </select>
+
+        <!-- Validation message for Priority: "span" displays the validation error -->
+        <span asp-validation-for="Priority"></span>
+    </div>
+
+    <!-- Map placeholder: The id "map" is used by map.js to display leaflet map.-->
+    <div>
+        <label>Location</label>
+        <div id="map"></div>
+    </div>
+
+    <!-- Coordinates selected from the map: Readonly prevents manual input -->
+    <div>
+        <label asp-for="Latitude">Latitude</label>
+        <input asp-for="Latitude" readonly />
     </div>
 
     <div>
-        <label>Latitude:</label>
-        <input asp-for="Latitude" />
+        <label asp-for="Longitude">Longitude</label>
+        <input asp-for="Longitude" readonly />
     </div>
 
-    <div>
-        <label>Longitude:</label>
-        <input asp-for="Longitude" />
-    </div>
+    <!-- Submit the completed form -->
+    <button type="submit">Register Need</button>
 
-    <button type="submit">Registrer behov</button>
+        
 </form>
+
+
