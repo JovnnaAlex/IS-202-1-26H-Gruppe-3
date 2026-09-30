@@ -14,6 +14,7 @@ Prompter:
 Alex:
 
 Jeg brukte ChatGPT som støtte under utviklingen av Views/Need/Create.cshtml. KI ble brukt til å forstå Razor Views, koblingen til NeedViewModel, asp-for, validering, kart og koordinater, samt feilsøking av @model og namespace. Jeg brukte også ChatGPT til veiledning rundt Git og merging.
+
 Prompter:
 «Hvordan kobler jeg inputfeltene til NeedViewModel med asp-for?»
 «Hvordan lager jeg Priority som en dropdown med Low, Medium og High?»
