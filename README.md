@@ -1,0 +1,11 @@
+Edgar: 
+Jeg brukte ChatGPT som støtte i arbeidet med ViewModels. AI ble brukt til å forklare hva en ViewModel er og hvilken rolle den har i MVC, foreslå struktur for NeedViewModel og ResourceViewModel,
+forklare datatyper som string, bool og double, og hjelpe med navngivning av properties som Type, Priority, Available, Latitude og Longitude.
+Jeg brukte også AI til å finne og forstå feil i koden, blant annet manglende public, feil property-navn og namespace-problemer.
+Koden ble kontrollert og tilpasset prosjektets struktur før den ble lagt inn i GitHub.
+
+Prompter: 
+«Hva er en ViewModel og hva skal den gjøre?»
+«Hvor skal jeg lage ViewModels-mappen i prosjektet?»
+«Hva betyr feilen NeedViewModel could not be found?»
+«Hvordan legger jeg ViewModel-koden til GitHub?»
