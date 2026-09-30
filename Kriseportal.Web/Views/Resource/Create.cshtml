@@ -1,0 +1,114 @@
+@*
+    Views/Resource/Create.cshtml
+    ---------------------------------------------------------------
+    Skjema der en ressursleverandør registrerer en ressurs
+    (f.eks. kjøretøy, strømaggregat, personell) og plasserer den på kartet.
+
+    Flyt:
+      GET  /Resource/Create  -> ResourceController.Create()       viser dette skjemaet
+      POST /Resource/Create  -> ResourceController.Create(model)  sender data til Details
+
+    Avhengigheter:
+      - ResourceViewModel (Person 1): Name, ResourceType, Description, Available, Latitude, Longitude
+      - ResourceController (Person 2): actions Create (GET/POST) og Details
+      - map.js (Person 5): tegner kartet i <div id="map"> og fyller inn
+        de skjulte feltene med id="Latitude" og id="Longitude" ved klikk.
+
+    Ansvarlig: Emma (Person 4) – branch feature/resource-form
+*@
+@* Tag helpers (asp-for, asp-action osv.) slås på her, fordi prosjektet ikke har _ViewImports.cshtml ennå.
+   Fullt navn på modellen brukes av samme grunn. *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Kriseportal.Web.Models.ResourceViewModel
+
+@{
+    ViewData["Title"] = "Registrer ressurs";
+}
+
+@* Leaflet sin CSS legges her i viewet, så vi slipper å endre _Layout.cshtml (felles fil). *@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="container my-4">
+    <h1 class="mb-3">Registrer ressurs</h1>
+    <p class="text-muted">
+        Fyll ut informasjon om ressursen du kan stille til disposisjon, og klikk i kartet for å angi hvor den befinner seg.
+    </p>
+
+    @* asp-action/asp-controller gir action="/Resource/Create". method="post" sender til [HttpPost]-metoden. *@
+    <form asp-controller="Resource" asp-action="Create" method="post">
+
+        @* Viser samlede valideringsfeil fra controlleren (ModelState), hvis noen. *@
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row g-4">
+
+            @* ---------- Venstre kolonne: skjemafelter ---------- *@
+            <div class="col-12 col-lg-6">
+
+                @* Ressurstype – nedtrekksliste. Verdien lagres i ResourceViewModel.ResourceType *@
+                <div class="mb-3">
+                    <label asp-for="ResourceType" class="form-label">Ressurstype</label>
+                    <select asp-for="ResourceType" class="form-select" required>
+                        <option value="">-- Velg ressurstype --</option>
+                        <option>Kjøretøy</option>
+                        <option>Strømaggregat</option>
+                        <option>Personell</option>
+                        <option>Utstyr</option>
+                        <option>Lokaler / husly</option>
+                        <option>Mat og vann</option>
+                        <option>Annet</option>
+                    </select>
+                    <span asp-validation-for="ResourceType" class="text-danger"></span>
+                </div>
+
+                @* Navn på ressursen, f.eks. "Traktor" *@
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Navn</label>
+                    <input asp-for="Name" class="form-control" placeholder="F.eks. Traktor" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                @* Utfyllende beskrivelse av ressursen *@
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Beskrivelse</label>
+                    <textarea asp-for="Description" class="form-control" rows="4"
+                              placeholder="F.eks. John Deere traktor med henger, kan brukes til rydding og transport"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                @* Available er bool: asp-for lager både checkbox og et skjult "false"-felt,
+                   slik at verdien blir false hvis boksen ikke er krysset av. *@
+                <div class="form-check mb-3">
+                    <input asp-for="Available" class="form-check-input" />
+                    <label asp-for="Available" class="form-check-label">Tilgjengelig nå</label>
+                </div>
+            </div>
+
+            @* ---------- Høyre kolonne: kart ---------- *@
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Lokasjon</label>
+                <p class="small text-muted mb-2">Klikk i kartet der ressursen befinner seg.</p>
+
+                @* id="map" er avtalt i gruppen – map.js (Person 5) tegner kartet her. *@
+                <div id="map" style="height: 400px; width: 100%;" class="rounded border"></div>
+
+                @* Skjulte felt som map.js fyller inn. asp-for gir id="Latitude"/"Longitude"
+                   og name som matcher ResourceViewModel, så verdiene blir med i POST. *@
+                <input asp-for="Latitude" type="hidden" />
+                <input asp-for="Longitude" type="hidden" />
+                <span asp-validation-for="Latitude" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+                Registrer ressurs
+            </button>
+        </div>
+    </form>
+</div>
+
+@* Leaflet-biblioteket, deretter felles kartlogikk fra Person 5 (map.js).
+   Lagt direkte her fordi _Layout.cshtml ikke har en Scripts-seksjon ennå. *@
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="~/js/map.js" asp-append-version="true"></script>
