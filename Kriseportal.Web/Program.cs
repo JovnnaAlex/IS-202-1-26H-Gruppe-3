@@ -1,5 +1,4 @@
 using Kriseportal.Web;
-using Kriseportal.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
+builder.Services.AddControllersWithViews();
 builder.Services.AddOutputCache();
 
 builder.Services.AddHttpClient<WeatherApiClient>(client =>
@@ -36,8 +33,9 @@ app.UseOutputCache();
 
 app.MapStaticAssets();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapDefaultEndpoints();
 
