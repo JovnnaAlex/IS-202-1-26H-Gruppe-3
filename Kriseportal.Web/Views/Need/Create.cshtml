@@ -1,0 +1,36 @@
+@model Kriseportal.Web.Models.NeedViewModel
+
+<h1>Registrer behov</h1>
+
+<form asp-controller="Need" asp-action="Create" method="post">
+    <div>
+        <label>Type behov:</label>
+        <input asp-for="Type" />
+    </div>
+
+    <div>
+        <label>Beskrivelse:</label>
+        <input asp-for="Description" />
+    </div>
+
+    <div>
+        <label>Prioritet:</label>
+        <select asp-for="Priority">
+            <option value="Lav">Lav</option>
+            <option value="Medium">Medium</option>
+            <option value="Høy">Høy</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Latitude:</label>
+        <input asp-for="Latitude" />
+    </div>
+
+    <div>
+        <label>Longitude:</label>
+        <input asp-for="Longitude" />
+    </div>
+
+    <button type="submit">Registrer behov</button>
+</form>

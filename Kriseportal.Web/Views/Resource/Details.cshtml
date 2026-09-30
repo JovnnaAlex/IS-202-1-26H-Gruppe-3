@@ -1,0 +1,12 @@
+@model Kriseportal.Web.Models.ResourceViewModel
+
+<h1>Ressurs registrert</h1>
+
+<p><strong>Navn:</strong> @Model.Name</p>
+<p><strong>Ressurstype:</strong> @Model.ResourceType</p>
+<p><strong>Beskrivelse:</strong> @Model.Description</p>
+<p><strong>Tilgjengelig:</strong> @Model.Available</p>
+<p><strong>Latitude:</strong> @Model.Latitude</p>
+<p><strong>Longitude:</strong> @Model.Longitude</p>
+
+<a asp-controller="Resource" asp-action="Create">Registrer ny ressurs</a>

@@ -1,0 +1,37 @@
+@model Kriseportal.Web.Models.ResourceViewModel
+
+<h1>Registrer ressurs</h1>
+
+<form asp-controller="Resource" asp-action="Create" method="post">
+    <div>
+        <label>Navn:</label>
+        <input asp-for="Name" />
+    </div>
+
+    <div>
+        <label>Ressurstype:</label>
+        <input asp-for="ResourceType" />
+    </div>
+
+    <div>
+        <label>Beskrivelse:</label>
+        <input asp-for="Description" />
+    </div>
+
+    <div>
+        <label>Tilgjengelig:</label>
+        <input asp-for="Available" />
+    </div>
+
+    <div>
+        <label>Latitude:</label>
+        <input asp-for="Latitude" />
+    </div>
+
+    <div>
+        <label>Longitude:</label>
+        <input asp-for="Longitude" />
+    </div>
+
+    <button type="submit">Registrer ressurs</button>
+</form>

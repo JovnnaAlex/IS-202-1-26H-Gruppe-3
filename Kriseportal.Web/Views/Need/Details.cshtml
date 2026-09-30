@@ -1,0 +1,11 @@
+@model Kriseportal.Web.Models.NeedViewModel
+
+<h1>Behov registrert</h1>
+
+<p><strong>Type:</strong> @Model.Type</p>
+<p><strong>Beskrivelse:</strong> @Model.Description</p>
+<p><strong>Prioritet:</strong> @Model.Priority</p>
+<p><strong>Latitude:</strong> @Model.Latitude</p>
+<p><strong>Longitude:</strong> @Model.Longitude</p>
+
+<a asp-controller="Need" asp-action="Create">Registrer nytt behov</a>
