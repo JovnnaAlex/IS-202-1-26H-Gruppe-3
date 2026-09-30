@@ -1,4 +1,51 @@
+# Kriseportal – IS-202 Gruppe 3
+
+Kriseportal er en ASP.NET Core MVC-applikasjon for registrering av behov og ressurser i en krisesituasjon. Brukeren kan fylle ut et skjema, velge geografisk plassering i et Leaflet-kart og sende inn informasjonen. Dataene behandles av en Controller og vises på en egen Details-side.
+
+## Funksjonalitet
+
+Applikasjonen har to registreringsflyter:
+
+- **Registrer behov:** `/Need/Create`
+- **Registrer ressurs:** `/Resource/Create`
+
+Begge bruker GET for å vise skjema og POST for å sende inn data. Informasjonen sendes gjennom ViewModels og vises på egne Details-sider.
+
+## Systemarkitektur
+
+Applikasjonen følger MVC-strukturen:
+
+- **Models/ViewModels:** `NeedViewModel` og `ResourceViewModel`
+- **Controllers:** `NeedController` og `ResourceController`
+- **Views:** Create- og Details-sider for behov og ressurser
+- **Kart:** Leaflet og `wwwroot/js/map.js` brukes til å registrere geografiske koordinater
+
+Prosjektet bruker også .NET Aspire for å starte og kjøre tjenestene i løsningen.
+
+## Drift
+
+Prosjektet kan bygges fra rotmappen med `dotnet build`.
+
+Applikasjonen startes gjennom `Kriseportal.AppHost`. Når AppHost kjører, kan webapplikasjonen åpnes gjennom adressen til `webfrontend` i Aspire-dashboardet.
+
+## Testing
+
+Applikasjonen er testet lokalt under utviklingen og etter merge til `master`.
+
+- **Build:** `dotnet build` gjennomføres uten errors.
+- **GET:** Registreringssidene for behov og ressurser åpnes.
+- **POST:** Data fra skjemaene sendes til Controller og vises på Details-siden.
+- **Kart:** Kartet reagerer på klikk, viser markør og registrerer Latitude og Longitude.
+- **Responsivitet:** Sidene er utviklet for visning på forskjellige skjermstørrelser.
+
+### Kjent problem
+
+Ved testing av kartdata er det observert at koordinatene kan vises som `0, 0` på Details-siden, selv om koordinatene registreres ved klikk i kartet. Dette krever videre feilsøking.
+
+---
+
 # KI-logg
+
 
 ## Edgar
 
