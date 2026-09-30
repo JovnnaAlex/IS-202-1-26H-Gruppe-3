@@ -1,0 +1,47 @@
+/* details.css - Almir: resultatsider (Need/Details og Resource/Details).
+   Egen fil slik at vi ikke rører site.css (fellesfil). Mobil først. */
+:root {
+  --c-urgent: #c62828;   /* rød  = akutt behov       */
+  --c-planned: #f9a825;  /* gul  = planlagt behov    */
+  --c-resource: #2e7d32; /* grønn = tilgjengelig ressurs */
+  --c-text: #1b1f23;
+  --c-muted: #5b6570;
+  --c-line: #d9dee3;
+  --c-bg: #f5f7f9;
+}
+.result { max-width: 960px; margin: 0 auto; padding: 1rem; color: var(--c-text); }
+.result__banner {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .9rem 1rem; border-radius: 8px; margin-bottom: 1.25rem;
+  background: var(--c-bg); border-left: 6px solid var(--accent, var(--c-line));
+}
+.result__banner h1 { font-size: 1.25rem; margin: 0; }
+.result__grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+.result__facts { margin: 0; }
+.result__facts dt { font-size: .85rem; color: var(--c-muted); margin-top: .9rem; }
+.result__facts dd { margin: .15rem 0 0; font-size: 1.05rem; max-width: 65ch; overflow-wrap: anywhere; }
+.badge {
+  display: inline-block; padding: .15rem .6rem; border-radius: 999px;
+  color: #fff; font-weight: 600; font-size: .9rem; background: var(--c-muted);
+}
+.badge--high, .badge--unavailable { background: var(--c-urgent); }
+.badge--medium { background: var(--c-planned); color: #1b1f23; }
+.badge--low, .badge--available { background: var(--c-resource); }
+.result__map { height: 280px; border-radius: 8px; border: 1px solid var(--c-line); }
+.result__coords { font-size: .85rem; color: var(--c-muted); margin-top: .4rem; }
+.result__actions { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+.result__actions a {
+  padding: .6rem 1rem; border-radius: 6px; text-decoration: none; min-height: 44px;
+  display: inline-flex; align-items: center; border: 1px solid var(--c-line); color: var(--c-text);
+}
+.result__actions a:focus-visible { outline: 3px solid #1565c0; outline-offset: 2px; }
+.result__actions a.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Tablet og opp: fakta til venstre, kart til høyre */
+@media (min-width: 768px) {
+  .result { padding: 2rem; }
+  .result__grid { grid-template-columns: 1fr 1fr; }
+  .result__map { height: 380px; }
+}
+/* Desktop */
+@media (min-width: 1200px) { .result__map { height: 440px; } }
