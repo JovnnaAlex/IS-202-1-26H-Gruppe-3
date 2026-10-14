@@ -22,7 +22,8 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
     });
 
 var app = builder.Build();
-
+app.UseRequestLocalization("en-US");
+// la til request localization for å sette default språk til engelsk Edgar
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
