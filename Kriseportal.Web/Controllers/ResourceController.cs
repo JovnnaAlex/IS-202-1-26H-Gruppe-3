@@ -14,6 +14,11 @@ public class ResourceController : Controller
     [HttpPost]
     public IActionResult Create(ResourceViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
         return View("Details", model);
     }
 }
+// la til en if statement for modelstate validation Edgar

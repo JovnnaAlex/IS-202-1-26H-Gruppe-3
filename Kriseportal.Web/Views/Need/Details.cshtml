@@ -2,8 +2,9 @@
 @using System.Globalization
 @{
     ViewData["Title"] = "Behov registrert";
-    var lat = Model.Latitude.ToString(CultureInfo.InvariantCulture);
-    var lng = Model.Longitude.ToString(CultureInfo.InvariantCulture);
+    var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);
+    var lng = Model.Longitude?.ToString(CultureInfo.InvariantCulture);
+@*la til ? til latitude og longitude Edgar*@
     var prio = Model.Priority switch { "Høy" => "high", "Medium" => "medium", _ => "low" };
     var accent = Model.Priority == "Høy" ? "var(--c-urgent)" : "var(--c-planned)";
 }

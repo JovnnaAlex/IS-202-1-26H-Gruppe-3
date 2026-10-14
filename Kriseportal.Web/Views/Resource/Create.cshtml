@@ -35,8 +35,8 @@
     </p>
 
     @* asp-action/asp-controller gir action="/Resource/Create". method="post" sender til [HttpPost]-metoden. *@
-    <form asp-controller="Resource" asp-action="Create" method="post">
-
+    <form asp-controller="Resource" asp-action="Create" method="post" novalidate>
+@*Edgar la til novalidate på enden for å deaktivere HTML5-validering å bruke backend for validering og stoppe for registrering med ugyldige data *@
         @* Viser samlede valideringsfeil fra controlleren (ModelState), hvis noen. *@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -97,6 +97,8 @@
                 <input asp-for="Latitude" type="hidden" />
                 <input asp-for="Longitude" type="hidden" />
                 <span asp-validation-for="Latitude" class="text-danger"></span>
+                <span asp-validation-for="Longitude" class="text-danger"></span>
+                @* Validering for Longitude vises her endret av Edgar. *@
             </div>
         </div>
 

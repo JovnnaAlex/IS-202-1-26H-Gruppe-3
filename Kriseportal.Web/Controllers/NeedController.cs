@@ -10,10 +10,17 @@ public class NeedController : Controller
     {
         return View();
     }
-
+    
     [HttpPost]
     public IActionResult Create(NeedViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         return View("Details", model);
     }
 }
+
+// la til en if statement for modelstate validation Edgar

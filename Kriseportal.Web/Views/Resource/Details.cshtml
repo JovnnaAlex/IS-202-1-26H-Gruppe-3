@@ -2,8 +2,9 @@
 @using System.Globalization
 @{
     ViewData["Title"] = "Ressurs registrert";
-    var lat = Model.Latitude.ToString(CultureInfo.InvariantCulture);
-    var lng = Model.Longitude.ToString(CultureInfo.InvariantCulture);
+    var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);
+    var lng = Model.Longitude?.ToString(CultureInfo.InvariantCulture);
+@*la til ? til latitude og longitude Edgar*@
 }
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
