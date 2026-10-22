@@ -1,0 +1,13 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: kriseberedskap-db
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata: 
