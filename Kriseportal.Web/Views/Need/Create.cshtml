@@ -1,4 +1,5 @@
 ﻿@model Kriseportal.Web.Models.NeedViewModel
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <!-- Page heading -->
 <h1> Register Need</h1>
@@ -40,7 +41,7 @@
     <!-- Map placeholder: The id "map" is used by map.js to display leaflet map.-->
     <div>
         <label>Location</label>
-        <div id="map"></div>
+        <div id="map" style="height: 400px; width: 100%;"></div>
     </div>
 
     <!-- Coordinates selected from the map: Readonly prevents manual input -->
@@ -67,5 +68,6 @@
 
         
 </form>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="~/js/map.js" asp-append-version="true"></script>
 
