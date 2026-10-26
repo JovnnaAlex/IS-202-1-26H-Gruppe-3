@@ -1,21 +1,31 @@
 @model Kriseportal.Web.Models.ResourceViewModel
 @using System.Globalization
+
 @{
+    // Setter sidetittelen.
     ViewData["Title"] = "Ressurs registrert";
+
+    // Henter koordinatene og sørger for riktig desimalformat.
     var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);
     var lng = Model.Longitude?.ToString(CultureInfo.InvariantCulture);
-@*la til ? til latitude og longitude Edgar*@
+
+    @* Edgar la til ? for å håndtere mulige nullverdier i Latitude og Longitude. *@
 }
 
+@* Laster inn Leaflet og stilarket for detaljsiden. *@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="~/css/details.css" asp-append-version="true" />
 
 <main class="result" style="--accent:var(--c-resource)">
+
+    @* Viser bekreftelse på at ressursen er registrert. *@
     <div class="result__banner" role="status">
         <h1>Ressursen er registrert</h1>
     </div>
 
     <div class="result__grid">
+
+        @* Viser informasjon om den registrerte ressursen. *@
         <dl class="result__facts">
             <dt>Navn</dt>
             <dd>@Model.Name</dd>
@@ -31,30 +41,49 @@
             </dd>
         </dl>
 
+        @* Viser kartet og koordinatene til ressursen. *@
         <section aria-label="Plassering på kart">
             <div id="map" class="result__map"></div>
             <p class="result__coords">Posisjon: @lat, @lng</p>
         </section>
     </div>
 
+    @* Lenker for å registrere en ny ressurs eller gå tilbake til forsiden. *@
     <div class="result__actions">
         <a class="primary" asp-controller="Resource" asp-action="Create">Registrer ny ressurs</a>
         <a asp-controller="Home" asp-action="Index">Til forsiden</a>
     </div>
 </main>
 
+@* Lagrer koordinatene i skjulte felt slik at JavaScript kan hente dem. *@
 <input type="hidden" id="Latitude" value="@lat" />
 <input type="hidden" id="Longitude" value="@lng" />
 
 @section Scripts {
+
+    @* Laster inn Leaflet-biblioteket. *@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
+        // Henter koordinatene fra de skjulte feltene.
         const lat = parseFloat(document.getElementById("Latitude").value);
         const lng = parseFloat(document.getElementById("Longitude").value);
+
+        // Oppretter kartet og sentrerer det på den registrerte ressursen.
         const map = L.map("map").setView([lat, lng], 13);
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19, attribution: "&copy; OpenStreetMap"
+
+        // Legger til Kartverkets topografiske kartgrunnlag.
+        L.tileLayer("https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png", {
+
+            // Setter maksimalt zoomnivå til 18.
+            maxZoom: 18,
+
+            // Viser Kartverket som kilde på kartet.
+            attribution: "&copy; Kartverket"
+
         }).addTo(map);
+
+        // Plasserer en markør på ressursens registrerte posisjon.
         L.marker([lat, lng]).addTo(map);
     </script>
 }
