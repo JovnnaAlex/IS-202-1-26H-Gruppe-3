@@ -1,33 +1,49 @@
 using Kriseportal.Web;
+using Kriseportal.Web.DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
+// Legger til standardoppsettet fra Aspire (helsesjekk, logging og tjenesteoppslag)
 builder.AddServiceDefaults();
 
-// Add services to the container.
+// Legger til tjenester i appen
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add MVC controllers and views.
+// Legger til MVC med controllers og views
 builder.Services.AddControllersWithViews();
+
+// Kobler appen til MariaDB via EF Core (Pomelo)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(
+        connectionString,
+        new MariaDbServerVersion(new Version(11, 4, 0)),
+        mySql => mySql.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null)));
 
 builder.Services.AddOutputCache();
 
 builder.Services.AddHttpClient<WeatherApiClient>(client =>
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-        client.BaseAddress = new("https+http://apiservice");
-    });
+{
+    // Adressen «https+http://» betyr at HTTPS brukes hvis det finnes, ellers HTTP.
+    // Aspire finner selv riktig adresse til tjenesten «apiservice».
+    client.BaseAddress = new("https+http://apiservice");
+});
 
 var app = builder.Build();
+
+// Setter engelsk som standardspråk, slik at desimaltall bruker punktum og ikke komma
 app.UseRequestLocalization("en-US");
-// la til request localization for å sette default språk til engelsk Edgar
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    // HSTS ber nettleseren alltid bruke HTTPS. Standardverdien er 30 dager.
     app.UseHsts();
 }
 
