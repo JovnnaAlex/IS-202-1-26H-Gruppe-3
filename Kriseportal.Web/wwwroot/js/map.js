@@ -1,23 +1,24 @@
-// Gets the map element and determines whether the map is editable or view-only.
+// Henter kartelementet og sjekker om kartet kan redigeres eller kun vises.
 const mapElement = document.getElementById('map');
 const mapMode = mapElement.dataset.mapMode || 'edit';
 
-// Initializes the Leaflet map and sets the default view to Southern Norway.
-const map = L.map('map').setView([58.15, 8.0], 8);
+// Oppretter Leaflet-kartet med Kristiansand som standardvisning.
+const map = L.map('map').setView([58.1467, 7.9956], 11);
 
-// Adds the OpenStreetMap map layer.
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+// Legger til Kartverkets topografiske kartgrunnlag.
+L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+    attribution: '&copy; Kartverket',
+    maxZoom: 18
 }).addTo(map);
 
-// Stores the current marker so only one selected location is shown.
+// Lagrer markøren slik at kun én valgt posisjon vises om gangen.
 let marker;
 
-// Gets the coordinate fields from the form.
+// Henter koordinatfeltene fra skjemaet.
 const latitudeInput = document.getElementById('Latitude');
 const longitudeInput = document.getElementById('Longitude');
 
-// Shows an existing location when coordinates are already available.
+// Viser en eksisterende posisjon dersom koordinatene allerede er registrert.
 if (latitudeInput && longitudeInput &&
     latitudeInput.value && longitudeInput.value) {
 
@@ -28,7 +29,7 @@ if (latitudeInput && longitudeInput &&
     map.setView([latitude, longitude], 13);
 }
 
-// Allows location selection only when the map is in edit mode.
+// Tillater valg av posisjon kun når kartet er i redigeringsmodus.
 if (mapMode === 'edit') {
     map.on('click', function (e) {
         const latitude = e.latlng.lat;
