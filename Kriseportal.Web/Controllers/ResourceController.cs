@@ -1,10 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models;
+using Kriseportal.Web.Repositories;
 
 namespace Kriseportal.Web.Controllers;
 
 public class ResourceController : Controller
 {
+    private readonly IResourceRepository _resourceRepository;
+
+    public ResourceController(IResourceRepository resourceRepository)
+    {
+        _resourceRepository = resourceRepository;
+    }
+    
     [HttpGet]
     public IActionResult Create()
     {

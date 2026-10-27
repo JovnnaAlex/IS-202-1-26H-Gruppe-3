@@ -1,10 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models;
+using Kriseportal.Web.Repositories;
 
 namespace Kriseportal.Web.Controllers;
 
 public class NeedController : Controller
 {
+    private readonly INeedRepository _needRepository;
+
+    public NeedController(INeedRepository needRepository)
+    {
+        _needRepository = needRepository;
+    }
+    
     [HttpGet]
     public IActionResult Create()
     {
