@@ -47,4 +47,5 @@ public class Resource
     // Ressursleverandøren som eier ressursen. Kobles til ApplicationUser i B02.
     [Required]
     public string ProviderId { get; set; } = string.Empty;
+    public ApplicationUser? Provider { get; set; }
 }
