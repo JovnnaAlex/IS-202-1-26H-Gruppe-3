@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kriseportal.ApiService\Kriseportal.ApiService.csproj" />
     <ProjectReference Include="..\Kriseportal.Web\Kriseportal.Web.csproj" />
   </ItemGroup>
 

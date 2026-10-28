@@ -12,14 +12,9 @@ var mariadb = builder.AddContainer("mariadb", "mariadb", "11.4")
     .WithVolume("kriseportal-data", "/var/lib/mysql")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var apiService = builder.AddProject<Projects.Kriseportal_ApiService>("apiservice")
-    .WithHttpHealthCheck("/health");
-
 builder.AddProject<Projects.Kriseportal_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
-    .WithReference(apiService)
-    .WaitFor(apiService)
     .WaitFor(mariadb);
 
 builder.Build().Run();
