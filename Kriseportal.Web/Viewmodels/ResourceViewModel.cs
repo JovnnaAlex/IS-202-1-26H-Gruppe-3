@@ -6,11 +6,11 @@ namespace Kriseportal.Web.Models
     {
         // Navn på ressursen er obligatorisk.
         [Required(ErrorMessage = "Du må oppgi navn på ressursen.")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         // Brukeren må velge en ressurstype.
         [Required(ErrorMessage = "Du må velge en ressurstype.")]
-        public string ResourceType { get; set; }
+        public string ResourceType { get; set; } = string.Empty;
 
         // Beskrivelse er valgfritt.
         public string? Description { get; set; }

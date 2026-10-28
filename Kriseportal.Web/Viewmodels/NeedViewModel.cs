@@ -6,15 +6,15 @@ namespace Kriseportal.Web.Models
     {
         // Type behov er obligatorisk.
         [Required(ErrorMessage = "Du må oppgi type behov.")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         // Beskrivelse av behovet er obligatorisk.
         [Required(ErrorMessage = "Du må skrive en beskrivelse av behovet.")]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         // Brukeren må velge prioritet.
         [Required(ErrorMessage = "Du må velge en prioritet.")]
-        public string Priority { get; set; }
+        public string Priority { get; set; } = string.Empty;
 
         // Breddegrad må registreres gjennom kartet.
         [Required(ErrorMessage = "Du må velge en plassering på kartet.")]
