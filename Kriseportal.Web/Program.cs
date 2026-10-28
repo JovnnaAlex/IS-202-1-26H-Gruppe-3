@@ -1,6 +1,8 @@
 using Kriseportal.Web;
 using Kriseportal.Web.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Kriseportal.Web.Models.Entities;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null)));
+
+// Registrerer ASP.NET Core Identity med våre egne brukere og roller
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddRoles<Microsoft.AspNetCore.Identity.IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddOutputCache();
 
