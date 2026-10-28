@@ -2,6 +2,7 @@ using Kriseportal.Web;
 using Kriseportal.Web.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Kriseportal.Web.Models.Entities;
+using Kriseportal.Web.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentityCore<ApplicationUser>()
     .AddRoles<Microsoft.AspNetCore.Identity.IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Registrerer repositories med dependency injection
+builder.Services.AddScoped<INeedRepository, NeedRepository>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 
 builder.Services.AddOutputCache();
 
