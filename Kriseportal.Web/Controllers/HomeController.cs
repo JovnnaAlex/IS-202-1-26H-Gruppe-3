@@ -8,4 +8,11 @@ public class HomeController : Controller
     {
         return View();
     }
+
+    // Enkel feilside i produksjon (brukes av UseExceptionHandler i Program.cs)
+    [Route("Home/Error")]
+    public IActionResult Error()
+    {
+        return Content("Noe gikk galt. Prøv igjen senere.");
+    }
 }
