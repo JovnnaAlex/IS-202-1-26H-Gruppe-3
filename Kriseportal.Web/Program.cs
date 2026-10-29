@@ -1,7 +1,8 @@
 using Kriseportal.Web;
 using Kriseportal.Web.DataAccess;
-using Microsoft.EntityFrameworkCore;
 using Kriseportal.Web.Models.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,12 +29,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(10),
             errorNumbersToAdd: null)));
 
-// Registrerer ASP.NET Core Identity med våre egne brukere og roller
-builder.Services.AddIdentityCore<ApplicationUser>()
-    .AddRoles<Microsoft.AspNetCore.Identity.IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddOutputCache();
+
+//Setter opp Identity for brukere, roller og innlogging med lagring i databasen
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddHttpClient<WeatherApiClient>(client =>
 {
@@ -55,6 +60,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.UseAntiforgery();
 
