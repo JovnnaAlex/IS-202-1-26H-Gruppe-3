@@ -1,0 +1,18 @@
+﻿@model Kriseportal.Web.Models.LoginViewModel
+
+<h1>Login</h1>
+
+ <form method="post">
+ <div asp-validation-summary="ModelOnly"></div>
+ 
+ <label asp-for="Email">E-postadresse:</label>
+ <input asp-for="Email" />
+ <span asp-validation-for="Email"></span>
+ 
+ <label asp-for="Password">Passord:</label>
+ <input asp-for="Password" type="password" />
+ <span asp-validation-for="Password"></span>
+
+ <button type="submit">Logg inn</button>
+ 
+ </form>

@@ -172,6 +172,25 @@
                 Forespørsler
             </span>
 
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="sidebar-link btn text-start w-100">
+                            Logg ut
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="sidebar-link">
+                        Logg inn
+                    </a>
+
+                    <a asp-controller="Account" asp-action="Register" class="sidebar-link">
+                        Opprett konto
+                    </a>
+                }
+
         </nav>
 
     </aside>
