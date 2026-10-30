@@ -1,0 +1,191 @@
+﻿/* Legger til skrifttypen Inter*/
+/* Vanlig Inter */
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/InterVariable.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Kursiv Inter */
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/InterVariable-Italic.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Ikoner i sidemenyen */
+.sidebar-icon {
+    width: 24px; /* Ikonstørrelse hentet fra Figma */
+    height: 24px;
+    flex-shrink: 0; /* Hindrer at ikonet krymper */
+}
+
+/* Farger og størrelser hentet fra Figma */
+
+:root {
+    --background-color: #F8F7F3;
+    --sidebar-color: #C5D5C8;
+    --primary-color: #527366;
+    --heading-color: #26352F;
+    --sidebar-text-color: #263D32;
+    --muted-color: #80664F;
+    --map-color: #E2E9E2;
+    --card-color: #FFFFFF;
+    --font-family: 'Inter', sans-serif;
+    --sidebar-width: 260px;
+    --card-radius: 12px;
+    --button-radius: 8px;
+}
+
+/* Hele nettsiden */
+
+body {
+    /* Dashboard - offentlig aktør  */
+    /* Dette kommer fra Figma, men vi må endre litt på det for å få det til å se bra ut i nettleseren. */
+
+    margin: 0; /* Fjerner standard margin på body */
+    min-height: 100vh; /* Sikrer at body alltid fyller hele høyden på viewporten/skjermen */
+    background-color: #F8F7F3; /* Lys bakgrunnsfarge for hele siden fra figma*/
+    font-family: var(--font-family); /* Forteller nettsiden hvilken skrifttype som skal brukes */
+}
+
+/* Dashboard */
+.dashboard {
+    padding: 40px;
+}
+
+    /* Overskrift */
+    .dashboard h1 {
+        font-size: 32px;
+        color: var(--heading-color);
+    }
+
+    /* Undertekst*/
+    .dashboard > p {
+        font-size: 16px;
+        color: var(--muted-color);
+    }
+
+/* Oversiktskort */
+.dashboard-card {
+    background-color: var(--card-color);
+    border-radius: var(--card-radius);
+    width: 100%;
+    max-width: 336px;
+    min-height: 180px;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-top: 40px;
+}
+
+    .dashboard-card h2 {
+        font-size: 20px;
+        color: var(--heading-color);
+    }
+
+    .dashboard-card p {
+        font-size: 14px;
+        color: var(--muted-color);
+    }
+
+    /* Felles oppsett  */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidemeny */
+.sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0; /* Sidemenyen blir til en fleksibel beholder*/
+    background-color: var(--sidebar-color);
+    padding: 24px;
+    box-sizing: border-box; /* Padding er inkludert på 260px*/
+    display: flex;
+    flex-direction: column;
+}
+/* Logo og undertekst */
+.sidebar-brand {
+    margin-bottom: 32px; /* Avstand til navigasjonsmenyen */
+}
+
+.sidebar-brand h2 {
+    font-family: var(--font-family);
+    font-size: 24px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.sidebar-brand p {
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--sidebar-text-color);
+    margin: 4px 0 0;
+}
+
+/* Navigasjon */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column; /* Setter elementer under hverandre*/
+    gap: 16px;
+}
+
+/* Menytekst hentet fra Figma */
+.sidebar-nav a,
+.sidebar-nav .sidebar-link,
+.sidebar-bottom .sidebar-link {
+    display: flex; /* Plasserer ikon og tekst ved siden av hverandre */
+    align-items: center; /* Sentrerer ikonet og teksten vertikalt */
+    gap: 12px; /* Avstand mellom ikon og tekst */
+
+    padding: 12px;
+    font-family: var(--font-family);
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 19px;
+    color: var(--sidebar-text-color);
+    text-decoration: none;
+    
+}   
+
+/* Menyvalgene nederst i sidemenyen */
+.sidebar-bottom {
+    margin-top: auto; /* Skyver sidebar-bottom så langt ned i sidebaren*/
+    padding-top: 20px;
+    border-top: 1px solid #9FB7A5;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Menyvalg som ikke fungerer ennå */
+.sidebar-link.disabled {
+    cursor: default;
+}
+
+/* Hovedinnhold */
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+}

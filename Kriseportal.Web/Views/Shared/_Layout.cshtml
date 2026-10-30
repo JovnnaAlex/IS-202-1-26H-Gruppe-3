@@ -4,14 +4,111 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
+
+    <!-- Vår egen CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Kobler til site.css (FIGMA) -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
 
-<main>
-    @RenderBody()
-</main>
+    <div class="app-layout">
 
-@await RenderSectionAsync("Scripts", required: false)
+        <!-- Felles sidemeny som er felles på alle sider  -->
+        <!-- Sider som fungerer -->
+        <aside class="sidebar">
+
+            <!-- Logo og undertekst fra Figma -->
+            <div class="sidebar-brand">
+                <h2>Kriseportalen</h2>
+                <p>Ressurs - og behovskoordinering</p>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <!--Dashboard-->
+                <a asp-controller="Home" asp-action="Index">
+                    <img src="~/icons/dashboard.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Dashboard
+                </a>
+
+                <!--Behov-->
+                <a asp-controller="Need" asp-action="Create">
+                    <img src="~/icons/behov.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Behov
+                </a>
+
+                <!--Ressurser-->
+                <a asp-controller="Resource" asp-action="Create">
+                    <img src="~/icons/ressurser.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Ressurser
+                </a>
+
+                <!-- Sider som ikke er klare ennå, men vises på siden -->
+                <span class="sidebar-link disabled">
+                    <img src="~/icons/kart.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Kart
+                </span>
+
+                <!--Forespørsler-->
+                <span class="sidebar-link disabled">
+                    <img src="~/icons/foresporsler.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Forespørsler
+                </span>
+
+            </nav>
+
+            <!-- Nederste meny, disse er heller ikke klare ennå/implementert -->
+            <div class="sidebar-bottom">
+
+                <!--Innstillinger-->
+                <span class="sidebar-link disabled">
+                    <img src="~/icons/innstillinger.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Innstillinger
+                </span>
+
+                <!--Profil-->
+                <span class="sidebar-link disabled">
+                    <img src="~/icons/profil.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Min profil
+                </span>
+
+                <!--Logg-ut-->
+                <span class="sidebar-link disabled">
+                    <img src="~/icons/logg-ut.svg"
+                         alt=""
+                         class="sidebar-icon" />
+                    Logg ut
+                </span>
+
+            </div>
+
+
+        </aside>
+
+        <!-- Innholdet på den aktive siden -->
+        <main class="main-content">
+            @RenderBody()
+        </main>
+
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>
