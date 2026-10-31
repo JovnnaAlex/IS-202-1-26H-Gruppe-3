@@ -107,6 +107,13 @@ body {
     box-sizing: border-box; /* Padding er inkludert på 260px*/
     display: flex;
     flex-direction: column;
+
+    /* Holder sidemenyen stabil på alle sider */
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    align-self: flex-start;
+    overflow-y: auto;
 }
 /* Logo og undertekst */
 .sidebar-brand {
