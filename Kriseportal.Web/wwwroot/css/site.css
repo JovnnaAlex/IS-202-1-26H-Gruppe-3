@@ -172,6 +172,23 @@ body {
 .sidebar-link.disabled {
     cursor: default;
 }
+/* Markerer den aktive siden */
+.sidebar-nav a.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: var(--button-radius);
+}
+
+/* Farge når man holder musepekeren over menyvalgene */
+.sidebar-nav a:hover {
+    background-color: #AFC5B4;
+    border-radius: var(--button-radius);
+}
+
+/* Beholder aktiv farge når musepekeren er over */
+.sidebar-nav a.active:hover {
+    background-color: var(--primary-color);
+}
 
 /* Hovedinnhold */
 .main-content {
