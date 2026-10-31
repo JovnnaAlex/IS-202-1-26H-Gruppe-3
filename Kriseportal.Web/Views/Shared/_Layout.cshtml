@@ -34,6 +34,10 @@
         <link rel="stylesheet"
               href="~/css/site.css"
               asp-append-version="true" />
+
+              
+    <!-- Laster CSS som tilhører den aktuelle siden -->
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
@@ -63,7 +67,7 @@
 
                 <!-- Behov -->
                 <a asp-controller="Need"
-                   asp-action="Create"
+                   asp-action="Index"
                    class="@(currentController == "Need" ? "active" : "")">
 
                     <img src="~/icons/behov.svg" alt="" class="sidebar-icon" />

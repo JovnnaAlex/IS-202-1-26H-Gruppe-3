@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Behov";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/need-index.css"
+          asp-append-version="true" />
+}
+
+<div class="needs-page">
+
+    <!-- Overskrift og registreringsknapp -->
+    <div class="needs-header">
+        <div>
+            <h1>Behov</h1>
+            <p>Oversikt over behov og ressurser</p>
+        </div>
+
+        <!-- Åpner det eksisterende registreringsskjemaet -->
+        <a asp-controller="Need"
+           asp-action="Create"
+           class="needs-create-button">
+            + Registrer behov
+        </a>
+    </div>
+
+    <!-- Hovedkort fra Figma -->
+    <section class="needs-card">
+
+        <h2>Alle behov</h2>
+
+        <!-- Søk og filtrering av behov -->
+        <div class="needs-filters">
+
+            <!-- Søkefelt -->
+            <input type="search"
+                   class="needs-search"
+                   placeholder="Søk etter behov eller kommune..."
+                   aria-label="Søk etter behov eller kommune" />
+
+            <!-- Kommunefilter -->
+            <select class="needs-municipality"
+                    aria-label="Filtrer etter kommune">
+
+                <option value="">Alle kommuner</option>
+                <option value="Kristiansand">Kristiansand</option>
+                <option value="Vennesla">Vennesla</option>
+                <option value="Grimstad">Grimstad</option>
+
+            </select>
+
+        </div>
+
+        <!-- Tabell med oversikt over behov -->
+        <div class="needs-table-wrapper">
+
+            <table class="needs-table">
+
+                <!-- Tabelloverskrifter -->
+                <thead>
+                    <tr>
+                        <th>Behov</th>
+                        <th>Kommune</th>
+                        <th>Prioritet</th>
+                        <th>Status</th>
+                        <th>Handling</th>
+                    </tr>
+                </thead>
+
+                <!-- Behovene skal vises her senere -->
+                <tbody>
+                    <tr>
+                        <td colspan="5" class="needs-empty">
+                            Ingen behov registrert ennå.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- Antall behov som vises i tabellen -->
+        <p class="needs-count">Viser 0 av 0 behov "Må enda kobles til databasen"</p>
+
+    </section>
+
+</div>
