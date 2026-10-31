@@ -1,9 +1,10 @@
-﻿using Kriseportal.Web.Models.Entities;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Kriseportal.Web.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kriseportal.Web.DataAccess;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -35,6 +36,12 @@ public class ApplicationDbContext : DbContext
                 .WithMany(c => c.Needs)
                 .HasForeignKey(n => n.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Kobler behovet til den offentlige aktøren som registrerte det
+            need.HasOne(n => n.PublicAuthority)
+                .WithMany()
+                .HasForeignKey(n => n.PublicAuthorityId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Indekser på feltene vi filtrerer mest på
             need.HasIndex(n => n.Status);
@@ -56,6 +63,12 @@ public class ApplicationDbContext : DbContext
             resource.HasOne(r => r.Category)
                 .WithMany(c => c.Resources)
                 .HasForeignKey(r => r.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Kobler ressursen til ressursleverandøren som eier den
+            resource.HasOne(r => r.Provider)
+                .WithMany()
+                .HasForeignKey(r => r.ProviderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             resource.HasIndex(r => r.Municipality);

@@ -1,23 +1,9 @@
 @*
-    Views/Resource/Create.cshtml
-    ---------------------------------------------------------------
-    Skjema der en ressursleverandør registrerer en ressurs
-    (f.eks. kjøretøy, strømaggregat, personell) og plasserer den på kartet.
-
-    Flyt:
-      GET  /Resource/Create  -> ResourceController.Create()       viser dette skjemaet
-      POST /Resource/Create  -> ResourceController.Create(model)  sender data til Details
-
-    Avhengigheter:
-      - ResourceViewModel (Person 1): Name, ResourceType, Description, Available, Latitude, Longitude
-      - ResourceController (Person 2): actions Create (GET/POST) og Details
-      - map.js (Person 5): tegner kartet i <div id="map"> og fyller inn
-        de skjulte feltene med id="Latitude" og id="Longitude" ved klikk.
-
-    Ansvarlig: Emma (Person 4) – branch feature/resource-form
+    Skjema for registrering av ressurser.
+    Brukeren kan velge plassering gjennom adressesøk eller kartklikk.
+    Skjemaet sender informasjonen til ResourceController.Create.
 *@
-@* Tag helpers (asp-for, asp-action osv.) slås på her, fordi prosjektet ikke har _ViewImports.cshtml ennå.
-   Fullt navn på modellen brukes av samme grunn. *@
+
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model Kriseportal.Web.Models.ResourceViewModel
 
@@ -25,92 +11,386 @@
     ViewData["Title"] = "Registrer ressurs";
 }
 
-@* Leaflet sin CSS legges her i viewet, så vi slipper å endre _Layout.cshtml (felles fil). *@
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Laster inn Leaflet sitt stilark. -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<div class="container my-4">
-    <h1 class="mb-3">Registrer ressurs</h1>
-    <p class="text-muted">
-        Fyll ut informasjon om ressursen du kan stille til disposisjon, og klikk i kartet for å angi hvor den befinner seg.
-    </p>
+<style>
+    /* Hovedområdet for registrering av ressurser. */
+    .resource-page {
+        max-width: 1300px;
+        margin: 0 auto;
+        color: #24332B;
+    }
 
-    @* asp-action/asp-controller gir action="/Resource/Create". method="post" sender til [HttpPost]-metoden. *@
-    <form asp-controller="Resource" asp-action="Create" method="post" novalidate>
-@*Edgar la til novalidate på enden for å deaktivere HTML5-validering å bruke backend for validering og stoppe for registrering med ugyldige data *@
-        @* Viser samlede valideringsfeil fra controlleren (ModelState), hvis noen. *@
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    /* Overskrift og forklarende tekst. */
+    .resource-heading {
+        margin-bottom: 28px;
+    }
 
-        <div class="row g-4">
+    .resource-heading h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #244D3B;
+        margin-bottom: 8px;
+    }
 
-            @* ---------- Venstre kolonne: skjemafelter ---------- *@
-            <div class="col-12 col-lg-6">
+    .resource-heading p {
+        color: #66756B;
+        margin: 0;
+    }
 
-                @* Ressurstype – nedtrekksliste. Verdien lagres i ResourceViewModel.ResourceType *@
-                <div class="mb-3">
-                    <label asp-for="ResourceType" class="form-label">Ressurstype</label>
-                    <select asp-for="ResourceType" class="form-select" required>
-                        <option value="">-- Velg ressurstype --</option>
-                        <option>Kjøretøy</option>
-                        <option>Strømaggregat</option>
-                        <option>Personell</option>
-                        <option>Utstyr</option>
-                        <option>Lokaler / husly</option>
-                        <option>Mat og vann</option>
-                        <option>Annet</option>
-                    </select>
-                    <span asp-validation-for="ResourceType" class="text-danger"></span>
-                </div>
+    /* Hvit boks rundt registreringsskjemaet. */
+    .resource-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E1E8E1;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
 
-                @* Navn på ressursen, f.eks. "Traktor" *@
-                <div class="mb-3">
-                    <label asp-for="Name" class="form-label">Navn</label>
-                    <input asp-for="Name" class="form-control" placeholder="F.eks. Traktor" required />
-                    <span asp-validation-for="Name" class="text-danger"></span>
-                </div>
+    /* Plasserer ressursinformasjon og kart ved siden av hverandre. */
+    .resource-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+    }
 
-                @* Utfyllende beskrivelse av ressursen *@
-                <div class="mb-3">
-                    <label asp-for="Description" class="form-label">Beskrivelse</label>
-                    <textarea asp-for="Description" class="form-control" rows="4"
-                              placeholder="F.eks. John Deere traktor med henger, kan brukes til rydding og transport"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
-                </div>
+    /* Overskrifter for skjemadelene. */
+    .resource-section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        color: #244D3B;
+    }
 
-                @* Available er bool: asp-for lager både checkbox og et skjult "false"-felt,
-                   slik at verdien blir false hvis boksen ikke er krysset av. *@
-                <div class="form-check mb-3">
-                    <input asp-for="Available" class="form-check-input" />
-                    <label asp-for="Available" class="form-check-label">Tilgjengelig nå</label>
-                </div>
+    /* Avstand mellom skjemafeltene. */
+    .resource-field {
+        margin-bottom: 22px;
+    }
+
+    /* Etiketter for skjemafeltene. */
+    .resource-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    /* Viser obligatoriske felt med en rød stjerne. */
+    .required-star {
+        color: #C62828;
+        font-weight: 700;
+    }
+
+    /* Felles utseende for tekstfelt og nedtrekkslister. */
+    .resource-input {
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #CBD5CC;
+        border-radius: 8px;
+        background-color: #FFFFFF;
+        color: #24332B;
+        font: inherit;
+    }
+
+    /* Markerer aktivt felt tydelig. */
+    .resource-input:focus {
+        outline: 2px solid #244D3B;
+        outline-offset: 1px;
+    }
+
+    /* Gir god plass til beskrivelse av ressursen. */
+    .resource-textarea {
+        min-height: 160px;
+        resize: vertical;
+    }
+
+    /* Viser valideringsfeil under tilhørende felt. */
+    .field-validation-error {
+        display: block;
+        color: #C62828;
+        font-size: 0.9rem;
+        margin-top: 6px;
+    }
+
+    /* Tilgjengelighetsfeltet. */
+    .resource-availability {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background-color: #F5F7F4;
+        border: 1px solid #E1E8E1;
+        border-radius: 8px;
+    }
+
+    .resource-checkbox {
+        width: 20px;
+        height: 20px;
+        accent-color: #244D3B;
+        cursor: pointer;
+    }
+
+    /* Forklarende tekst ved kartet. */
+    .resource-help-text {
+        color: #66756B;
+        font-size: 0.95rem;
+        margin-bottom: 14px;
+    }
+
+    /* Område for adresseforslag fra Kartverket. */
+    #addressSuggestions {
+        margin-top: 6px;
+    }
+
+    /* Kartets størrelse og ramme. */
+    #map {
+        height: 400px;
+        width: 100%;
+        border: 1px solid #CBD5CC;
+        border-radius: 10px;
+        z-index: 0;
+    }
+
+    /* Viser valgt plassering under kartet. */
+    .resource-location-info {
+        margin-top: 16px;
+        padding: 14px;
+        background-color: #F5F7F4;
+        border-radius: 8px;
+        color: #526157;
+        font-size: 0.9rem;
+    }
+
+    /* Plasserer registreringsknappen nederst til høyre. */
+    .resource-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid #E1E8E1;
+    }
+
+    /* Grønn hovedknapp for registrering. */
+    .resource-submit {
+        background-color: #244D3B;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .resource-submit:hover {
+        background-color: #193A2C;
+    }
+
+    .resource-submit:focus-visible {
+        outline: 3px solid #86B69A;
+        outline-offset: 3px;
+    }
+
+    /* Tilpasser skjemaet til mindre skjermer. */
+    @@media (max-width: 900px) {
+        .resource-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .resource-card {
+            padding: 20px;
+        }
+
+        .resource-submit {
+            width: 100%;
+        }
+    }
+</style>
+
+<!-- Hovedinnhold for registrering av ressurser. -->
+<div class="resource-page">
+
+    <!-- Overskrift og forklaring. -->
+    <div class="resource-heading">
+        <h1>Registrer ressurs</h1>
+
+        <p>
+            Registrer en ressurs du kan stille til disposisjon,
+            og velg hvor ressursen befinner seg.
+        </p>
+    </div>
+
+    <!-- Registreringsskjemaet. -->
+    <div class="resource-card">
+
+        <form asp-controller="Resource"
+              asp-action="Create"
+              method="post"
+              novalidate>
+
+            <!-- Viser generelle valideringsfeil. -->
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger"></div>
+
+            <div class="resource-grid">
+
+                <!-- Venstre kolonne: Informasjon om ressursen. -->
+                <section>
+
+                    <h2 class="resource-section-title">
+                        Informasjon om ressursen
+                    </h2>
+
+                    <!-- Valg av ressurstype. -->
+                    <div class="resource-field">
+
+                        <label asp-for="ResourceType" class="resource-label">
+                            Ressurstype
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <select asp-for="ResourceType"
+                                class="resource-input"
+                                aria-required="true">
+
+                            <option value="">Velg ressurstype</option>
+                            <option value="Kjøretøy">Kjøretøy</option>
+                            <option value="Strømaggregat">Strømaggregat</option>
+                            <option value="Personell">Personell</option>
+                            <option value="Utstyr">Utstyr</option>
+                            <option value="Lokaler / husly">Lokaler / husly</option>
+                            <option value="Mat og vann">Mat og vann</option>
+                            <option value="Annet">Annet</option>
+
+                        </select>
+
+                        <span asp-validation-for="ResourceType"></span>
+
+                    </div>
+
+                    <!-- Navn på ressursen. -->
+                    <div class="resource-field">
+
+                        <label asp-for="Name" class="resource-label">
+                            Navn på ressurs
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Name"
+                               class="resource-input"
+                               placeholder="F.eks. Traktor"
+                               aria-required="true" />
+
+                        <span asp-validation-for="Name"></span>
+
+                    </div>
+
+                    <!-- Valgfri beskrivelse av ressursen. -->
+                    <div class="resource-field">
+
+                        <label asp-for="Description" class="resource-label">
+                            Beskrivelse
+                        </label>
+
+                        <textarea asp-for="Description"
+                                  class="resource-input resource-textarea"
+                                  placeholder="Beskriv ressursens kapasitet, egenskaper og bruksområder."></textarea>
+
+                        <span asp-validation-for="Description"></span>
+
+                    </div>
+
+                    <!-- Angir om ressursen er tilgjengelig nå. -->
+                    <div class="resource-field">
+
+                        <div class="resource-availability">
+
+                            <input asp-for="Available"
+                                   class="resource-checkbox" />
+
+                            <label asp-for="Available">
+                                Tilgjengelig nå
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Høyre kolonne: Adresse og geografisk plassering. -->
+                <section>
+
+                    <h2 class="resource-section-title">
+                        Geografisk plassering
+                        <span class="required-star">*</span>
+                    </h2>
+
+                    <!-- Adressefelt koblet til adressesøket i map.js. -->
+                    <div class="resource-field">
+
+                        <label for="addressSearch" class="resource-label">
+                            Søk etter adresse eller sted
+                        </label>
+
+                        <input type="search"
+                               id="addressSearch"
+                               class="resource-input"
+                               placeholder="F.eks. Markens gate 1, Kristiansand"
+                               autocomplete="off" />
+
+                        <!-- Her vises adresseforslag fra Kartverket. -->
+                        <div id="addressSuggestions"></div>
+
+                    </div>
+
+                    <!-- Forklaring av hvordan plassering velges. -->
+                    <p class="resource-help-text">
+                        Søk etter en adresse, eller klikk direkte i kartet
+                        for å velge hvor ressursen befinner seg.
+                    </p>
+
+                    <!-- Kartverket-kartet opprettes av map.js. -->
+                    <div id="map"
+                         data-map-mode="edit"
+                         aria-label="Kart for valg av ressursens plassering">
+                    </div>
+
+                    <!-- Koordinatene sendes inn sammen med skjemaet. -->
+                    <input asp-for="Latitude" type="hidden" />
+                    <input asp-for="Longitude" type="hidden" />
+
+                    <!-- Viser feilmeldinger hvis plassering mangler. -->
+                    <span asp-validation-for="Latitude"></span>
+                    <span asp-validation-for="Longitude"></span>
+
+                    <!-- Informasjon om hvordan plasseringen registreres. -->
+                    <div class="resource-location-info">
+                        Plasseringen lagres automatisk når du velger
+                        en adresse eller klikker i kartet.
+                    </div>
+
+                </section>
+
             </div>
 
-            @* ---------- Høyre kolonne: kart ---------- *@
-            <div class="col-12 col-lg-6">
-                <label class="form-label">Lokasjon</label>
-                <p class="small text-muted mb-2">Klikk i kartet der ressursen befinner seg.</p>
+            <!-- Knapp for å sende inn registreringen. -->
+            <div class="resource-actions">
 
-                @* id="map" er avtalt i gruppen – map.js (Person 5) tegner kartet her. *@
-                <div id="map" style="height: 400px; width: 100%;" class="rounded border"></div>
+                <button type="submit" class="resource-submit">
+                    Registrer ressurs
+                </button>
 
-                @* Skjulte felt som map.js fyller inn. asp-for gir id="Latitude"/"Longitude"
-                   og name som matcher ResourceViewModel, så verdiene blir med i POST. *@
-                <input asp-for="Latitude" type="hidden" />
-                <input asp-for="Longitude" type="hidden" />
-                <span asp-validation-for="Latitude" class="text-danger"></span>
-                <span asp-validation-for="Longitude" class="text-danger"></span>
-                @* Validering for Longitude vises her endret av Edgar. *@
             </div>
-        </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary btn-lg">
-                Registrer ressurs
-            </button>
-        </div>
-    </form>
+        </form>
+
+    </div>
+
 </div>
 
-@* Leaflet-biblioteket, deretter felles kartlogikk fra Person 5 (map.js).
-   Lagt direkte her fordi _Layout.cshtml ikke har en Scripts-seksjon ennå. *@
+<!-- Laster inn Leaflet og eksisterende kartfunksjonalitet. -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="~/js/map.js" asp-append-version="true"></script>

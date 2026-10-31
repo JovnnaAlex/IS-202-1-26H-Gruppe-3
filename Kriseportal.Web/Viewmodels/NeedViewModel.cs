@@ -1,18 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 namespace Kriseportal.Web.Models
 {
     public class NeedViewModel
     {
-        [Required(ErrorMessage = "Write the type of need")]
-        public string Type { get; set; }
-        [Required(ErrorMessage = "Write the description of the need")]
-        public string Description { get; set; }
-        [Required(ErrorMessage = "Choose the priority of the need")]
-        public string Priority { get; set; }
-        [Required(ErrorMessage = "Write the latitude of the need")]
+        // Type behov er obligatorisk.
+        [Required(ErrorMessage = "Du må oppgi type behov.")]
+        public string Type { get; set; } = string.Empty;
+
+        // Beskrivelse av behovet er obligatorisk.
+        [Required(ErrorMessage = "Du må skrive en beskrivelse av behovet.")]
+        public string Description { get; set; } = string.Empty;
+
+        // Brukeren må velge prioritet.
+        [Required(ErrorMessage = "Du må velge en prioritet.")]
+        public string Priority { get; set; } = string.Empty;
+
+        // Breddegrad må registreres gjennom kartet.
+        [Required(ErrorMessage = "Du må velge en plassering på kartet.")]
         public double? Latitude { get; set; }
-        [Required(ErrorMessage = "Write the longitude of the need")]
+
+        // Lengdegrad må registreres gjennom kartet.
+        [Required(ErrorMessage = "Du må velge en plassering på kartet.")]
         public double? Longitude { get; set; }
     }
 }
-//endret av edgar lagt til required og ? på double for å tillate nullverdier, ellers vil det kaste en feil hvis brukeren ikke fyller ut feltet.

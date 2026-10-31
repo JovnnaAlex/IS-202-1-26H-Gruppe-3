@@ -1,20 +1,29 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 namespace Kriseportal.Web.Models
 {
     public class ResourceViewModel
     {
-            [Required(ErrorMessage = "Write the name of the resource")]
-            public string Name { get; set; }
-            [Required(ErrorMessage = "Write the type of resource")]    
-            public string ResourceType { get; set; }
-            public string? Description { get; set; }
-            public bool Available { get; set; }
-            [Required(ErrorMessage = "Write the latitude of the resource")]
-            public double? Latitude { get; set; }
-            [Required(ErrorMessage = "Write the longitude of the resource")]
-            public double? Longitude { get; set; }
-        }
+        // Navn på ressursen er obligatorisk.
+        [Required(ErrorMessage = "Du må oppgi navn på ressursen.")]
+        public string Name { get; set; } = string.Empty;
+
+        // Brukeren må velge en ressurstype.
+        [Required(ErrorMessage = "Du må velge en ressurstype.")]
+        public string ResourceType { get; set; } = string.Empty;
+
+        // Beskrivelse er valgfritt.
+        public string? Description { get; set; }
+
+        // Angir om ressursen er tilgjengelig.
+        public bool Available { get; set; }
+
+        // Brukeren må velge en plassering på kartet.
+        [Required(ErrorMessage = "Du må velge en plassering på kartet.")]
+        public double? Latitude { get; set; }
+
+        // Lengdegrad registreres automatisk fra kartet.
+        [Required(ErrorMessage = "Du må velge en plassering på kartet.")]
+        public double? Longitude { get; set; }
     }
-
-//endret av edgar lagt til required la til ? på double for å tillate nullverdier, ellers vil det kaste en feil hvis brukeren ikke fyller ut feltet. 
-
+}

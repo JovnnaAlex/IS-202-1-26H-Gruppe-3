@@ -50,4 +50,5 @@ public class Need
     // Kobles til ApplicationUser i B02, når Backend har laget den i B06.
     [Required]
     public string PublicAuthorityId { get; set; } = string.Empty;
+    public ApplicationUser? PublicAuthority { get; set; }
 }

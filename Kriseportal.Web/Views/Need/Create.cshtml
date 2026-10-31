@@ -1,73 +1,375 @@
 ﻿@model Kriseportal.Web.Models.NeedViewModel
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<!-- Page heading -->
-<h1> Register Need</h1>
+@{
+    ViewData["Title"] = "Registrer behov";
+}
 
- 
-<form asp-action="Create" method="post">
+<!-- Laster inn Leaflet sitt stilark for kartvisning. -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <!-- Need type input -->
-    <div>
-        <label asp-for="Type">Need Type</label>
-        <input asp-for="Type" />
-        <!-- Validation message for Need Type: "span" displays the validation error -->
-        <span asp-validation-for="Type"></span>
+<style>
+    /* Hovedområdet for registrering av behov. */
+    .need-page {
+        max-width: 1300px;
+        margin: 0 auto;
+        color: #24332B;
+    }
+
+    /* Overskrift og forklarende tekst. */
+    .need-heading {
+        margin-bottom: 28px;
+    }
+
+    .need-heading h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #244D3B;
+        margin-bottom: 8px;
+    }
+
+    .need-heading p {
+        color: #66756B;
+        margin: 0;
+    }
+
+    /* Hvit boks rundt registreringsskjemaet. */
+    .need-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E1E8E1;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Plasserer informasjon og kart ved siden av hverandre. */
+    .need-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+    }
+
+    /* Overskrifter for skjemadelene. */
+    .need-section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        color: #244D3B;
+    }
+
+    /* Avstand mellom feltene. */
+    .need-field {
+        margin-bottom: 22px;
+    }
+
+    /* Etiketter for skjemafeltene. */
+    .need-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    /* Viser obligatoriske felt med en rød stjerne. */
+    .required-star {
+        color: #C62828;
+        font-weight: 700;
+    }
+
+    /* Felles utseende for tekstfelt og nedtrekkslister. */
+    .need-input {
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #CBD5CC;
+        border-radius: 8px;
+        background-color: #FFFFFF;
+        color: #24332B;
+        font: inherit;
+    }
+
+    /* Tydelig markering av aktive felt. */
+    .need-input:focus {
+        outline: 2px solid #244D3B;
+        outline-offset: 1px;
+    }
+
+    /* Beskrivelsesfeltet skal ha god plass. */
+    .need-textarea {
+        min-height: 160px;
+        resize: vertical;
+    }
+
+    /* Viser valideringsfeil under tilhørende felt. */
+    .field-validation-error {
+        display: block;
+        color: #C62828;
+        font-size: 0.9rem;
+        margin-top: 6px;
+    }
+
+    /* Forklarende tekst ved kartet. */
+    .need-help-text {
+        color: #66756B;
+        font-size: 0.95rem;
+        margin-bottom: 14px;
+    }
+
+    /* Område for fremtidige adresseforslag. */
+    #addressSuggestions {
+        margin-top: 6px;
+    }
+
+    /* Kartets størrelse og ramme. */
+    #map {
+        height: 400px;
+        width: 100%;
+        border: 1px solid #CBD5CC;
+        border-radius: 10px;
+        z-index: 0;
+    }
+
+    /* Plasserer koordinatfeltene ved siden av hverandre. */
+    .need-coordinates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 20px;
+    }
+
+    /* Koordinatene fylles inn automatisk fra kartet. */
+    .need-input[readonly] {
+        background-color: #F5F7F4;
+        color: #526157;
+    }
+
+    /* Plasserer registreringsknappen nederst til høyre. */
+    .need-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid #E1E8E1;
+    }
+
+    /* Grønn hovedknapp for registrering. */
+    .need-submit {
+        background-color: #244D3B;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .need-submit:hover {
+        background-color: #193A2C;
+    }
+
+    .need-submit:focus-visible {
+        outline: 3px solid #86B69A;
+        outline-offset: 3px;
+    }
+
+    /* Tilpasser skjemaet til mindre skjermer. */
+    @@media (max-width: 900px) {
+        .need-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .need-card {
+            padding: 20px;
+        }
+
+        .need-coordinates {
+            grid-template-columns: 1fr;
+        }
+
+        .need-submit {
+            width: 100%;
+        }
+    }
+</style>
+
+<!-- Hovedinnhold for registrering av behov. -->
+<div class="need-page">
+
+    <!-- Sidens overskrift. -->
+    <div class="need-heading">
+        <h1>Registrer behov</h1>
+        <p>
+            Beskriv behovet og velg hvor det er behov for hjelp.
+        </p>
     </div>
 
-    <!-- Description input -->
-    <div>
-        <label asp-for="Description">Description</label>
-        <textarea asp-for="Description"></textarea>
-        <!--Validation message for Description: "span" displays the validation error -->
-        <span asp-validation-for="Description"></span>
+    <!-- Registreringsskjemaet. -->
+    <div class="need-card">
+
+        <form asp-controller="Need"
+              asp-action="Create"
+              method="post">
+
+            <div class="need-grid">
+
+                <!-- Venstre kolonne: Informasjon om behovet. -->
+                <section>
+
+                    <h2 class="need-section-title">
+                        Informasjon om behovet
+                    </h2>
+
+                    <!-- Type behov. -->
+                    <div class="need-field">
+
+                        <label asp-for="Type" class="need-label">
+                            Type behov
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Type"
+                               class="need-input"
+                               placeholder="F.eks. Strømaggregat"
+                               aria-required="true" />
+
+                        <span asp-validation-for="Type"></span>
+
+                    </div>
+
+                    <!-- Beskrivelse av behovet. -->
+                    <div class="need-field">
+
+                        <label asp-for="Description" class="need-label">
+                            Beskrivelse
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <textarea asp-for="Description"
+                                  class="need-input need-textarea"
+                                  placeholder="Beskriv hva dere trenger, og hvorfor behovet har oppstått."
+                                  aria-required="true"></textarea>
+
+                        <span asp-validation-for="Description"></span>
+
+                    </div>
+
+                    <!-- Prioritet for behovet. -->
+                    <div class="need-field">
+
+                        <label asp-for="Priority" class="need-label">
+                            Prioritet
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <select asp-for="Priority"
+                                class="need-input"
+                                aria-required="true">
+
+                            <option value="">Velg prioritet</option>
+                            <option value="Low">Lav</option>
+                            <option value="Medium">Middels</option>
+                            <option value="High">Høy</option>
+
+                        </select>
+
+                        <span asp-validation-for="Priority"></span>
+
+                    </div>
+
+                </section>
+
+                <!-- Høyre kolonne: Adresse, kart og koordinater. -->
+                <section>
+
+                    <h2 class="need-section-title">
+                        Geografisk plassering
+                        <span class="required-star">*</span>
+                    </h2>
+
+                    <!-- Adressefeltet kobles til Kartverkets API senere. -->
+                    <div class="need-field">
+
+                        <label for="addressSearch" class="need-label">
+                            Søk etter adresse eller sted
+                        </label>
+
+                        <input type="search"
+                               id="addressSearch"
+                               class="need-input"
+                               placeholder="F.eks. Markens gate 1, Kristiansand"
+                               autocomplete="off" />
+
+                        <!-- Her skal adresseforslag vises. -->
+                        <div id="addressSuggestions"></div>
+
+                    </div>
+
+                    <!-- Forklaring av hvordan plassering velges. -->
+                    <p class="need-help-text">
+                        Søk etter en adresse, eller klikk direkte i kartet
+                        for å velge plassering.
+                    </p>
+
+                    <!-- Kartverket-kartet opprettes av map.js. -->
+                    <div id="map"
+                         data-map-mode="edit"
+                         aria-label="Kart for valg av geografisk plassering">
+                    </div>
+
+                    <!-- Koordinatene fylles inn automatisk fra kartet. -->
+                    <div class="need-coordinates">
+
+                        <!-- Breddegrad. -->
+                        <div>
+
+                            <label asp-for="Latitude" class="need-label">
+                                Breddegrad
+                            </label>
+
+                            <input asp-for="Latitude"
+                                   class="need-input"
+                                   readonly />
+
+                            <span asp-validation-for="Latitude"></span>
+
+                        </div>
+
+                        <!-- Lengdegrad. -->
+                        <div>
+
+                            <label asp-for="Longitude" class="need-label">
+                                Lengdegrad
+                            </label>
+
+                            <input asp-for="Longitude"
+                                   class="need-input"
+                                   readonly />
+
+                            <span asp-validation-for="Longitude"></span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- Knapp for å sende inn registreringen. -->
+            <div class="need-actions">
+
+                <button type="submit" class="need-submit">
+                    Registrer behov
+                </button>
+
+            </div>
+
+        </form>
+
     </div>
 
-    <!-- Priority Selection -->
-    <div>
-        <label asp-for="Priority">Priority</label>
+</div>
 
-        <select asp-for="Priority">
-            <option value="">Select Priority</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-        </select>
-
-        <!-- Validation message for Priority: "span" displays the validation error -->
-        <span asp-validation-for="Priority"></span>
-    </div>
-
-    <!-- Map placeholder: The id "map" is used by map.js to display leaflet map.-->
-    <div>
-        <label>Location</label>
-        <div id="map" style="height: 400px; width: 100%;"></div>
-    </div>
-
-    <!-- Coordinates selected from the map: Readonly prevents manual input -->
-    <div>
-        <label asp-for="Latitude">Latitude</label>
-        <input asp-for="Latitude" readonly />
-
-        <!--endret av edgar-->
-        <!-- Validation message for Latitude: "span" displays the validation error -->
-        <span asp-validation-for="Latitude"></span>
-    </div>
-
-    <div>
-        <label asp-for="Longitude">Longitude</label>
-        <input asp-for="Longitude" readonly />
-        
-        <!--endret av edgar-->
-        <!-- Validation message for Longitude: "span" displays the validation error -->
-        <span asp-validation-for="Longitude"></span>
-    </div>
-
-    <!-- Submit the completed form -->
-    <button type="submit">Register Need</button>
-
-        
-</form>
+<!-- Laster inn Leaflet og eksisterende kartfunksjonalitet. -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="~/js/map.js" asp-append-version="true"></script>
-
