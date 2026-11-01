@@ -1,0 +1,297 @@
+
+@{
+    ViewData["Title"] = "Send forespørsel";
+
+    // Sara: Midlertidige eksempeldata for frontend-prototypen.
+    // Disse skal senere erstattes med data fra databasen.
+    var resourceName = "Strømaggregat";
+    var resourceMunicipality = "Kristiansand";
+    var resourceQuantity = "2 stk";
+}
+
+<style>
+    /* Sara: Design tilpasset ressursoversikten og Figma. */
+
+    .request-page {
+        color: #293B33;
+        max-width: 950px;
+    }
+
+    .request-back {
+        display: inline-block;
+        color: #527667;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 22px;
+    }
+
+    .request-back:hover {
+        text-decoration: underline;
+    }
+
+    .request-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .request-subtitle {
+        color: #8A6F5A;
+        margin-bottom: 30px;
+    }
+
+    .request-card {
+        background: #FFFFFF;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 22px;
+    }
+
+    .request-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 22px;
+    }
+
+    .request-resource {
+        background: #F0F3EF;
+        border-radius: 9px;
+        padding: 20px;
+    }
+
+    .request-resource-name {
+        font-size: 19px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .request-resource-info {
+        color: #63766B;
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+
+    .request-field {
+        margin-bottom: 24px;
+    }
+
+    .request-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 9px;
+    }
+
+    .request-hint {
+        color: #8A6F5A;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .request-input {
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #D7DED7;
+        border-radius: 8px;
+        background: #FFFFFF;
+        color: #293B33;
+        font: inherit;
+    }
+
+    .request-input:focus {
+        outline: 2px solid #A8C4B0;
+        outline-offset: 1px;
+    }
+
+    .request-status {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 20px;
+        background: #F3ECE3;
+        color: #856A53;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .request-notice {
+        padding: 16px 18px;
+        border: 1px solid #E8E0D7;
+        background: #FAF7F2;
+        border-radius: 9px;
+        color: #6C604F;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .request-button {
+        display: inline-block;
+        border: none;
+        border-radius: 8px;
+        padding: 13px 24px;
+        background: #527667;
+        color: #FFFFFF;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .request-button:disabled {
+        background: #A9B8AF;
+        color: #FFFFFF;
+        cursor: not-allowed;
+    }
+
+    .request-cancel {
+        color: #527667;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .request-cancel:hover {
+        text-decoration: underline;
+    }
+
+    @@media (max-width: 768px) {
+        .request-card {
+            padding: 18px;
+        }
+
+        .request-title {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<div class="request-page">
+
+    <!-- Sara: Tilbake til ressursoversikten. -->
+    <a asp-controller="Resource"
+       asp-action="Index"
+       class="request-back">
+        ← Tilbake til ressurser
+    </a>
+
+    <h1 class="request-title">Send forespørsel</h1>
+
+    <p class="request-subtitle">
+        Velg hvilket behov du ønsker å dekke med ressursen.
+    </p>
+
+    <!-- Sara: Viser ressursen forespørselen gjelder. -->
+    <section class="request-card">
+
+        <h2>Valgt ressurs</h2>
+
+        <div class="request-resource">
+            <p class="request-resource-name">
+                @resourceName
+            </p>
+
+            <p class="request-resource-info">
+                @resourceMunicipality · @resourceQuantity
+            </p>
+        </div>
+
+    </section>
+
+    <!-- Sara: Skjema for å velge behov. -->
+    <section class="request-card">
+
+        <h2>Forespørselsinformasjon</h2>
+
+        <div class="request-field">
+
+            <label for="needSelect"
+                   class="request-label">
+                Velg behov
+            </label>
+
+            <select id="needSelect"
+                    class="request-input"
+                    disabled>
+
+                <option value="">
+                    Velg et registrert behov
+                </option>
+
+            </select>
+
+            <p class="request-hint">
+                Her skal offentlige aktører kunne velge
+                blant sine registrerte behov.
+            </p>
+
+        </div>
+
+        <div class="request-field">
+
+            <label for="requestMessage"
+                   class="request-label">
+                Melding til ressursleverandør
+            </label>
+
+            <textarea id="requestMessage"
+                      class="request-input"
+                      rows="5"
+                      maxlength="1000"
+                      placeholder="Beskriv kort hvorfor ressursen er nødvendig..."
+                      disabled></textarea>
+
+            <p class="request-hint">
+                Meldingsfeltet er foreløpig en del av prototypen.
+                Backend-teamet må avklare hvordan meldinger skal lagres.
+            </p>
+
+        </div>
+
+        <div class="request-field">
+
+            <span class="request-label">
+                Status
+            </span>
+
+            <span class="request-status">
+                Venter på svar
+            </span>
+
+            <p class="request-hint">
+                Nye forespørsler skal få statusen Proposed
+                når lagring er implementert.
+            </p>
+
+        </div>
+
+        <!-- Sara: Tydelig informasjon om at funksjonen ikke er aktiv ennå. -->
+        <div class="request-notice" role="status">
+            Dette er en frontend-prototype.
+            Innsending av forespørsler er ikke aktivert ennå.
+            Ingen informasjon blir sendt eller lagret.
+        </div>
+
+        <div class="request-actions">
+
+            <!-- Sara: Deaktivert til backend støtter forespørsler. -->
+            <button type="button"
+                    class="request-button"
+                    disabled>
+                Send forespørsel
+            </button>
+
+            <a asp-controller="Resource"
+               asp-action="Index"
+               class="request-cancel">
+                Avbryt
+            </a>
+
+        </div>
+
+    </section>
+
+</div>

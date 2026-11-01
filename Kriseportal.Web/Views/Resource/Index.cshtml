@@ -1,0 +1,441 @@
+
+@model List<Kriseportal.Web.Models.Entities.Resource>
+@using Kriseportal.Web.Models.Entities
+
+@{
+    ViewData["Title"] = "Ressurser";
+
+    // Sara: Henter unike kommuner fra ressursene.
+    var municipalities = Model
+        .Select(r => r.Municipality)
+        .Where(m => !string.IsNullOrWhiteSpace(m))
+        .Distinct()
+        .OrderBy(m => m)
+        .ToList();
+
+    // Sara: Henter unike kategorier fra ressursene.
+    var categories = Model
+        .Where(r => r.Category != null)
+        .Select(r => r.Category!.Name)
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
+}
+
+<style>
+    /* Sara: Farger og design inspirert av Figma-prototypen. */
+    .resources-page {
+        color: #293B33;
+    }
+
+    .resources-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .resources-subtitle {
+        color: #8A6F5A;
+        margin-bottom: 36px;
+    }
+
+    .resources-card {
+        background: #FFFFFF;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 24px;
+        min-height: 400px;
+    }
+
+    .resources-card-title {
+        font-size: 21px;
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
+
+    .resources-filters {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .resources-search {
+        flex: 2;
+        min-width: 230px;
+    }
+
+    .resources-filter {
+        flex: 1;
+        min-width: 170px;
+        position: relative;
+    }
+
+    .resources-input {
+        width: 100%;
+        height: 46px;
+        padding: 10px 14px;
+        border: 1px solid #D7DED7;
+        border-radius: 8px;
+        background: #FFFFFF;
+        color: #293B33;
+        font: inherit;
+    }
+
+    .resources-input:focus {
+        outline: 2px solid #A8C4B0;
+        outline-offset: 1px;
+    }
+
+    /* Sara: Fjerner nettleserens standardpil og lager
+       lik avstand til høyrekanten på begge nedtrekksmenyene. */
+    .resources-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        padding-left: 16px;
+        padding-right: 48px;
+        cursor: pointer;
+    }
+
+    /* Sara: Egen pil som ligger pent innenfor kanten. */
+    .resources-filter::after {
+        content: "";
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        width: 9px;
+        height: 9px;
+        border-right: 1.8px solid #293B33;
+        border-bottom: 1.8px solid #293B33;
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+    }
+
+    .resources-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .resources-table thead {
+        background: #F0F3EF;
+    }
+
+    .resources-table th {
+        padding: 15px;
+        font-weight: 600;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .resources-table th:first-child {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .resources-table th:last-child {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .resources-table td {
+        padding: 16px 15px;
+        border-bottom: 1px solid #EEEAE4;
+        vertical-align: middle;
+    }
+
+    .category-badge {
+        display: inline-block;
+        padding: 6px 13px;
+        background: #F3ECE3;
+        color: #856A53;
+        border-radius: 20px;
+        font-size: 13px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 13px;
+        background: #E3F1E7;
+        color: #2F6849;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* Sara: Stil for lenken til ressursens detaljside. */
+    .resource-details-link {
+        color: #527667;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .resource-details-link:hover {
+        color: #244D3B;
+        text-decoration: underline;
+    }
+
+    .resource-details-link:focus-visible {
+        outline: 2px solid #244D3B;
+        outline-offset: 4px;
+        border-radius: 3px;
+    }
+
+    .resources-count {
+        color: #8A6F5A;
+        font-size: 13px;
+        margin-top: 24px;
+    }
+
+    .resources-empty {
+        text-align: center;
+        padding: 35px 15px;
+        color: #7B847D;
+    }
+</style>
+
+<div class="resources-page">
+
+    <h1 class="resources-title">Ressurser</h1>
+
+    <p class="resources-subtitle">
+        Oversikt over tilgjengelige ressurser
+    </p>
+
+    <div class="resources-card">
+
+        <h2 class="resources-card-title">
+            Alle ressurser
+        </h2>
+
+        <!-- Sara: Søk og filtrering av ressurser. -->
+        <div class="resources-filters">
+
+            <div class="resources-search">
+                <label for="resourceSearch"
+                       class="visually-hidden">
+                    Søk etter ressurs eller kommune
+                </label>
+
+                <input
+                    type="search"
+                    id="resourceSearch"
+                    class="resources-input"
+                    placeholder="Søk etter ressurs eller kommune..." />
+            </div>
+
+            <!-- Sara: Kommunefilter med tilpasset pil. -->
+            <div class="resources-filter">
+                <label for="municipalityFilter"
+                       class="visually-hidden">
+                    Velg kommune
+                </label>
+
+                <select id="municipalityFilter"
+                        class="resources-input resources-select">
+                    <option value="">Alle kommuner</option>
+
+                    @foreach (var municipality in municipalities)
+                    {
+                        <option value="@municipality">
+                            @municipality
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Sara: Kategorifilter med samme pil og avstand. -->
+            <div class="resources-filter">
+                <label for="categoryFilter"
+                       class="visually-hidden">
+                    Velg kategori
+                </label>
+
+                <select id="categoryFilter"
+                        class="resources-input resources-select">
+                    <option value="">Alle kategorier</option>
+
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category">
+                            @category
+                        </option>
+                    }
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Sara: Ressurstabell med data fra databasen. -->
+        <div class="table-responsive">
+
+            <table class="resources-table" id="resourcesTable">
+
+                <thead>
+                    <tr>
+                        <th>Ressurs</th>
+                        <th>Kommune</th>
+                        <th>Kategori</th>
+                        <th>Antall</th>
+                        <th>Status</th>
+
+                        <!-- Sara: Kolonne for detaljvisning. -->
+                        <th>Handling</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var resource in Model)
+                    {
+                        <tr class="resource-row"
+                            data-name="@resource.Name"
+                            data-municipality="@resource.Municipality"
+                            data-category="@(resource.Category?.Name ?? "")">
+
+                            <td>@resource.Name</td>
+
+                            <td>@resource.Municipality</td>
+
+                            <td>
+                                <span class="category-badge">
+                                    @(resource.Category?.Name ?? "Ukjent")
+                                </span>
+                            </td>
+
+                            <td>
+                                @resource.Quantity @resource.Unit
+                            </td>
+
+                            <td>
+                                @if (resource.Availability == ResourceAvailability.Available)
+                                {
+                                    <span class="status-badge">
+                                        Tilgjengelig
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        Ikke tilgjengelig
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Sara: Åpner detaljsiden for riktig ressurs. -->
+                            <td>
+                                <a asp-controller="Resource"
+                                   asp-action="ResourceDetails"
+                                   asp-route-id="@resource.ResourceId"
+                                   class="resource-details-link"
+                                   aria-label="Se detaljer for @resource.Name">
+                                    Se detaljer
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Sara: Viser melding ved tom database eller tomt søkeresultat. -->
+        <p id="emptyMessage"
+           class="resources-empty"
+           role="status"
+           aria-live="polite"
+           style="display: none;">
+        </p>
+
+        <!-- Sara: Teller hvor mange ressurser som vises. -->
+        <p class="resources-count"
+           id="resourceCount"
+           aria-live="polite">
+            Viser @Model.Count av @Model.Count ressurser
+        </p>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // Sara: Filtrerer ressursene etter søk, kommune og kategori.
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const searchInput = document.getElementById("resourceSearch");
+            const municipalityFilter = document.getElementById("municipalityFilter");
+            const categoryFilter = document.getElementById("categoryFilter");
+
+            const rows = document.querySelectorAll(".resource-row");
+            const resourceCount = document.getElementById("resourceCount");
+            const emptyMessage = document.getElementById("emptyMessage");
+
+            function filterResources() {
+
+                const search = searchInput.value.trim().toLowerCase();
+                const municipality = municipalityFilter.value.toLowerCase();
+                const category = categoryFilter.value.toLowerCase();
+
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+
+                    const name = (row.dataset.name || "").toLowerCase();
+                    const rowMunicipality =
+                        (row.dataset.municipality || "").toLowerCase();
+                    const rowCategory =
+                        (row.dataset.category || "").toLowerCase();
+
+                    const matchesSearch =
+                        name.includes(search) ||
+                        rowMunicipality.includes(search) ||
+                        rowCategory.includes(search);
+
+                    const matchesMunicipality =
+                        municipality === "" ||
+                        rowMunicipality === municipality;
+
+                    const matchesCategory =
+                        category === "" ||
+                        rowCategory === category;
+
+                    const isVisible =
+                        matchesSearch &&
+                        matchesMunicipality &&
+                        matchesCategory;
+
+                    row.style.display = isVisible ? "" : "none";
+
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+                });
+
+                resourceCount.textContent =
+                    "Viser " + visibleCount + " av " +
+                    rows.length + " ressurser";
+
+                // Sara: Skiller mellom tom database og søk uten treff.
+                if (rows.length === 0) {
+                    emptyMessage.textContent =
+                        "Ingen tilgjengelige ressurser er registrert ennå.";
+                    emptyMessage.style.display = "block";
+                }
+                else if (visibleCount === 0) {
+                    emptyMessage.textContent =
+                        "Ingen ressurser passer til søket eller filtrene dine.";
+                    emptyMessage.style.display = "block";
+                }
+                else {
+                    emptyMessage.style.display = "none";
+                }
+            }
+
+            searchInput.addEventListener("input", filterResources);
+            municipalityFilter.addEventListener("change", filterResources);
+            categoryFilter.addEventListener("change", filterResources);
+
+            filterResources();
+        });
+    </script>
+}
