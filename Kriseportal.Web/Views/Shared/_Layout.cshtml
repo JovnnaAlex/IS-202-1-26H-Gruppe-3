@@ -104,13 +104,17 @@
 
             <div class="sidebar-bottom">
 
-            <!-- Innstillinger -->
-            <span class="sidebar-link disabled">
-                <img src="~/icons/innstillinger.svg"
-                        alt=""
-                        class="sidebar-icon" />
-                Innstillinger
-            </span>
+                <!-- Innstillinger -->
+                <a asp-controller="Settings"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Settings" ? "active" : "")">
+
+                    <img src="~/icons/innstillinger.svg"
+                         alt=""
+                         class="sidebar-icon" />
+
+                    Innstillinger
+                </a>
 
             <!-- Min profil -->
             <a asp-controller="Profile"
