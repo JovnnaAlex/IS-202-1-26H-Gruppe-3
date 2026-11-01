@@ -213,3 +213,9 @@ body {
         width: 100%;
     }
 }
+
+/* Hele datofeltet skal se klikkbart ut */
+#needDateFrom,
+#needDateTo {
+    cursor: pointer;
+}

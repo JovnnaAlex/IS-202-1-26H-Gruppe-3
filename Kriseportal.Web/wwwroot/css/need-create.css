@@ -1,0 +1,557 @@
+﻿
+/* =========================================
+   REGISTRER BEHOV
+   Skjema til venstre, kart til høyre
+   ========================================= */
+
+/* Hovedområde */
+.need-create-page {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 40px;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Sideoverskrift */
+.need-create-header h1 {
+    margin: 0;
+    color: #26352F;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.need-create-header p {
+    margin: 9px 0 0;
+    color: #80664F;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+/* =========================================
+   HVITT SKJEMAKORT
+   ========================================= */
+
+.need-create-card {
+    width: 100%;
+    min-width: 0;
+    margin-top: 36px;
+    padding: 30px;
+    background: #FFFFFF;
+    border: 1px solid #EAE4DA;
+    border-radius: 12px;
+    box-sizing: border-box;
+    /* Responsiv layout basert på kortets bredde */
+    container-type: inline-size;
+}
+
+    .need-create-card > h2 {
+        margin: 0 0 28px;
+        color: #26352F;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+/* =========================================
+   HOVEDLAYOUT - TO KOLONNER PÅ PC
+   ========================================= */
+
+.need-create-form {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+        "summary summary"
+        "fields  map"
+        "actions actions";
+    column-gap: 36px;
+    align-items: start;
+}
+
+    /* Valideringsoppsummering */
+    .need-create-form > [data-valmsg-summary] {
+        grid-area: summary;
+        min-width: 0;
+    }
+
+    /* Feltene til venstre */
+    .need-create-form > .need-create-grid {
+        grid-area: fields;
+        min-width: 0;
+    }
+
+    /* Kartseksjonen til høyre */
+    .need-create-form > .need-create-map-section {
+        grid-area: map;
+        min-width: 0;
+    }
+
+    /* Knapper under begge kolonnene */
+    .need-create-form > .need-create-actions {
+        grid-area: actions;
+    }
+
+/* =========================================
+   SKJEMAFELTER
+   ========================================= */
+
+.need-create-grid {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+        "heading"
+        "title"
+        "description"
+        "category"
+        "priority"
+        "municipality"
+        "date-from"
+        "date-to";
+    gap: 18px;
+    align-items: start;
+}
+
+/* Plassering av feltene */
+.need-create-title {
+    grid-area: title;
+}
+
+.need-create-description {
+    grid-area: description;
+}
+
+.need-create-category {
+    grid-area: category;
+}
+
+.need-create-priority {
+    grid-area: priority;
+}
+
+.need-create-municipality {
+    grid-area: municipality;
+}
+
+.need-create-date-from {
+    grid-area: date-from;
+}
+
+.need-create-date-to {
+    grid-area: date-to;
+}
+
+/* =========================================
+   LABELS OG INPUTFELTER
+   ========================================= */
+
+.need-create-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+    .need-create-field label {
+        display: block;
+        margin: 0 0 10px;
+        color: #26352F;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 19px;
+    }
+
+.need-create-input,
+.need-create-select,
+.need-create-textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    background: #FFFFFF;
+    border: 1px solid #D7DED7;
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: #26352F;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+}
+
+/* Input og dropdown */
+.need-create-input,
+.need-create-select {
+    height: 46px;
+    padding: 0 16px;
+}
+
+.need-create-select {
+    cursor: pointer;
+}
+
+/* Beskrivelsesfelt */
+.need-create-textarea,
+.need-create-description .need-create-textarea {
+    height: 120px;
+    min-height: 120px;
+    padding: 14px 16px;
+    resize: vertical;
+    flex: initial;
+}
+
+    /* Placeholder */
+    .need-create-input::placeholder,
+    .need-create-textarea::placeholder {
+        color: #8B948D;
+        opacity: 1;
+    }
+
+    /* Fokus */
+    .need-create-input:focus,
+    .need-create-select:focus,
+    .need-create-textarea:focus {
+        outline: none;
+        border-color: #527366;
+        box-shadow: 0 0 0 3px rgba(82, 115, 102, 0.12);
+    }
+
+/* =========================================
+   DATO OG TID
+   ========================================= */
+
+#needDateFrom,
+#needDateTo {
+    cursor: pointer;
+    color-scheme: light;
+}
+
+    #needDateFrom::-webkit-calendar-picker-indicator,
+    #needDateTo::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+    }
+
+/* =========================================
+   GEOGRAFISK PLASSERING - HØYRE KOLONNE
+   ========================================= */
+
+.need-create-map-section {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+}
+
+    .need-create-map-section h3 {
+        margin: 0 0 16px;
+        color: #26352F;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 26px;
+    }
+
+.need-create-map-help {
+    margin: 0 0 20px;
+    color: #80664F;
+    font-size: 14px;
+    line-height: 21px;
+}
+
+/* =========================================
+   ADRESSESØK
+   ========================================= */
+
+.need-create-address {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 20px;
+}
+
+#addressSuggestions {
+    margin-top: 6px;
+}
+
+/* =========================================
+   LEAFLET-KART
+   ========================================= */
+
+.need-create-page #map {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 400px;
+    background: #E2E9E2;
+    border: 1px solid #D7DED7;
+    border-radius: 8px;
+    box-sizing: border-box;
+    z-index: 0;
+}
+
+/* =========================================
+   KOORDINATER
+   ========================================= */
+
+.need-create-coordinates {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.need-create-input[readonly] {
+    background: #F1F3EF;
+    color: #526157;
+    cursor: default;
+}
+
+/* =========================================
+   KNAPPER
+   ========================================= */
+
+.need-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: 16px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #EAE4DA;
+    box-sizing: border-box;
+}
+
+.need-create-cancel,
+.need-create-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+/* Avbryt */
+.need-create-cancel {
+    width: 124px;
+    color: #527366;
+    background: #FFFFFF;
+    border: 1px solid #527366;
+}
+
+    .need-create-cancel:hover {
+        background: #F1F5F1;
+        color: #405E51;
+    }
+
+/* Registrer behov */
+.need-create-submit {
+    width: 176px;
+    color: #FFFFFF;
+    background: #527366;
+    border: 1px solid #527366;
+    font-weight: 700;
+}
+
+    .need-create-submit:hover {
+        background: #405E51;
+        border-color: #405E51;
+    }
+
+    /* Tastaturnavigering */
+    .need-create-cancel:focus-visible,
+    .need-create-submit:focus-visible {
+        outline: 3px solid #86B69A;
+        outline-offset: 3px;
+    }
+
+/* =========================================
+   VALIDERING
+   ========================================= */
+
+.need-create-page .field-validation-error {
+    display: block;
+    margin-top: 6px;
+    color: #B42318;
+    font-size: 13px;
+    line-height: 19px;
+}
+
+.need-create-page .field-validation-valid,
+.need-create-page .validation-summary-valid {
+    display: none;
+}
+
+.need-create-page .input-validation-error {
+    border-color: #B42318;
+}
+
+.need-create-page .validation-summary-errors {
+    margin: 0 0 24px;
+    padding: 12px 16px;
+    color: #B42318;
+    background: #FFF5F4;
+    border: 1px solid #F1C7C3;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* Overskrift for informasjon om behov */
+.need-create-fields-heading {
+    grid-area: heading;
+    margin: 0;
+    color: #26352F;
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 26px;
+}
+
+/* =========================================
+   RESPONSIVT DESIGN
+   ========================================= */
+
+/*
+   Bruker kortets faktiske bredde.
+
+   Når innholdet blir for smalt,
+   flyttes kartet under skjemafeltene.
+*/
+
+@container (max-width: 680px) {
+
+    .need-create-form {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "summary"
+            "fields"
+            "map"
+            "actions";
+        column-gap: 0;
+    }
+
+    .need-create-map-section {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid #EAE4DA;
+    }
+
+    .need-create-page #map {
+        height: 320px;
+    }
+}
+
+/* Nettbrett */
+@media (max-width: 900px) {
+
+    .need-create-page {
+        padding: 24px;
+    }
+
+    .need-create-card {
+        padding: 24px;
+    }
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+
+    .need-create-page {
+        padding: 20px;
+    }
+
+    .need-create-header h1 {
+        font-size: 26px;
+    }
+
+    .need-create-header p {
+        font-size: 14px;
+    }
+
+    .need-create-card {
+        margin-top: 24px;
+        padding: 20px;
+    }
+
+        .need-create-card > h2 {
+            font-size: 18px;
+        }
+
+    .need-create-map-section h3 {
+        font-size: 18px;
+    }
+
+    .need-create-coordinates {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .need-create-page #map {
+        height: 280px;
+    }
+}
+
+/* Små mobiler */
+@media (max-width: 480px) {
+
+    .need-create-page {
+        padding: 12px;
+    }
+
+    .need-create-card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .need-create-header h1 {
+        font-size: 24px;
+    }
+
+
+    .need-create-grid {
+        display: grid;
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "heading"
+            "title"
+            "description"
+            "category"
+            "priority"
+            "municipality"
+            "date-from"
+            "date-to";
+        gap: 18px;
+        align-items: start;
+    }
+
+    .need-create-page #map {
+        height: 240px;
+    }
+
+    .need-create-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .need-create-cancel,
+    .need-create-submit {
+        width: 100%;
+    }
+}
