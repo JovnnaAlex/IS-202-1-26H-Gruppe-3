@@ -1,13 +1,238 @@
 @{
     ViewData["Title"] = "Dashboard";
 }
-@* Dette er bare en plassholder for dashboard*@
-<div class="dashboard">
-    <h1>Dashboard</h1>
-    <p>Oversikt over behov og ressurser</p>
 
-    <div class="dashboard-card">
-        <h2>Aktive behov</h2>
-        <p>Her skal behovene vises.</p>
+@section Styles {
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet"
+          href="~/css/dashboard.css"
+          asp-append-version="true" />
+}
+
+<div class="dashboard-page">
+
+    <!-- Overskrift og handlingsknapper -->
+    <header class="dash-header">
+
+        <div class="dash-header-text">
+            <h1>Dashboard</h1>
+            <p>Oversikt over behov og ressurser</p>
+        </div>
+
+        <div class="dash-header-actions">
+            <a asp-controller="Resource"
+               asp-action="Create"
+               class="dash-button dash-button-outline">
+                + Registrer ressurs
+            </a>
+
+            <a asp-controller="Need"
+               asp-action="Create"
+               class="dash-button dash-button-primary">
+                + Registrer behov
+            </a>
+        </div>
+
+    </header>
+
+    <!-- Oversiktskort -->
+    <section class="dash-stat-grid"
+             aria-label="Statusoversikt">
+
+        <!-- Aktive behov -->
+        <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+                <h2>Aktive behov</h2>
+                <span class="dash-stat-icon">!</span>
+            </div>
+
+            <p class="dash-stat-number">—</p>
+
+            <p class="dash-stat-description">
+                Antall aktive behov vises når databasen er koblet til.
+            </p>
+
+        </article>
+
+        <!-- Tilgjengelige ressurser -->
+        <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+                <h2>Tilgjengelige ressurser</h2>
+                <span class="dash-stat-icon">✓</span>
+            </div>
+
+            <p class="dash-stat-number">—</p>
+
+            <p class="dash-stat-description">
+                Tilgjengelige ressurser vises når databasen er koblet til.
+            </p>
+
+        </article>
+
+        <!-- Forespørsler -->
+        <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+                <h2>Forespørsler</h2>
+                <span class="dash-stat-icon">↗</span>
+            </div>
+
+            <p class="dash-stat-number">—</p>
+
+            <p class="dash-stat-description">
+                Oversikt over forespørsler kommer senere.
+            </p>
+
+        </article>
+
+    </section>
+
+    <!-- Kart og hurtighandlinger -->
+    <div class="dash-content-grid">
+
+        <!-- Kartoversikt -->
+        <section class="dash-panel dash-map-panel">
+
+            <div class="dash-panel-header">
+                <div>
+                    <h2>Kartoversikt</h2>
+                    <p>Geografisk oversikt over området</p>
+                </div>
+            </div>
+
+            <!-- Leaflet-kart -->
+            <div id="dashboardMap"
+                 aria-label="Kartoversikt over Kristiansand">
+            </div>
+
+            <p class="dash-map-info">
+                Behov og ressurser vil vises på kartet
+                når dashboardet er koblet til databasen.
+            </p>
+
+        </section>
+
+        <!-- Hurtighandlinger -->
+        <section class="dash-panel dash-quick-panel">
+
+            <div class="dash-panel-header">
+                <div>
+                    <h2>Hurtighandlinger</h2>
+                    <p>Gå raskt til viktige funksjoner</p>
+                </div>
+            </div>
+
+            <div class="dash-quick-links">
+
+                <a asp-controller="Need"
+                   asp-action="Index"
+                   class="dash-quick-link">
+
+                    <span class="dash-quick-symbol">☷</span>
+
+                    <span class="dash-quick-text">
+                        <strong>Se alle behov</strong>
+                        <small>Åpne behovsoversikten</small>
+                    </span>
+
+                    <span class="dash-quick-arrow">→</span>
+
+                </a>
+
+                <a asp-controller="Need"
+                   asp-action="Create"
+                   class="dash-quick-link">
+
+                    <span class="dash-quick-symbol">+</span>
+
+                    <span class="dash-quick-text">
+                        <strong>Registrer behov</strong>
+                        <small>Opprett et nytt behov</small>
+                    </span>
+
+                    <span class="dash-quick-arrow">→</span>
+
+                </a>
+
+                <a asp-controller="Resource"
+                   asp-action="Create"
+                   class="dash-quick-link">
+
+                    <span class="dash-quick-symbol">+</span>
+
+                    <span class="dash-quick-text">
+                        <strong>Registrer ressurs</strong>
+                        <small>Legg til en tilgjengelig ressurs</small>
+                    </span>
+
+                    <span class="dash-quick-arrow">→</span>
+
+                </a>
+
+            </div>
+
+        </section>
+
     </div>
+
+    <!-- Siste aktivitet -->
+    <section class="dash-panel dash-activity-panel">
+
+        <div class="dash-panel-header">
+            <div>
+                <h2>Siste aktivitet</h2>
+                <p>Nyeste behov og ressursregistreringer</p>
+            </div>
+        </div>
+
+        <div class="dash-empty-state">
+            <div class="dash-empty-icon">☷</div>
+
+            <h3>Ingen aktivitet å vise ennå</h3>
+
+            <p>
+                Registreringer vil vises her når
+                dashboardet er koblet til databasen.
+            </p>
+        </div>
+
+    </section>
+
 </div>
+
+@section Scripts {
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+    <script>
+        // Oppretter kartet på dashboardet.
+        // Sentrerer kartet på Kristiansand.
+
+        const dashboardMap = L.map('dashboardMap').setView(
+            [58.1467, 7.9956],
+            11
+        );
+
+        // Kartgrunnlag fra Kartverket.
+        L.tileLayer(
+            'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png',
+            {
+                maxZoom: 18,
+                attribution: '&copy; Kartverket'
+            }
+        ).addTo(dashboardMap);
+
+        // Sørger for riktig kartstørrelse.
+        window.addEventListener('load', function () {
+            dashboardMap.invalidateSize();
+        });
+    </script>
+}
