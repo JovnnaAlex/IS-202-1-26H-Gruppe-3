@@ -179,22 +179,27 @@ body {
 .sidebar-link.disabled {
     cursor: default;
 }
-/* Markerer den aktive siden */
-.sidebar-nav a.active {
+/* Aktiv side i hele sidemenyen */
+.sidebar a.active {
     background-color: var(--primary-color);
-    color: white;
+    color: #FFFFFF;
     border-radius: var(--button-radius);
 }
 
-/* Farge når man holder musepekeren over menyvalgene */
-.sidebar-nav a:hover {
+/* Hover på alle klikkbare menyvalg */
+.sidebar a:hover {
     background-color: #AFC5B4;
     border-radius: var(--button-radius);
 }
 
-/* Beholder aktiv farge når musepekeren er over */
-.sidebar-nav a.active:hover {
+/* Behold grønn farge på aktiv side */
+.sidebar a.active:hover {
     background-color: var(--primary-color);
+}
+
+/* Hvite ikoner på aktiv side */
+.sidebar a.active .sidebar-icon {
+    filter: brightness(0) invert(1);
 }
 
 /* Hovedinnhold */
@@ -203,19 +208,24 @@ body {
     min-width: 0;
 }
 
-/* Mobil */
+/* Mobil - sidemeny og innhold */
 @media (max-width: 768px) {
+
     .app-layout {
         flex-direction: column;
     }
 
     .sidebar {
+        position: relative;
+        top: auto;
         width: 100%;
+        height: auto;
+        min-height: 0;
+        overflow-y: visible;
+    }
+
+    .sidebar-bottom {
+        margin-top: 24px;
     }
 }
 
-/* Hele datofeltet skal se klikkbart ut */
-#needDateFrom,
-#needDateTo {
-    cursor: pointer;
-}

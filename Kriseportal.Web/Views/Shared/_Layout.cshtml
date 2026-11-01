@@ -6,7 +6,6 @@
 <!DOCTYPE html>
 <html lang="no">
 
-
  <head>
     <!-- Laster inn Inter tidlig for å redusere fontbytte -->
     <link rel="preload"
@@ -105,32 +104,36 @@
 
             <div class="sidebar-bottom">
 
-                <!--Innstillinger-->
-                <span class="sidebar-link disabled">
-                    <img src="~/icons/innstillinger.svg"
-                         alt=""
-                         class="sidebar-icon" />
-                    Innstillinger
-                </span>
+            <!-- Innstillinger -->
+            <span class="sidebar-link disabled">
+                <img src="~/icons/innstillinger.svg"
+                        alt=""
+                        class="sidebar-icon" />
+                Innstillinger
+            </span>
 
-                <!--Profil-->
-                <span class="sidebar-link disabled">
-                    <img src="~/icons/profil.svg"
-                         alt=""
-                         class="sidebar-icon" />
-                    Min profil
-                </span>
+            <!-- Min profil -->
+            <a asp-controller="Profile"
+                asp-action="Index"
+                class="sidebar-link @(currentController == "Profile" ? "active" : "")">
 
-                <!--Logg-ut-->
-                <span class="sidebar-link disabled">
-                    <img src="~/icons/logg-ut.svg"
-                         alt=""
-                         class="sidebar-icon" />
-                    Logg ut
-                </span>
+                <img src="~/icons/profil.svg"
+                        alt=""
+                        class="sidebar-icon" />
+                Min profil
+            </a>
 
-            </div>
+            <!-- Logg ut -->
+            <span class="sidebar-link disabled">
+                <img src="~/icons/logg-ut.svg"
+                        alt=""
+                        class="sidebar-icon" />
+                Logg ut
+            </span>
 
+        </div> <!-- sidebar-bottom -->
+
+        </aside> <!-- sidebar -->
 
         </aside>
 

@@ -1,0 +1,128 @@
+﻿
+@{
+    ViewData["Title"] = "Min profil";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/profile.css"
+          asp-append-version="true" />
+}
+
+<div class="profile-page">
+
+    <!-- Overskrift -->
+    <header class="profile-page-header">
+        <h1>Min profil</h1>
+        <p>Administrer din profil og kontaktinformasjon</p>
+    </header>
+
+    <!-- Melding etter lagring -->
+    <div id="profile-message"
+         class="profile-feedback"
+         role="status"
+         hidden>
+    </div>
+
+    <!-- Profilkort -->
+    <section class="profile-card">
+
+        <!-- Profilnavn og rolle -->
+        <div class="profile-identity">
+
+            <div class="profile-avatar">
+                <img src="~/icons/profil.svg"
+                     alt=""
+                     class="profile-avatar-icon" />
+            </div>
+
+            <div class="profile-identity-text">
+                <h2>Kriseledelsen Kristiansand</h2>
+                <p>Offentlig aktør</p>
+            </div>
+
+        </div>
+
+        <!-- Profilinformasjon -->
+        <section class="profile-section">
+
+            <h3>Profilinformasjon</h3>
+
+            <div class="profile-info-grid">
+
+                <div class="profile-info-field">
+                    <span class="profile-info-label">
+                        Organisasjon
+                    </span>
+
+                    <span class="profile-info-value">
+                        Kristiansand Kommune
+                    </span>
+                </div>
+
+                <div class="profile-info-field">
+                    <span class="profile-info-label">
+                        Rolle
+                    </span>
+
+                    <span class="profile-info-value">
+                        Offentlig aktør
+                    </span>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Kontaktinformasjon -->
+        <section class="profile-section">
+
+            <h3>Kontaktinformasjon</h3>
+
+            <div class="profile-info-grid">
+
+                <div class="profile-info-field">
+                    <span class="profile-info-label">
+                        E-postadresse
+                    </span>
+
+                    <span id="profile-email-display"
+                          class="profile-info-value">
+                        Ikke oppgitt
+                    </span>
+                </div>
+
+                <div class="profile-info-field">
+                    <span class="profile-info-label">
+                        Telefonnummer
+                    </span>
+
+                    <span id="profile-phone-display"
+                          class="profile-info-value">
+                        Ikke oppgitt
+                    </span>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Rediger profil -->
+        <div class="profile-actions">
+
+            <a asp-controller="Profile"
+               asp-action="Edit"
+               class="profile-edit-button">
+                Rediger profil
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/profile.js"
+            asp-append-version="true"></script>
+}

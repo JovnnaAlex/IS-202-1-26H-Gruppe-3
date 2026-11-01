@@ -1,0 +1,144 @@
+﻿
+@{
+    ViewData["Title"] = "Rediger profil";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/profile.css"
+          asp-append-version="true" />
+}
+
+<div class="profile-page">
+
+    <!-- Overskrift -->
+    <header class="profile-page-header">
+        <h1>Rediger profil</h1>
+        <p>Oppdater din kontaktinformasjon</p>
+    </header>
+
+    <!-- Rediger profil-kort -->
+    <section class="profile-card profile-edit-card">
+
+        <form id="profile-edit-form"
+              class="profile-edit-form"
+              data-return-url="@Url.Action("Index", "Profile")"
+              novalidate>
+
+            <h2 class="profile-edit-heading">
+                Personlig informasjon
+            </h2>
+
+            <!-- Organisasjon og rolle -->
+            <div class="profile-edit-grid">
+
+                <div class="profile-edit-field">
+
+                    <label for="profile-organization">
+                        Organisasjon
+                    </label>
+
+                    <input id="profile-organization"
+                           type="text"
+                           value="Kristiansand kommune"
+                           class="profile-readonly-input"
+                           readonly />
+
+                </div>
+
+                <div class="profile-edit-field">
+
+                    <label for="profile-role">
+                        Rolle
+                    </label>
+
+                    <input id="profile-role"
+                           type="text"
+                           value="Offentlig aktør"
+                           class="profile-readonly-input"
+                           readonly />
+
+                </div>
+
+            </div>
+
+            <!-- Kontaktinformasjon -->
+            <div class="profile-edit-grid profile-contact-grid">
+
+                <!-- E-post -->
+                <div class="profile-edit-field">
+
+                    <label for="profile-email">
+                        E-postadresse
+                    </label>
+
+                    <input id="profile-email"
+                           type="email"
+                           placeholder="Skriv inn e-postadresse"
+                           autocomplete="off"
+                           maxlength="254"
+                           aria-describedby="profile-email-error" />
+
+                    <span id="profile-email-error"
+                          class="profile-error"
+                          aria-live="polite">
+                    </span>
+
+                </div>
+
+                <!-- Telefonnummer -->
+                <div class="profile-edit-field">
+
+                    <label for="profile-phone">
+                        Telefonnummer
+                    </label>
+
+                    <input id="profile-phone"
+                           type="tel"
+                           placeholder="Skriv inn telefonnummer"
+                           autocomplete="off"
+                           maxlength="30"
+                           aria-describedby="profile-phone-error" />
+
+                    <span id="profile-phone-error"
+                          class="profile-error"
+                          aria-live="polite">
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Generell feilmelding -->
+            <p id="profile-form-error"
+               class="profile-form-error"
+               role="alert"
+               hidden>
+            </p>
+
+            <!-- Knapper -->
+            <div class="profile-actions">
+
+                <a asp-controller="Profile"
+                   asp-action="Index"
+                   class="profile-cancel-button">
+                    Avbryt
+                </a>
+
+                <button type="submit"
+                        class="profile-edit-button">
+                    Lagre endring
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/profile.js"
+            asp-append-version="true"></script>
+}
