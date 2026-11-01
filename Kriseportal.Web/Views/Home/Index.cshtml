@@ -1,6 +1,1110 @@
+
 @{
-    ViewData["Title"] = "Kriseportal";
+    // Sara: Bruker egen layout for den offentlige forsiden.
+    Layout = "_PublicLayout";
+
+    ViewData["Title"] = "Forside";
 }
 
-<h1>Kriseportal</h1>
-<p>MVC fungerer.</p>
+<style>
+    /* Sara: Lys beigegrønn bakgrunn på hele forsiden. */
+    .public-main {
+        background: #F0F3EA;
+    }
+
+    /* Sara: Velkomstseksjon. */
+    .home-hero {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 95px 30px 95px;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: center;
+        gap: 65px;
+    }
+
+    .hero-label {
+        color: #56745F;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        color: #244D3B;
+        font-size: clamp(38px, 4.5vw, 60px);
+        font-weight: 700;
+        line-height: 1.15;
+        margin-bottom: 26px;
+    }
+
+    .hero-description {
+        color: #53645A;
+        font-size: 18px;
+        line-height: 1.8;
+        max-width: 560px;
+        margin-bottom: 30px;
+    }
+
+    .hero-button {
+        display: inline-block;
+        background: #244D3B;
+        color: white;
+        padding: 15px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    /* Sara: Fotografiet fra Forsvarets øvelse. */
+    .hero-photo {
+        width: 100%;
+        margin: 0;
+    }
+
+    .hero-photo-image {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 18px;
+        display: block;
+    }
+
+    .hero-photo-credit {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #65736A;
+        text-align: right;
+    }
+
+    /* Sara: Seksjonen med de fire stegene. */
+    .steps-section {
+        padding: 45px 30px 100px;
+    }
+
+    .steps-container {
+        max-width: 1320px;
+        margin: 0 auto;
+    }
+
+    .steps-heading {
+        text-align: center;
+        margin-bottom: 42px;
+    }
+
+    .steps-title {
+        color: #244D3B;
+        font-size: clamp(30px, 3.5vw, 44px);
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .steps-description {
+        color: #53645A;
+        font-size: 17px;
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .step-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8DE;
+        border-radius: 16px;
+        padding: 24px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        box-shadow: 0 5px 16px rgba(36, 77, 59, 0.05);
+    }
+
+    .step-icon {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #EAF1E2;
+        border-radius: 15px;
+        color: #244D3B;
+    }
+
+    .step-icon svg {
+        width: 30px;
+        height: 30px;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .step-card h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #244D3B;
+        margin: 4px 0 8px;
+    }
+
+    .step-card p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #53645A;
+        margin: 0;
+    }
+
+    /* Sara: Kartseksjonen på hovedforsiden. */
+    .home-map-section {
+        background: #F0F3EA;
+        padding: 35px 30px 100px;
+    }
+
+    .home-map-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 65px;
+    }
+
+    .home-map-frame {
+        background: #FFFFFF;
+        border: 1px solid #E2E8DE;
+        border-radius: 18px;
+        padding: 10px;
+        box-shadow: 0 5px 16px rgba(36, 77, 59, 0.05);
+    }
+
+    /* Sara: Leaflet trenger en fast høyde for å vise kartet. */
+    #home-map {
+        width: 100%;
+        height: 310px;
+        border-radius: 12px;
+        z-index: 0;
+    }
+
+    .home-map-title {
+        color: #244D3B;
+        font-size: clamp(28px, 3vw, 40px);
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .home-map-description {
+        color: #53645A;
+        font-size: 17px;
+        line-height: 1.8;
+        margin-bottom: 24px;
+    }
+
+    .home-map-feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #244D3B;
+        font-size: 15px;
+        margin-bottom: 14px;
+    }
+
+    .home-map-feature svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* Sara: Seksjon om kontroll over egne ressurser. */
+    .resource-control-section {
+        background: #E8EEE5;
+        padding: 95px 30px;
+    }
+
+    .resource-control-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: center;
+        gap: 75px;
+    }
+
+    .resource-control-label {
+        color: #56745F;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .resource-control-title {
+        color: #244D3B;
+        font-size: clamp(30px, 3.5vw, 44px);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 24px;
+    }
+
+    .resource-control-description {
+        color: #53645A;
+        font-size: 17px;
+        line-height: 1.8;
+        max-width: 480px;
+    }
+
+    .resource-control-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .resource-control-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        background: #FFFFFF;
+        border: 1px solid #DFE7DC;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 5px 16px rgba(36, 77, 59, 0.04);
+    }
+
+    .resource-control-icon {
+        width: 52px;
+        height: 52px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #EAF1E2;
+        color: #244D3B;
+        border-radius: 13px;
+    }
+
+    .resource-control-icon svg {
+        width: 27px;
+        height: 27px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .resource-control-card h3 {
+        color: #244D3B;
+        font-size: 17px;
+        font-weight: 700;
+        margin: 2px 0 9px;
+    }
+
+    .resource-control-card p {
+        color: #53645A;
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* Sara: FAQ-seksjon med spørsmål som kan åpnes og lukkes. */
+    .faq-section {
+        background: #F0F3EA;
+        padding: 95px 30px 110px;
+    }
+
+    .faq-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .faq-heading {
+        text-align: center;
+        margin-bottom: 42px;
+    }
+
+    .faq-label {
+        color: #56745F;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .faq-title {
+        color: #244D3B;
+        font-size: clamp(30px, 3.5vw, 44px);
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .faq-description {
+        color: #53645A;
+        font-size: 17px;
+        line-height: 1.7;
+    }
+
+    .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    /* Sara: Details og summary gir åpne/lukke-funksjon uten JavaScript. */
+    .faq-item {
+        background: #FFFFFF;
+        border: 1px solid #E2E8DE;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(36, 77, 59, 0.04);
+        overflow: hidden;
+    }
+
+    .faq-question {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 24px 28px;
+        color: #244D3B;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .faq-question::-webkit-details-marker {
+        display: none;
+    }
+
+    .faq-question::after {
+        content: "+";
+        font-size: 26px;
+        font-weight: 400;
+        color: #244D3B;
+        flex-shrink: 0;
+    }
+
+    .faq-item[open] .faq-question::after {
+        content: "−";
+    }
+
+    .faq-question:hover {
+        background: #FAFCF8;
+    }
+
+    .faq-question:focus-visible {
+        outline: 3px solid #56745F;
+        outline-offset: -3px;
+    }
+
+    .faq-answer {
+        padding: 0 28px 25px;
+        color: #53645A;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .faq-answer p {
+        margin: 0;
+    }
+
+    /* Sara: Ny seksjon for prosjektets aktører. */
+    .project-actors-section {
+        background: #E8EEE5;
+        padding: 95px 30px 110px;
+    }
+
+    .project-actors-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .project-actors-heading {
+        text-align: center;
+        max-width: 760px;
+        margin: 0 auto 45px;
+    }
+
+    .project-actors-label {
+        color: #56745F;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .project-actors-title {
+        color: #244D3B;
+        font-size: clamp(30px, 3.5vw, 44px);
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .project-actors-description {
+        color: #53645A;
+        font-size: 17px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .project-actors-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .project-actor-card {
+        background: #FFFFFF;
+        border: 1px solid #DFE7DC;
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 5px 16px rgba(36, 77, 59, 0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Sara: Begge logoene får like store områder.
+       object-fit: contain hindrer at logoene strekkes. */
+    .project-actor-logo-area {
+        height: 175px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px 25px;
+    }
+
+    .project-actor-logo {
+        display: block;
+        max-width: 100%;
+        max-height: 145px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
+
+    /* Sara: Forsvarets logo er høyere enn Kartverkets,
+       derfor får den egen maksimal høyde. */
+    .project-actor-logo--forsvaret {
+        max-height: 150px;
+    }
+
+    .project-actor-divider {
+        height: 1px;
+        background: #E1E8E1;
+        margin-bottom: 25px;
+    }
+
+    .project-actor-subtitle {
+        color: #244D3B;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+
+    .project-actor-text {
+        color: #53645A;
+        font-size: 15px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    /* Sara: Tilpasning for nettbrett. */
+    @@media (max-width: 1050px) {
+        .steps-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .resource-control-container {
+            gap: 35px;
+        }
+    }
+
+    /* Sara: Tilpasning for mobil. */
+    @@media (max-width: 768px) {
+        .home-hero {
+            grid-template-columns: 1fr;
+            padding: 55px 22px 65px;
+            gap: 35px;
+        }
+
+        .hero-description {
+            font-size: 16px;
+        }
+
+        .hero-photo-image {
+            height: 260px;
+        }
+
+        .steps-section {
+            padding: 35px 22px 65px;
+        }
+
+        .steps-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .steps-description {
+            font-size: 15px;
+        }
+
+        .home-map-section {
+            padding: 30px 22px 65px;
+        }
+
+        .home-map-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        #home-map {
+            height: 260px;
+        }
+
+        .home-map-description {
+            font-size: 16px;
+        }
+
+        .resource-control-section {
+            padding: 65px 22px;
+        }
+
+        .resource-control-container {
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .resource-control-description {
+            font-size: 16px;
+        }
+
+        .resource-control-card {
+            padding: 20px;
+            gap: 15px;
+        }
+
+        /* Sara: FAQ tilpasses mobil. */
+        .faq-section {
+            padding: 65px 22px 75px;
+        }
+
+        .faq-description {
+            font-size: 15px;
+        }
+
+        .faq-question {
+            padding: 20px;
+            font-size: 15px;
+        }
+
+        .faq-answer {
+            padding: 0 20px 22px;
+            font-size: 14px;
+        }
+
+        /* Sara: Aktørene vises under hverandre på mobil. */
+        .project-actors-section {
+            padding: 65px 22px 75px;
+        }
+
+        .project-actors-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .project-actors-description {
+            font-size: 15px;
+        }
+
+        .project-actor-card {
+            padding: 24px;
+        }
+
+        .project-actor-logo-area {
+            height: 150px;
+        }
+
+        .project-actor-subtitle {
+            font-size: 17px;
+        }
+
+        .project-actor-text {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<!-- Sara: Velkomstseksjonen på forsiden. -->
+<section class="home-hero" id="om-portalen">
+
+    <div class="hero-content">
+
+        <p class="hero-label">
+            Sammen for en tryggere hverdag
+        </p>
+
+        <h1 class="hero-title">
+            Velkommen til<br />
+            Kriseportalen
+        </h1>
+
+        <p class="hero-description">
+            Kriseportalen gjør det enklere for privatpersoner,
+            frivillige og bedrifter å bidra med ressurser
+            når samfunnet trenger det.
+            <br /><br />
+            Ved å registrere tilgjengelige ressurser kan du
+            bidra til at offentlige aktører raskere finner
+            nødvendig utstyr, kjøretøy og annen hjelp
+            i en krisesituasjon.
+        </p>
+
+        <!-- Sara: Registreringsknappen kobles til backend senere. -->
+        <span class="hero-button">
+            Bli en ressursleverandør
+        </span>
+
+    </div>
+
+    <!-- Sara: Fotografiet fra Joint Viking 2025. -->
+    <figure class="hero-photo">
+
+        <img src="~/image/totalforsvaret bilde kriseportalen.jpg"
+             alt="Personell fra Heimevernet og ambulansetjenesten samarbeider under en beredskapsøvelse."
+             class="hero-photo-image" />
+
+        <!-- Sara: Fotograf og bruksrettigheter må bekreftes før publisering. -->
+        <figcaption class="hero-photo-credit">
+            Foto: Forsvaret – Øvelse Joint Viking 2025
+        </figcaption>
+
+    </figure>
+
+</section>
+
+<!-- Sara: Fire enkle steg for ressursleverandører. -->
+<section class="steps-section" id="slik-bidrar-du">
+
+    <div class="steps-container">
+
+        <div class="steps-heading">
+            <h2 class="steps-title">Slik bidrar du</h2>
+            <p class="steps-description">
+                Fire enkle steg for å bidra til samfunnets beredskap.
+            </p>
+        </div>
+
+        <div class="steps-grid">
+
+            <!-- Sara: Steg 1 – Opprett bruker. -->
+            <article class="step-card">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="10" cy="7" r="4" />
+                        <path d="M3 21v-2a7 7 0 0 1 14 0v2" />
+                        <path d="M20 8v8M16 12h8" />
+                    </svg>
+                </div>
+                <div>
+                    <h3>1. Opprett bruker</h3>
+                    <p>Registrer deg som ressursleverandør.</p>
+                </div>
+            </article>
+
+            <!-- Sara: Steg 2 – Registrer ressurser. -->
+            <article class="step-card">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="5" y="4" width="14" height="18" rx="2" />
+                        <path d="M9 4.5V2h6v2.5M9 10h6M9 14h6M9 18h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3>2. Registrer ressurser</h3>
+                    <p>Legg til utstyr, kjøretøy eller kompetanse.</p>
+                </div>
+            </article>
+
+            <!-- Sara: Steg 3 – Oppdater tilgjengelighet. -->
+            <article class="step-card">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2" />
+                        <path d="M7 3v4M17 3v4M3 10h18M8 15l3 3 5-5" />
+                    </svg>
+                </div>
+                <div>
+                    <h3>3. Hold oversikt</h3>
+                    <p>Oppdater når ressursene dine er tilgjengelige.</p>
+                </div>
+            </article>
+
+            <!-- Sara: Steg 4 – Bidra ved behov. -->
+            <article class="step-card">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 9l5-5 5 3 3-2 7 5-6 7-4-3-3 3-7-7z" />
+                        <path d="M9 11l4 4M12 8l5 4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3>4. Bidra ved behov</h3>
+                    <p>Svar på forespørsler fra offentlige aktører.</p>
+                </div>
+            </article>
+
+        </div>
+    </div>
+
+</section>
+
+<!-- Sara: Kartseksjon på den offentlige forsiden. -->
+<section class="home-map-section" id="ressurser-i-agder">
+
+    <div class="home-map-container">
+
+        <!-- Sara: Interaktivt kartgrunnlag fra Kartverket. -->
+        <div class="home-map-frame">
+            <div id="home-map"
+                 role="region"
+                 aria-label="Interaktivt kart over Agder">
+            </div>
+        </div>
+
+        <!-- Sara: Informasjon ved siden av kartet. -->
+        <div class="home-map-content">
+
+            <h2 class="home-map-title">
+                Ressurser i Agder
+            </h2>
+
+            <p class="home-map-description">
+                Kriseportalen skal gjøre det enklere å
+                få oversikt over ressurser som kan bidra
+                til samfunnets beredskap i Agder.
+                <br /><br />
+                Kartet viser regionen der løsningen utvikles.
+                Ressursinformasjon vil bli tilgjengelig
+                gjennom portalen etter hvert som
+                funksjonaliteten ferdigstilles.
+            </p>
+
+            <div class="home-map-feature">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 21s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                </svg>
+                <span>Geografisk oversikt over Agder</span>
+            </div>
+
+            <div class="home-map-feature">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z" />
+                    <path d="M9 4v13M15 7v13" />
+                </svg>
+                <span>Kartgrunnlag fra Kartverket</span>
+            </div>
+
+            <div class="home-map-feature">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" />
+                    <path d="M9 12l2 2 4-4" />
+                </svg>
+                <span>Ingen private ressursadresser vises her</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Sara: Informasjon om kontroll over egne ressurser. -->
+<section class="resource-control-section" id="dine-ressurser">
+
+    <div class="resource-control-container">
+
+        <div class="resource-control-content">
+
+            <p class="resource-control-label">
+                Dine ressurser – ditt bidrag
+            </p>
+
+            <h2 class="resource-control-title">
+                Du har kontroll over
+                dine ressurser
+            </h2>
+
+            <p class="resource-control-description">
+                Som ressursleverandør skal du enkelt kunne
+                administrere det du ønsker å bidra med.
+                Du bestemmer hvilke ressurser du registrerer,
+                og kan holde informasjonen oppdatert.
+                <br /><br />
+                Målet er å gjøre det trygt og oversiktlig
+                å bidra når samfunnet trenger ekstra hjelp.
+            </p>
+
+        </div>
+
+        <div class="resource-control-cards">
+
+            <article class="resource-control-card">
+
+                <div class="resource-control-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="4" y="5" width="16" height="16" rx="2" />
+                        <path d="M8 5V3h8v2M8 11h8M8 15h8" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h3>Administrer egne ressurser</h3>
+                    <p>
+                        Registrer og oppdater informasjon
+                        om utstyr, kjøretøy og andre ressurser
+                        du ønsker å stille til disposisjon.
+                    </p>
+                </div>
+
+            </article>
+
+            <article class="resource-control-card">
+
+                <div class="resource-control-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2" />
+                        <path d="M7 3v4M17 3v4M3 10h18M8 15l3 3 5-5" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h3>Oppdater tilgjengelighet</h3>
+                    <p>
+                        Hold oversikt over når ressursene
+                        dine er tilgjengelige, slik at
+                        informasjonen er mest mulig oppdatert.
+                    </p>
+                </div>
+
+            </article>
+
+            <article class="resource-control-card">
+
+                <div class="resource-control-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v12H8l-4 4z" />
+                        <path d="M8 9h8M8 12h5" />
+                    </svg>
+                </div>
+
+                <div>
+                    <h3>Håndter forespørsler</h3>
+                    <p>
+                        Få oversikt over forespørsler fra
+                        offentlige aktører og svar når du
+                        har mulighet til å bidra.
+                    </p>
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Sara: Ofte stilte spørsmål med åpne/lukke-funksjon. -->
+<section class="faq-section" id="ofte-stilte-sporsmal">
+
+    <div class="faq-container">
+
+        <div class="faq-heading">
+
+            <p class="faq-label">
+                Spørsmål og svar
+            </p>
+
+            <h2 class="faq-title">
+                Ofte stilte spørsmål
+            </h2>
+
+            <p class="faq-description">
+                Her finner du svar på noen vanlige spørsmål
+                om hvordan Kriseportalen er tenkt å fungere.
+            </p>
+
+        </div>
+
+        <div class="faq-list">
+
+            <!-- Sara: Spørsmål 1. -->
+            <details class="faq-item">
+                <summary class="faq-question">
+                    Hvem kan registrere seg som ressursleverandør?
+                </summary>
+                <div class="faq-answer">
+                    <p>
+                        Kriseportalen utvikles for privatpersoner,
+                        frivillige og bedrifter som ønsker å bidra
+                        med ressurser til samfunnets beredskap.
+                        Registreringsløsningen er under utvikling.
+                    </p>
+                </div>
+            </details>
+
+            <!-- Sara: Spørsmål 2. -->
+            <details class="faq-item">
+                <summary class="faq-question">
+                    Hvilke typer ressurser kan jeg registrere?
+                </summary>
+                <div class="faq-answer">
+                    <p>
+                        Løsningen er ment for ulike typer ressurser,
+                        som kjøretøy, maskiner, utstyr og relevant
+                        kompetanse. Hvilke kategorier som blir
+                        tilgjengelige, avhenger av den ferdige
+                        registreringsløsningen.
+                    </p>
+                </div>
+            </details>
+
+            <!-- Sara: Spørsmål 3. -->
+            <details class="faq-item">
+                <summary class="faq-question">
+                    Er jeg forpliktet til å bidra hvis jeg registrerer meg?
+                </summary>
+                <div class="faq-answer">
+                    <p>
+                        Kriseportalen planlegges med en funksjon
+                        der ressursleverandører kan håndtere
+                        forespørsler fra offentlige aktører.
+                        Eventuelle vilkår og forpliktelser
+                        ved registrering må avklares før
+                        løsningen tas i bruk.
+                    </p>
+                </div>
+            </details>
+
+            <!-- Sara: Spørsmål 4. -->
+            <details class="faq-item">
+                <summary class="faq-question">
+                    Hvem får tilgang til informasjonen om ressursene mine?
+                </summary>
+                <div class="faq-answer">
+                    <p>
+                        Målet er at relevante offentlige aktører
+                        skal kunne finne ressurser ved behov.
+                        Hvilke opplysninger de kan se, og hvordan
+                        tilgangen skal styres, må avklares
+                        før løsningen tas i bruk.
+                        Det offentlige kartet på denne forsiden
+                        viser ingen registrerte ressursadresser.
+                    </p>
+                </div>
+            </details>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Sara: Prosjektets aktører med offisielle logoer. -->
+<section class="project-actors-section" id="prosjektets-aktorer">
+
+    <div class="project-actors-container">
+
+        <div class="project-actors-heading">
+
+            <p class="project-actors-label">
+                Bak Kriseportalen
+            </p>
+
+            <h2 class="project-actors-title">
+                Prosjektets aktører
+            </h2>
+
+            <p class="project-actors-description">
+                Kriseportalen er et studentprosjekt som utforsker
+                hvordan digitale løsninger kan bidra til bedre
+                ressursoversikt og samhandling i krisesituasjoner.
+            </p>
+
+        </div>
+
+        <div class="project-actors-grid">
+
+            <!-- Sara: Kartverket leverer kartgrunnlaget til forsiden. -->
+            <article class="project-actor-card">
+
+                <div class="project-actor-logo-area">
+                    <img src="~/image/kartverket-logo.svg"
+                         asp-append-version="true"
+                         alt="Kartverkets logo"
+                         class="project-actor-logo" />
+                </div>
+
+                <div class="project-actor-divider"></div>
+
+                <h3 class="project-actor-subtitle">
+                    Kart og geografisk informasjon
+                </h3>
+
+                <p class="project-actor-text">
+                    Kriseportalen bruker kartgrunnlag fra Kartverket
+                    for å vise geografiske områder i Agder.
+                    Kartet gir en visuell oversikt som kan støtte
+                    arbeidet med å finne relevante ressurser
+                    i nærheten av et behov.
+                </p>
+
+            </article>
+
+            <!-- Sara: Forsvaret/Heimevernet er relevant for Totalforsvaret-caset. -->
+            <article class="project-actor-card">
+
+                <div class="project-actor-logo-area">
+                    <img src="~/image/forsvaret-logo.png"
+                         asp-append-version="true"
+                         alt="Forsvarets logo"
+                         class="project-actor-logo project-actor-logo--forsvaret" />
+                </div>
+
+                <div class="project-actor-divider"></div>
+
+                <h3 class="project-actor-subtitle">
+                    Kriseberedskap og Totalforsvaret
+                </h3>
+
+                <p class="project-actor-text">
+                    Prosjektet tar utgangspunkt i behovet for bedre
+                    samhandling mellom sivile og militære aktører.
+                    Heimevernet er en aktuell offentlig aktør som
+                    kan bruke løsningen til å registrere behov
+                    og få oversikt over tilgjengelige ressurser
+                    i en krisesituasjon.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Sara: Laster inn kartskriptet kun på forsiden. -->
+@section Scripts {
+    <script src="~/js/home-map.js" asp-append-version="true"></script>
+}
