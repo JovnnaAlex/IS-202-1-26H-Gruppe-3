@@ -243,30 +243,33 @@
                         Informasjon om ressursen
                     </h2>
 
-                    <!-- Valg av ressurstype. -->
+                    <!-- Valg av ressurskategori fra databasen. -->
                     <div class="resource-field">
 
-                        <label asp-for="ResourceType" class="resource-label">
-                            Ressurstype
+                        <label asp-for="CategoryId" class="resource-label">
+                            Ressurskategori
                             <span class="required-star">*</span>
                         </label>
 
-                        <select asp-for="ResourceType"
+                        <select asp-for="CategoryId"
                                 class="resource-input"
                                 aria-required="true">
 
-                            <option value="">Velg ressurstype</option>
-                            <option value="Kjøretøy">Kjøretøy</option>
-                            <option value="Strømaggregat">Strømaggregat</option>
-                            <option value="Personell">Personell</option>
-                            <option value="Utstyr">Utstyr</option>
-                            <option value="Lokaler / husly">Lokaler / husly</option>
-                            <option value="Mat og vann">Mat og vann</option>
-                            <option value="Annet">Annet</option>
+                            <option value="">Velg ressurskategori</option>
+
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.CategoryId">
+                                        @category.Name
+                                    </option>
+                                }
+                            }
 
                         </select>
 
-                        <span asp-validation-for="ResourceType"></span>
+                        <span asp-validation-for="CategoryId"></span>
 
                     </div>
 
@@ -286,7 +289,51 @@
                         <span asp-validation-for="Name"></span>
 
                     </div>
+                    
+                    <!-- Antall ressurser. -->
+                    <div class="resource-field">
 
+                        <label asp-for="Quantity" class="resource-label">
+                            Antall
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Quantity"
+                               type="number"
+                               min="1"
+                               step="1"
+                               class="resource-input"
+                               aria-required="true" />
+
+                        <span asp-validation-for="Quantity"></span>
+
+                    </div>
+
+                    <!-- Måleenhet for ressursen. -->
+                    <div class="resource-field">
+
+                        <label asp-for="Unit" class="resource-label">
+                            Enhet
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <select asp-for="Unit"
+                                class="resource-input"
+                                aria-required="true">
+
+                            <option value="stk">Stykk (stk)</option>
+                            <option value="liter">Liter</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="timer">Timer</option>
+                            <option value="personer">Personer</option>
+                            <option value="plasser">Plasser</option>
+
+                        </select>
+
+                        <span asp-validation-for="Unit"></span>
+
+                    </div>
+                    
                     <!-- Valgfri beskrivelse av ressursen. -->
                     <div class="resource-field">
 
@@ -302,24 +349,58 @@
 
                     </div>
 
-                    <!-- Angir om ressursen er tilgjengelig nå. -->
+                    <!-- Angir ressursens tilgjengelighetsstatus. -->
                     <div class="resource-field">
 
-                        <div class="resource-availability">
+                        <label asp-for="Availability" class="resource-label">
+                            Tilgjengelighet
+                            <span class="required-star">*</span>
+                        </label>
 
-                            <input asp-for="Available"
-                                   class="resource-checkbox" />
+                        <select asp-for="Availability"
+                                class="resource-input"
+                                aria-required="true">
 
-                            <label asp-for="Available">
-                                Tilgjengelig nå
-                            </label>
+                            <option value="Available">Tilgjengelig</option>
+                            <option value="Reserved">Reservert</option>
+                            <option value="Unavailable">Ikke tilgjengelig</option>
 
-                        </div>
+                        </select>
+
+                        <span asp-validation-for="Availability"></span>
+                    
+                    </div>
+                    <!-- Startdato for tilgjengelighet. -->
+                    <div class="resource-field">
+
+                        <label asp-for="AvailableFrom" class="resource-label">
+                            Tilgjengelig fra
+                        </label>
+
+                        <input asp-for="AvailableFrom"
+                               type="date"
+                               class="resource-input" />
+
+                        <span asp-validation-for="AvailableFrom"></span>
 
                     </div>
 
-                </section>
+                    <!-- Sluttdato for tilgjengelighet. -->
+                    <div class="resource-field">
 
+                        <label asp-for="AvailableTo" class="resource-label">
+                            Tilgjengelig til
+                        </label>
+
+                        <input asp-for="AvailableTo"
+                               type="date"
+                               class="resource-input" />
+
+                        <span asp-validation-for="AvailableTo"></span>
+
+                    </div>
+                </section>
+                
                 <!-- Høyre kolonne: Adresse og geografisk plassering. -->
                 <section>
 
@@ -328,6 +409,59 @@
                         <span class="required-star">*</span>
                     </h2>
 
+                    <!-- Kommune der ressursen befinner seg. -->
+                    <div class="resource-field">
+
+                        <label asp-for="Municipality" class="resource-label">
+                            Kommune
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Municipality"
+                               class="resource-input"
+                               placeholder="F.eks. Kristiansand"
+                               aria-required="true" />
+
+                        <span asp-validation-for="Municipality"></span>
+
+                    </div>
+                    
+                    <!-- Navn på kontaktperson for ressursen. -->
+                    <div class="resource-field">
+
+                        <label asp-for="ContactName" class="resource-label">
+                            Kontaktperson
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="ContactName"
+                               class="resource-input"
+                               placeholder="F.eks. Ola Nordmann"
+                               aria-required="true" />
+
+                        <span asp-validation-for="ContactName"></span>
+
+                    </div>
+                    
+                    <!-- Telefonnummer til kontaktpersonen. -->
+                    <div class="resource-field">
+
+                        <label asp-for="ContactPhone" class="resource-label">
+                            Telefonnummer
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="ContactPhone"
+                               type="tel"
+                               class="resource-input"
+                               placeholder="F.eks. 12345678"
+                               autocomplete="tel"
+                               aria-required="true" />
+
+                        <span asp-validation-for="ContactPhone"></span>
+
+                    </div>
+                    
                     <!-- Adressefelt koblet til adressesøket i map.js. -->
                     <div class="resource-field">
 
@@ -376,11 +510,11 @@
 
             </div>
 
-            <!-- Knapp for å sende inn registreringen. -->
+            <!-- Knapp for å gå videre til forhåndsvisning. -->
             <div class="resource-actions">
 
                 <button type="submit" class="resource-submit">
-                    Registrer ressurs
+                    Forhåndsvis ressurs
                 </button>
 
             </div>

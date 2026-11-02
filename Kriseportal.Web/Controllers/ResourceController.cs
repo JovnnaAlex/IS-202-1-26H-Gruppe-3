@@ -114,23 +114,75 @@ public class ResourceController : Controller
         return View();
     }
 
-    // Eksisterende funksjon for ressursregistrering.
+    // Henter kategorier fra databasen når registreringsskjemaet åpnes.
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        ViewBag.Categories = await _context.Categories
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
         return View();
     }
 
-    // Eksisterende funksjon for registreringsbekreftelse.
+    // Validerer ressursregistreringen og viser forhåndsvisningen.
     [HttpPost]
-    public IActionResult Create(ResourceViewModel model)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(ResourceViewModel model)
     {
+        // Kontrollerer at den valgte kategorien finnes i databasen.
+    
+        if (model.CategoryId.HasValue &&
+            !await _context.Categories.AnyAsync(c =>
+                c.CategoryId == model.CategoryId.Value))
+        {
+            ModelState.AddModelError(
+                nameof(model.CategoryId),
+                "Du må velge en gyldig ressurskategori.");
+        }
+
         if (!ModelState.IsValid)
         {
+            // Henter kategoriene på nytt dersom skjemaet har feil.
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
             return View(model);
         }
 
+        // Henter kategorinavnet til bekreftelsessiden.
+        ViewBag.CategoryName = await _context.Categories
+            .Where(c => c.CategoryId == model.CategoryId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync();
+
+        // Foreløpig ingen lagring i databasen.
         return View("Details", model);
     }
+
+    // Sender brukeren tilbake til skjemaet med tidligere utfylte opplysninger.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditPreview(ResourceViewModel model)
+    {
+        // Henter kategoriene på nytt slik at nedtrekkslisten fungerer.
+        ViewBag.Categories = await _context.Categories
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        // Viser skjemaet med informasjonen brukeren allerede har fylt ut.
+        return View("Create", model);
+    }
+
+    // Viser bekreftelsessiden når brukeren godkjenner opplysningene.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ConfirmPreview()
+    {
+        // Ressursen lagres foreløpig ikke i databasen.
+        return View("Confirmation");
+    }
 }
+
 // la til en if statement for modelstate validation Edgar
