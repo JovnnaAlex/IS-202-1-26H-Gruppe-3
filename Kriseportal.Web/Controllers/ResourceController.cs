@@ -1,6 +1,7 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 // Sara: Lagt til for å hente ressurser fra databasen.
 using Kriseportal.Web.DataAccess;
@@ -14,9 +15,15 @@ public class ResourceController : Controller
     // Sara: Kobler ResourceController til databasen.
     private readonly ApplicationDbContext _context;
 
-    public ResourceController(ApplicationDbContext context)
+    // Henter informasjon om den innloggede brukeren.
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public ResourceController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     // Sara: MIDLERTIDIG TEST.
@@ -115,6 +122,7 @@ public class ResourceController : Controller
     }
 
     // Henter kategorier fra databasen når registreringsskjemaet åpnes.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpGet]
     public async Task<IActionResult> Create()
     {
@@ -126,6 +134,7 @@ public class ResourceController : Controller
     }
 
     // Validerer ressursregistreringen og viser forhåndsvisningen.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ResourceViewModel model)
@@ -162,6 +171,7 @@ public class ResourceController : Controller
     }
 
     // Sender brukeren tilbake til skjemaet med tidligere utfylte opplysninger.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPreview(ResourceViewModel model)
@@ -176,11 +186,68 @@ public class ResourceController : Controller
     }
 
     // Viser bekreftelsessiden når brukeren godkjenner opplysningene.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ConfirmPreview()
+    public async Task<IActionResult> ConfirmPreview(ResourceViewModel model)
     {
-        // Ressursen lagres foreløpig ikke i databasen.
+        // Kontrollerer at den valgte kategorien finnes i databasen.
+        if (model.CategoryId.HasValue &&
+            !await _context.Categories.AnyAsync(c =>
+                c.CategoryId == model.CategoryId.Value))
+        {
+            ModelState.AddModelError(
+                nameof(model.CategoryId),
+                "Du må velge en gyldig ressurskategori.");
+        }
+
+        // Kontrollerer at alle opplysningene er gyldige.
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View("Create", model);
+        }
+        // Henter brukeren som registrerer ressursen.
+        var user = await _userManager.GetUserAsync(User);
+
+        // Kontrollerer at brukeren finnes.
+        if (user == null)
+        {
+            return Challenge();
+        }
+        // Oppretter en ny ressurs med informasjon fra skjemaet.
+        var resource = new Resource
+        {
+            Name = model.Name,
+            Description = model.Description,
+            CategoryId = model.CategoryId!.Value,
+            Quantity = model.Quantity,
+            Unit = model.Unit,
+            Availability = model.Availability,
+
+            AvailableFrom = model.AvailableFrom,
+            AvailableTo = model.AvailableTo,
+
+            Municipality = model.Municipality,
+            Latitude = Math.Round(Convert.ToDecimal(model.Latitude!.Value), 6),
+            Longitude = Math.Round(Convert.ToDecimal(model.Longitude!.Value), 6),
+
+            ContactName = model.ContactName,
+            ContactPhone = model.ContactPhone,
+
+            ProviderId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        // Legger ressursen til i databasen.
+        _context.Resources.Add(resource);
+
+        // Lagrer endringene i MariaDB.
+        await _context.SaveChangesAsync();
+
+        // Viser bekreftelsessiden etter vellykket lagring.
         return View("Confirmation");
     }
 }

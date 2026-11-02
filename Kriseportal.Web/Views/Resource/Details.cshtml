@@ -113,12 +113,33 @@
 
         </form>
 
-        @* Bekrefter opplysningene og åpner bekreftelsessiden. *@
+        @* Bekrefter opplysningene og sender ressursinformasjonen videre. *@
         <form asp-controller="Resource"
               asp-action="ConfirmPreview"
               method="post">
 
             @Html.AntiForgeryToken()
+
+            @* Informasjon om ressursen *@
+            <input type="hidden" asp-for="Name" />
+            <input type="hidden" asp-for="CategoryId" />
+            <input type="hidden" asp-for="Description" />
+            <input type="hidden" asp-for="Quantity" />
+            <input type="hidden" asp-for="Unit" />
+            <input type="hidden" asp-for="Availability" />
+
+            @* Tilgjengelighetsperiode *@
+            <input type="hidden" asp-for="AvailableFrom" />
+            <input type="hidden" asp-for="AvailableTo" />
+
+            @* Plassering *@
+            <input type="hidden" asp-for="Municipality" />
+            <input type="hidden" asp-for="Latitude" />
+            <input type="hidden" asp-for="Longitude" />
+
+            @* Kontaktinformasjon *@
+            <input type="hidden" asp-for="ContactName" />
+            <input type="hidden" asp-for="ContactPhone" />
 
             <button type="submit" class="primary">
                 Bekreft registrering
