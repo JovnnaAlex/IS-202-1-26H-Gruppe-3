@@ -1,0 +1,270 @@
+﻿
+/* ==================================
+   BEHOV – OVERSIKTSSIDE
+   ================================== */
+
+/* Hele Behov-oversikten */
+.needs-page {
+    width: 100%;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* Overskrift til venstre og knapp til høyre */
+.needs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+    /* Overskriften "Behov" */
+    .needs-header h1 {
+        font-size: 32px;
+        font-weight: 600;
+        line-height: 39px;
+        color: var(--heading-color);
+        margin: 0;
+    }
+
+    /* Underteksten */
+    .needs-header p {
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 19px;
+        color: var(--muted-color);
+        margin: 8px 0 0;
+    }
+
+/* Knappen "+ Registrer behov" */
+.needs-create-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    min-height: 48px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    background-color: var(--primary-color);
+    color: #FFFFFF;
+    border-radius: var(--button-radius);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+    /* Når musepekeren er over knappen */
+    .needs-create-button:hover {
+        background-color: #405E51;
+        color: #FFFFFF;
+    }
+
+/* ==================================
+   HOVEDKORT – ALLE BEHOV
+   ================================== */
+
+.needs-card {
+    background-color: var(--card-color);
+    border: 1px solid #EAE4DA;
+    border-radius: var(--card-radius);
+    padding: 24px;
+    min-height: 620px;
+    margin-top: 40px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+}
+
+    /* Overskriften "Alle behov" */
+    .needs-card h2 {
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 24px;
+        color: var(--heading-color);
+        margin: 0;
+    }
+
+/* ==================================
+   SØKEFELT OG KOMMUNEFILTER
+   ================================== */
+
+/* Plasserer søk og filter ved siden av hverandre */
+.needs-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+/* Søkefelt: 480 x 44 px fra Figma */
+.needs-search {
+    width: 480px;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
+    border: 1px solid #D7DED7;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--heading-color);
+}
+
+    /* Teksten inni søkefeltet */
+    .needs-search::placeholder {
+        color: #8B948D;
+    }
+
+/* Kommunefilter: 240 x 44 px fra Figma */
+.needs-municipality {
+    width: 240px;
+    max-width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
+    border: 1px solid #D7DED7;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--heading-color);
+}
+
+    /* Markering når man bruker søk eller filter */
+    .needs-search:focus,
+    .needs-municipality:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+/* ==================================
+   TABELL – BEHOVSLISTE
+   ================================== */
+
+/* Avstand mellom filtrene og tabellen */
+.needs-table-wrapper {
+    margin-top: 36px;
+    overflow-x: auto;
+}
+
+/* Hele tabellen */
+.needs-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--heading-color);
+}
+
+    /* Bakgrunn på tabelloverskriften */
+    .needs-table thead {
+        background-color: #F1F3EF;
+    }
+
+    /* Overskriftscellene */
+    .needs-table th {
+        height: 48px;
+        padding: 0 16px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 600;
+        vertical-align: middle;
+    }
+
+        /* Avrundede hjørner på overskriftsraden */
+        .needs-table th:first-child {
+            border-radius: 6px 0 0 6px;
+        }
+
+        .needs-table th:last-child {
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Kolonnebredder tilpasset Figma */
+        .needs-table th:nth-child(1) {
+            width: 36%;
+        }
+
+        .needs-table th:nth-child(2) {
+            width: 20%;
+        }
+
+        .needs-table th:nth-child(3) {
+            width: 15%;
+        }
+
+        .needs-table th:nth-child(4) {
+            width: 13%;
+        }
+
+        .needs-table th:nth-child(5) {
+            width: 16%;
+        }
+
+    /* Vanlige tabellrader */
+    .needs-table tbody tr {
+        height: 64px;
+        border-bottom: 1px solid #EAE4DA;
+    }
+
+    /* Innhold i tabellcellene */
+    .needs-table td {
+        padding: 12px 16px;
+        vertical-align: middle;
+    }
+
+    /* Antall behov nederst i hovedkortet */
+    .needs-count {
+        margin-top: auto;
+        margin-bottom: 0;
+        font-family: var(--font-family);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--muted-color);
+    }
+
+/* ==================================
+   MOBILTILPASNING
+   ================================== */
+
+@media (max-width: 768px) {
+
+    .needs-page {
+        padding: 20px;
+    }
+
+    .needs-header {
+        flex-wrap: wrap;
+    }
+
+    .needs-create-button {
+        width: auto;
+    }
+
+    .needs-card {
+        min-height: 400px;
+        padding: 16px;
+        margin-top: 24px;
+    }
+
+    .needs-search,
+    .needs-municipality {
+        width: 100%;
+    }
+}
+
+/* Melding når ingen behov er registrert */
+.needs-table .needs-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted-color);
+    font-size: 14px;
+}

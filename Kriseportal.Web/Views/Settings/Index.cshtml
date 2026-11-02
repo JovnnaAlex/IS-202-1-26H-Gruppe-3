@@ -1,0 +1,92 @@
+@{
+    ViewData["Title"] = "Innstillinger";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/settings.css" asp-append-version="true" />
+}
+
+<div class="settings-page" id="settings-page">
+    <header class="settings-page-header">
+        <h1>Innstillinger</h1>
+        <p>Tilpass visning og preferanser i Kriseportalen</p>
+    </header>
+
+    <section class="settings-card" aria-labelledby="settings-card-title">
+        <h2 id="settings-card-title" class="settings-card-title">Mine innstillinger</h2>
+        <p class="settings-intro">Disse valgene lagres bare som testinnstillinger i denne nettleseren.</p>
+
+        <form id="settings-form" novalidate>
+            <section class="settings-section" aria-labelledby="settings-display-title">
+                <div class="settings-section-heading">
+                    <h3 id="settings-display-title">Visning og tilgjengelighet</h3>
+                    <p>Juster hvordan denne innstillingssiden vises.</p>
+                </div>
+
+                <div class="settings-option-row">
+                    <div class="settings-option-text">
+                        <label for="settings-large-text" class="settings-option-title">Større tekst</label>
+                        <p>Gjør teksten lettere å lese på denne siden.</p>
+                    </div>
+                    <input type="checkbox" id="settings-large-text" class="settings-switch" role="switch" />
+                </div>
+
+                <div class="settings-option-row">
+                    <div class="settings-option-text">
+                        <label for="settings-reduce-motion" class="settings-option-title">Reduser animasjoner</label>
+                        <p>Slår av overgangseffekter på denne siden.</p>
+                    </div>
+                    <input type="checkbox" id="settings-reduce-motion" class="settings-switch" role="switch" />
+                </div>
+            </section>
+
+            <section class="settings-section" aria-labelledby="settings-map-title">
+                <div class="settings-section-heading">
+                    <h3 id="settings-map-title">Kartpreferanser</h3>
+                    <p>Velg hva du ønsker å se på kartet som standard.</p>
+                </div>
+
+                <div class="settings-select-row">
+                    <div class="settings-option-text">
+                        <label for="settings-map-view" class="settings-option-title">Foretrukket kartvisning</label>
+                        <p>Valget lagres som demo, men er ikke koblet til Leaflet-kartet ennå.</p>
+                    </div>
+                    <select id="settings-map-view" class="settings-select">
+                        <option value="both">Behov og ressurser</option>
+                        <option value="needs">Kun behov</option>
+                        <option value="resources">Kun ressurser</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="settings-section" aria-labelledby="settings-account-title">
+                <div class="settings-section-heading">
+                    <h3 id="settings-account-title">Konto og sikkerhet</h3>
+                    <p>Administrer kontaktinformasjon og se status for kontofunksjoner.</p>
+                </div>
+
+                <div class="settings-option-row settings-account-row">
+                    <div class="settings-option-text">
+                        <span class="settings-option-title">Min profil</span>
+                        <p>Se eller rediger kontaktinformasjon.</p>
+                    </div>
+                    <a asp-controller="Profile" asp-action="Index" class="settings-secondary-link">Åpne profil</a>
+                </div>
+                <div class="settings-note">
+                    Innlogging, roller og tofaktorautentisering håndteres senere av backend og skal ikke styres med en frontend-bryter.
+                </div>
+            </section>
+
+            <p id="settings-feedback" class="settings-feedback" role="status" aria-live="polite" hidden></p>
+
+            <div class="settings-actions">
+                <button type="button" id="settings-reset" class="settings-reset-button">Tilbakestill</button>
+                <button type="submit" class="settings-save-button">Lagre innstillinger</button>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/settings.js" asp-append-version="true"></script>
+}

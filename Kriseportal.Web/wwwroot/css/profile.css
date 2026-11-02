@@ -1,0 +1,499 @@
+﻿
+/* =========================================
+   FELLES STYLING - PROFILSIDENE
+   ========================================= */
+
+.profile-page {
+    width: 100%;
+    min-width: 0;
+    padding: 40px;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    color: #26352F;
+    container-type: inline-size;
+}
+
+/* Overskrift */
+.profile-page-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 39px;
+    color: #26352F;
+}
+
+/* Undertekst */
+.profile-page-header p {
+    margin: 9px 0 0;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+    color: #80664F;
+}
+
+/* Hvitt kort */
+.profile-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 620px;
+    margin-top: 43px;
+    padding: 29px 23px 40px;
+    background-color: #FFFFFF;
+    border: 1px solid #EAE4DA;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+/* =========================================
+   MIN PROFIL - INDEX
+   ========================================= */
+
+/* Profilnavn og ikon */
+.profile-identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 30px;
+}
+
+.profile-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    background-color: #E5F1E8;
+    border-radius: 50%;
+}
+
+.profile-avatar-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.profile-identity-text {
+    min-width: 0;
+    padding-top: 5px;
+}
+
+    .profile-identity-text h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 27px;
+        color: #26352F;
+    }
+
+    .profile-identity-text p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 17px;
+        color: #80664F;
+    }
+
+/* Seksjoner */
+.profile-section {
+    padding-top: 30px;
+    padding-bottom: 40px;
+    border-top: 1px solid #EAE4DA;
+}
+
+    .profile-section h3 {
+        margin: 0 0 36px;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 24px;
+        color: #26352F;
+    }
+
+/* Informasjon i to kolonner */
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 352px) minmax(0, 1fr);
+    gap: 24px;
+    width: 100%;
+    max-width: 750px;
+}
+
+.profile-info-field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+    min-width: 0;
+}
+
+.profile-info-label {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 17px;
+    color: #80664F;
+}
+
+.profile-info-value {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 19px;
+    color: #26352F;
+    overflow-wrap: anywhere;
+}
+
+/* =========================================
+   REDIGER PROFIL - EDIT
+   ========================================= */
+
+/* Kortet har samme størrelse som i Figma */
+.profile-edit-card {
+    min-height: 620px;
+}
+
+.profile-edit-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Personlig informasjon */
+.profile-edit-heading {
+    margin: 0 0 28px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+    color: #26352F;
+}
+
+/* To like kolonner */
+.profile-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 28px;
+    row-gap: 24px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Avstand til e-post og telefon */
+.profile-contact-grid {
+    margin-top: 48px;
+}
+
+.profile-edit-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+    /* Navn på inputfelt */
+    .profile-edit-field label {
+        display: block;
+        margin: 0 0 11px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 17px;
+        color: #26352F;
+    }
+
+    /* Inputfelt fra Figma */
+    .profile-edit-field input {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: 0 15px;
+        background-color: #FFFFFF;
+        border: 1px solid #D7DED7;
+        border-radius: 8px;
+        color: #26352F;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        box-sizing: border-box;
+    }
+
+    /* Organisasjon og rolle kan ikke endres */
+    .profile-edit-field .profile-readonly-input {
+        background-color: #D7DED7;
+        border-color: #B7C5BA;
+        color: #80664F;
+        cursor: default;
+    }
+
+    /* Placeholder */
+    .profile-edit-field input::placeholder {
+        color: #8B948D;
+        opacity: 1;
+    }
+
+    /* Input er markert når brukeren skriver */
+    .profile-edit-field input:not([readonly]):focus {
+        outline: 2px solid #527366;
+        outline-offset: 1px;
+        border-color: #527366;
+    }
+
+    /* Ugyldige felt */
+    .profile-edit-field input[aria-invalid="true"] {
+        border-color: #B42318;
+    }
+
+/* Feilmelding under felt */
+.profile-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 18px;
+    color: #B42318;
+}
+
+/* Generell feilmelding */
+.profile-form-error {
+    margin: 20px 0 0;
+    font-size: 14px;
+    color: #B42318;
+}
+
+    .profile-form-error[hidden] {
+        display: none;
+    }
+
+/* =========================================
+   KNAPPER
+   ========================================= */
+
+/* Plasseres nederst til høyre */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: auto;
+    padding-top: 28px;
+    padding-right: 24px;
+    box-sizing: border-box;
+}
+
+/* Grønn knapp */
+.profile-edit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 176px;
+    min-height: 48px;
+    padding: 0 16px;
+    background-color: #527366;
+    border: 1px solid #527366;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+    .profile-edit-button:hover {
+        background-color: #405E51;
+        color: #FFFFFF;
+    }
+
+/* Avbryt-knapp */
+.profile-cancel-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    min-height: 48px;
+    padding: 0 16px;
+    background-color: #FFFFFF;
+    border: 1px solid #527366;
+    border-radius: 8px;
+    color: #26352F;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+    .profile-cancel-button:hover {
+        background-color: #F1F5F1;
+        color: #26352F;
+    }
+
+/* Lagre-knapp fra Figma: 186px */
+.profile-edit-form .profile-edit-button {
+    width: 186px;
+}
+
+/* Knappene nederst i redigeringsskjema */
+.profile-edit-form .profile-actions {
+    padding-top: 36px;
+}
+
+/* Tastaturnavigasjon */
+.profile-edit-button:focus-visible,
+.profile-cancel-button:focus-visible {
+    outline: 3px solid #86B69A;
+    outline-offset: 3px;
+}
+
+/* =========================================
+   TILBAKEMELDING ETTER LAGRING
+   ========================================= */
+
+.profile-feedback {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background-color: #F1F5F1;
+    border: 1px solid #C5D5C8;
+    border-radius: 8px;
+    color: #26352F;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+    .profile-feedback[hidden] {
+        display: none;
+    }
+
+/* =========================================
+   RESPONSIVT DESIGN - NETTBRETT
+   ========================================= */
+
+@container (max-width: 800px) {
+
+    .profile-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profile-edit-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+
+    .profile-contact-grid {
+        margin-top: 28px;
+    }
+
+    .profile-actions {
+        padding-right: 0;
+    }
+}
+
+/* Mindre innholdsområde */
+@container (max-width: 650px) {
+
+    .profile-card {
+        min-height: 0;
+    }
+
+    .profile-info-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-edit-heading {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    .profile-section h3 {
+        margin-bottom: 24px;
+    }
+
+    .profile-actions {
+        margin-top: 24px;
+    }
+}
+
+/* =========================================
+   RESPONSIVT DESIGN - MOBIL
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .profile-page {
+        padding: 20px;
+    }
+
+    .profile-page-header h1 {
+        font-size: 26px;
+        line-height: 32px;
+    }
+
+    .profile-page-header p {
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    .profile-card {
+        margin-top: 24px;
+        padding: 24px;
+        min-height: 0;
+    }
+
+    .profile-identity-text h2 {
+        font-size: 19px;
+        line-height: 24px;
+    }
+
+    .profile-section h3 {
+        font-size: 18px;
+    }
+}
+
+/* =========================================
+   RESPONSIVT DESIGN - LITEN MOBIL
+   ========================================= */
+
+@media (max-width: 480px) {
+
+    .profile-page {
+        padding: 12px;
+    }
+
+    .profile-card {
+        padding: 16px;
+    }
+
+    .profile-identity {
+        gap: 14px;
+    }
+
+    .profile-avatar {
+        width: 56px;
+        height: 56px;
+    }
+
+    .profile-avatar-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .profile-identity-text h2 {
+        font-size: 17px;
+        line-height: 22px;
+    }
+
+    .profile-edit-form .profile-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 12px;
+        padding-right: 0;
+    }
+
+    .profile-edit-form .profile-cancel-button,
+    .profile-edit-form .profile-edit-button {
+        width: 100%;
+    }
+
+    .profile-card > .profile-actions .profile-edit-button {
+        width: 100%;
+    }
+}

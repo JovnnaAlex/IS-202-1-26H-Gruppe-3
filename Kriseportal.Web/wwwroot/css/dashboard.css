@@ -1,0 +1,345 @@
+﻿
+/* =========================================
+   DASHBOARD - FIGMA DESIGN
+   ========================================= */
+
+/* Hovedområde */
+.dashboard-page {
+    width: 100%;
+    min-width: 0;
+    padding: 40px;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    container-type: inline-size;
+}
+
+/* =========================================
+   OVERSKRIFT OG KNAPP
+   ========================================= */
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+    .dashboard-header h1 {
+        margin: 0;
+        color: #26352F;
+        font-size: 32px;
+        font-weight: 600;
+        line-height: 39px;
+    }
+
+    .dashboard-header p {
+        margin: 9px 0 0;
+        color: #80664F;
+        font-size: 16px;
+        line-height: 19px;
+    }
+
+/* Registreringsknapp */
+.dashboard-create-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 48px;
+    flex-shrink: 0;
+    background-color: #527366;
+    border: 1px solid #527366;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+    .dashboard-create-button:hover {
+        background-color: #405E51;
+        color: #FFFFFF;
+    }
+
+/* =========================================
+   HOVEDLAYOUT
+   Kart venstre, kort høyre
+   ========================================= */
+
+.dashboard-content {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 740fr) minmax(0, 336fr);
+    gap: 24px;
+    margin-top: 43px;
+    align-items: start;
+}
+
+/* =========================================
+   KART
+   ========================================= */
+
+.dashboard-map-section {
+    min-width: 0;
+    width: 100%;
+}
+
+.dashboard-page #dashboardMap {
+    display: block;
+    width: 100%;
+    height: 620px;
+    min-width: 0;
+    background-color: #E2E9E2;
+    border: 1px solid #D7DED7;
+    border-radius: 12px;
+    box-sizing: border-box;
+    z-index: 0;
+}
+
+/* Tilgjengelig overskrift uten visuell plass */
+.dashboard-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* =========================================
+   OVERSIKTSKORT
+   ========================================= */
+
+.dashboard-statistics {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Hvitt kort */
+.dashboard-summary-card {
+    width: 100%;
+    height: 180px;
+    min-width: 0;
+    padding: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #EAE4DA;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+/* Øverste del av kortet */
+.dashboard-summary-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+    .dashboard-summary-top h2 {
+        margin: 0;
+        color: #26352F;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 22px;
+    }
+
+/* Ikon */
+.dashboard-summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background-color: #E8EFEA;
+    border-radius: 8px;
+    color: #527366;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Tall */
+.dashboard-summary-number {
+    margin: 10px 0 6px;
+    color: #527366;
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 40px;
+}
+
+/* Beskrivelse */
+.dashboard-summary-description {
+    margin: 0;
+    color: #80664F;
+    font-size: 13px;
+    line-height: 19px;
+}
+
+/* =========================================
+   INFORMASJON UNDER KARTET
+   ========================================= */
+
+.dashboard-note {
+    margin: 16px 0 0;
+    color: #80664F;
+    font-size: 13px;
+    line-height: 20px;
+}
+
+/* =========================================
+   HOVER / FOKUS
+   ========================================= */
+
+.dashboard-create-button:focus-visible {
+    outline: 3px solid #86B69A;
+    outline-offset: 3px;
+}
+
+/* =========================================
+   RESPONSIVT DESIGN
+   ========================================= */
+
+/* Når hovedområdet blir smalere */
+@container (max-width: 1050px) {
+
+    .dashboard-content {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+
+    .dashboard-page #dashboardMap {
+        height: 440px;
+    }
+
+    .dashboard-statistics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .dashboard-summary-card {
+        height: 180px;
+        padding: 18px;
+    }
+
+    .dashboard-summary-top h2 {
+        font-size: 14px;
+    }
+}
+
+/* Smalere nettbrett */
+@container (max-width: 680px) {
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-statistics {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .dashboard-summary-card {
+        height: auto;
+        min-height: 150px;
+        padding: 20px;
+    }
+
+    .dashboard-page #dashboardMap {
+        height: 350px;
+    }
+}
+
+/* Nettbrett */
+@media (max-width: 900px) {
+
+    .dashboard-page {
+        padding: 24px;
+    }
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+
+    .dashboard-page {
+        padding: 20px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 26px;
+        line-height: 32px;
+    }
+
+    .dashboard-header p {
+        font-size: 14px;
+        line-height: 21px;
+    }
+
+    .dashboard-page #dashboardMap {
+        height: 300px;
+    }
+}
+
+/* Små mobilskjermer */
+@media (max-width: 480px) {
+
+    .dashboard-page {
+        padding: 12px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 24px;
+    }
+
+    .dashboard-create-button {
+        width: 100%;
+    }
+
+    .dashboard-page #dashboardMap {
+        height: 250px;
+    }
+
+    .dashboard-summary-card {
+        padding: 16px;
+    }
+}
+
+/* =========================================
+   KLIKK BARE DASHBOARD-KORT
+   ========================================= */
+
+.dashboard-summary-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+    /* Når musepekeren er over kortet */
+    .dashboard-summary-link:hover {
+        transform: translateY(-3px);
+        border-color: #9AAF9F;
+        box-shadow: 0 6px 18px rgba(38, 53, 47, 0.10);
+        color: inherit;
+    }
+
+    /* Behold fargene på teksten */
+    .dashboard-summary-link h2,
+    .dashboard-summary-link p {
+        text-decoration: none;
+    }
+
+    /* Når brukeren navigerer med tastaturet */
+    .dashboard-summary-link:focus-visible {
+        outline: 3px solid #527366;
+        outline-offset: 3px;
+    }

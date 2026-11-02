@@ -9,6 +9,15 @@ namespace Kriseportal.Web.Controllers;
 
 public class NeedController : Controller
 {
+
+    // Viser oversikten over behov (fra din frontend)
+    [HttpGet]
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // Database og miljø (fra master)
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
 
@@ -19,6 +28,7 @@ public class NeedController : Controller
         _context = context;
         _environment = environment;
     }
+
 
     [HttpGet]
     public async Task<IActionResult> Create()
@@ -35,7 +45,7 @@ public class NeedController : Controller
 
         return View();
     }
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(NeedViewModel model)

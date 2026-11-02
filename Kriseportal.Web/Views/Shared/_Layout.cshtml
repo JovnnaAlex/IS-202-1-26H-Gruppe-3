@@ -1,5 +1,4 @@
 @{
-    // Henter navnet på controlleren for å markere riktig menyvalg.
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
@@ -9,204 +8,157 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewData["Title"] - Kriseportal</title>
+    <title>@ViewData["Title"] - Kriseportalen</title>
 
-    <!-- Laster inn Bootstrap for responsivt oppsett. -->
+    <!-- Inter-font -->
+    <link rel="preload"
+          href="@Url.Content("~/fonts/InterVariable.woff2")"
+          as="font"
+          type="font/woff2"
+          crossorigin />
+
+    <!-- Bootstrap -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
 
-    <style>
-            /* Felles farger for Kriseportalen. */
-            :root {
-                --primary-green: #244D3B;
-                --light-green: #EAF1EB;
-                --background: #F5F7F4;
-                --text-color: #24332B;
-            }
+    <!-- Felles Figma-design -->
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
 
-            /* Grunnleggende utseende for hele nettsiden. */
-            body {
-                margin: 0;
-                background-color: var(--background);
-                color: var(--text-color);
-                font-family: Arial, sans-serif;
-            }
-
-            /* Hovedoppsett med sidemeny og innhold. */
-            .app-layout {
-                display: flex;
-                min-height: 100vh;
-            }
-
-            /* Sidemenyen til venstre. */
-            .sidebar {
-                width: 240px;
-                flex-shrink: 0;
-                background-color: white;
-                border-right: 1px solid #E1E8E1;
-                padding: 24px 16px;
-            }
-
-            /* Navnet på portalen. */
-            .sidebar-brand {
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: var(--primary-green);
-                margin-bottom: 36px;
-                padding-left: 12px;
-            }
-
-            /* Navigasjonslenkene. */
-            .sidebar-link {
-                display: block;
-                padding: 12px 16px;
-                margin-bottom: 6px;
-                border-radius: 8px;
-                color: var(--text-color);
-                text-decoration: none;
-                font-weight: 500;
-            }
-
-                /* Viser hvilket menyvalg brukeren holder over. */
-                .sidebar-link:hover {
-                    background-color: var(--light-green);
-                    color: var(--primary-green);
-                }
-
-                /* Marker aktiv side i menyen. */
-                .sidebar-link.active {
-                    background-color: var(--light-green);
-                    color: var(--primary-green);
-                    font-weight: 700;
-                    border-left: 4px solid var(--primary-green);
-                }
-
-                /* Menyvalg som ikke er implementert ennå. */
-                .sidebar-link.disabled {
-                    color: #888;
-                    cursor: not-allowed;
-                    opacity: 0.6;
-                }
-
-            /* Området der hver side viser sitt innhold. */
-            .main-content {
-                flex: 1;
-                min-width: 0;
-                padding: 32px;
-            }
-
-            /* Tilpasser oppsettet til mindre skjermer. */
-            @@media (max-width: 768px) {
-                .app-layout {
-                    flex-direction: column;
-                }
-
-                .sidebar {
-                    width: 100%;
-                    border-right: none;
-                    border-bottom: 1px solid #E1E8E1;
-                    padding: 16px;
-                }
-
-                .sidebar-brand {
-                    margin-bottom: 16px;
-                }
-
-                .sidebar-nav {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 6px;
-                }
-
-                .sidebar-link {
-                    margin-bottom: 0;
-                }
-
-                .main-content {
-                    padding: 16px;
-                }
-            }
-    </style>
+    <!-- CSS for individuelle sider -->
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 
 <body>
-
     <div class="app-layout">
 
-        <!-- Felles navigasjonsmeny. -->
         <aside class="sidebar">
 
+            <!-- Logo -->
             <div class="sidebar-brand">
-                Kriseportal
+                <h2>Kriseportalen</h2>
+                <p>Ressurs - og behovskoordinering</p>
             </div>
 
+            <!-- Hovedmeny -->
             <nav class="sidebar-nav" aria-label="Hovedmeny">
 
-                <!-- Lenke til forsiden. -->
+                <!-- Dashboard -->
                 <a asp-controller="Home"
                    asp-action="Index"
-                   class="sidebar-link @(currentController == "Home" ? "active" : "")">
+                   class="@(currentController == "Home" ? "active" : "")">
+
+                    <img src="~/icons/dashboard.svg"
+                         alt="" class="sidebar-icon" />
                     Dashboard
                 </a>
 
-                <!-- Lenke til registrering av behov. -->
+                <!-- Behov -->
                 <a asp-controller="Need"
-                   asp-action="Create"
-                   class="sidebar-link @(currentController == "Need" ? "active" : "")">
+                   asp-action="Index"
+                   class="@(currentController == "Need" ? "active" : "")">
+
+                    <img src="~/icons/behov.svg"
+                         alt="" class="sidebar-icon" />
                     Behov
                 </a>
 
-                <!-- Sara: Endret Ressurser fra Create til Index,
-                 slik at offentlig aktør får opp ressursoversikten
-                 i stedet for registreringsskjemaet. -->
+                <!-- Ressurser -->
                 <a asp-controller="Resource"
                    asp-action="Index"
-                   class="sidebar-link @(currentController == "Resource" ? "active" : "")">
+                   class="@(currentController == "Resource" ? "active" : "")">
+
+                    <img src="~/icons/ressurser.svg"
+                         alt="" class="sidebar-icon" />
                     Ressurser
                 </a>
 
-                <!-- Lenke til situasjonskartet. -->
+                <!-- Kart: Ny funksjon fra master -->
                 <a asp-controller="Map"
                    asp-action="Index"
-                   class="sidebar-link @(currentController == "Map" ? "active" : "")">
+                   class="@(currentController == "Map" ? "active" : "")">
+
+                    <img src="~/icons/kart.svg"
+                         alt="" class="sidebar-icon" />
                     Kart
                 </a>
 
-                <!-- Forespørsler aktiveres når siden er implementert. -->
-                <span class="sidebar-link disabled" aria-disabled="true">
+                <!-- Forespørsler: Ikke implementert -->
+                <span class="sidebar-link disabled"
+                      aria-disabled="true">
+
+                    <img src="~/icons/foresporsler.svg"
+                         alt="" class="sidebar-icon" />
                     Forespørsler
                 </span>
 
+            </nav>
+
+            <!-- Nederste meny -->
+            <div class="sidebar-bottom">
+
+                <!-- Innstillinger -->
+                <a asp-controller="Settings"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Settings" ? "active" : "")">
+
+                    <img src="~/icons/innstillinger.svg"
+                         alt="" class="sidebar-icon" />
+                    Innstillinger
+                </a>
+
+                <!-- Min profil -->
+                <a asp-controller="Profile"
+                   asp-action="Index"
+                   class="sidebar-link @(currentController == "Profile" ? "active" : "")">
+
+                    <img src="~/icons/profil.svg"
+                         alt="" class="sidebar-icon" />
+                    Min profil
+                </a>
+
+                <!-- Innlogging og utlogging fra master -->
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <form asp-controller="Account" asp-action="Logout" method="post">
-                        <button type="submit" class="sidebar-link btn text-start w-100">
+                    <form asp-controller="Account"
+                          asp-action="Logout"
+                          method="post">
+
+                        <button type="submit"
+                                class="sidebar-link sidebar-logout-button">
+
+                            <img src="~/icons/logg-ut.svg"
+                                 alt="" class="sidebar-icon" />
                             Logg ut
                         </button>
+
                     </form>
                 }
                 else
                 {
-                    <a asp-controller="Account" asp-action="Login" class="sidebar-link">
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       class="sidebar-link">
                         Logg inn
                     </a>
 
-                    <a asp-controller="Account" asp-action="Register" class="sidebar-link">
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="sidebar-link">
                         Opprett konto
                     </a>
                 }
 
-          </nav>
+            </div> <!-- sidebar-bottom -->
 
-        </aside>
-
-        <!-- Her vises innholdet fra den aktive siden. -->
+        </aside> <!-- sidebar -->
+        <!-- Sideinnhold -->
         <main class="main-content">
             @RenderBody()
         </main>
 
-    </div>
-
+    </div> <!-- app-layout -->
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
