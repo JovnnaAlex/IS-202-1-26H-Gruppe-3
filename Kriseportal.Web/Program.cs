@@ -35,12 +35,6 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
-{
-    // Adressen «https+http://» betyr at HTTPS brukes hvis det finnes, ellers HTTP.
-    // Aspire finner selv riktig adresse til tjenesten «apiservice».
-    client.BaseAddress = new("https+http://apiservice");
-});
 
 var app = builder.Build();
 // Kjører manglende databasemigreringer automatisk under utvikling
