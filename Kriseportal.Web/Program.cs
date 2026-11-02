@@ -33,6 +33,12 @@ builder.Services.AddOutputCache();
 
 var app = builder.Build();
 
+// Fyller databasen med kategorier og testdata under utvikling
+if (app.Environment.IsDevelopment())
+{
+    await DataSeeder.SeedAsync(app.Services);
+}
+
 // Setter engelsk som standardspråk, slik at desimaltall bruker punktum og ikke komma
 app.UseRequestLocalization("en-US");
 
