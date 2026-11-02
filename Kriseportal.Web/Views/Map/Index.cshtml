@@ -4,6 +4,8 @@
 
 <!-- Leaflet sitt stilark for kartvisning -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Ikoner for kategoriene på kartet -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
 <style>
     /* Kartsiden fyller hele skjermen ved siden av menyen */
@@ -44,9 +46,9 @@
         pointer-events: none;
     }
 
-    .map-topbar > * {
-        pointer-events: auto;
-    }
+        .map-topbar > * {
+            pointer-events: auto;
+        }
 
     .map-title {
         background: white;
@@ -76,10 +78,175 @@
         font-weight: 600;
         color: var(--primary-green);
     }
+
+    /* Markørene på kartet */
+    .km {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        color: #ffffff;
+        font-size: 15px;
+        line-height: 1;
+    }
+
+        /* Egne SVG-ikoner (f.eks. drone) skaleres til markøren */
+        .km svg {
+            width: 62%;
+            height: 62%;
+        }
+
+    /* Behov er runde, ressurser er firkantede */
+    .km-need {
+        border-radius: 50%;
+    }
+
+    .km-res {
+        border-radius: 6px;
+    }
+
+    /* Behov følger trafikklys: rød = akutt, oransje = haster, gul = planlagt */
+    .km-p-acute {
+        background: #C62828;
+    }
+
+    .km-p-high {
+        background: #F57C00;
+    }
+
+    .km-p-normal {
+        background: #F57C00;
+    }
+
+    .km-p-planned {
+        background: #FDD835;
+        color: #3E2723;
+    }
+
+    /* Ressurser: grønn = tilgjengelig, lilla = reservert */
+    .km-a-available {
+        background: #2E7D32;
+    }
+
+    .km-a-reserved {
+        background: #6A1B9A;
+    }
+
+    .km-a-unavailable {
+        background: #455A64;
+        opacity: 0.7;
+    }
+
+    /* Simulerte punkter får stiplet kant (brukes i beslutningsstøtten senere) */
+    .km-simulated {
+        border-style: dashed;
+    }
+
+    /* Rolig puls rundt akutte behov */
+    .km-need.km-p-acute::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 3px solid #C62828;
+        animation: km-pulse 1.8s ease-out infinite;
+    }
+
+    @@keyframes km-pulse {
+        from {
+            transform: scale(0.7);
+            opacity: 0.9;
+        }
+
+        to {
+            transform: scale(1.4);
+            opacity: 0;
+        }
+    }
+
+    /* Ingen animasjon for brukere som har slått av bevegelse i systemet */
+    @@media (prefers-reduced-motion: reduce) {
+        .km-need.km-p-acute::after {
+            display: none;
+        }
+    }
+
+    /* Tegnforklaring nede til venstre */
+    .map-legend {
+        position: absolute;
+        left: 12px;
+        bottom: 24px;
+        z-index: 1000;
+        max-width: 240px;
+        background: white;
+        border-radius: 10px;
+        padding: 10px 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-size: 0.9rem;
+    }
+
+        .map-legend summary {
+            min-height: 28px;
+            font-weight: 700;
+            color: var(--primary-green);
+            cursor: pointer;
+        }
+
+        .map-legend ul {
+            list-style: none;
+            margin: 8px 0 4px;
+            padding: 0;
+        }
+
+        .map-legend li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .map-legend p {
+            margin: 6px 0 0;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+    .lg {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .lg-need {
+        border-radius: 50%;
+    }
+
+    .lg-res {
+        border-radius: 4px;
+    }
 </style>
 
 <div class="crisis-map-page">
     <div id="crisis-map" role="application" aria-label="Situasjonskart over behov og ressurser"></div>
+
+    <details class="map-legend" id="map-legend" open>
+        <summary>Tegnforklaring</summary>
+        <ul>
+            <li><span class="lg lg-need km-p-acute"></span> Akutt behov</li>
+            <li><span class="lg lg-need km-p-high"></span> Haster (større = høyere)</li>
+            <li><span class="lg lg-need km-p-planned"></span> Planlagt behov</li>
+            <li><span class="lg lg-res km-a-available"></span> Tilgjengelig ressurs</li>
+            <li><span class="lg lg-res km-a-reserved"></span> Reservert ressurs</li>
+        </ul>
+        <p>Rund = behov · Firkantet = ressurs</p>
+    </details>
 
     <div class="map-topbar">
         <div class="map-title">
