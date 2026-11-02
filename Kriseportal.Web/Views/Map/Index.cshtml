@@ -1,0 +1,459 @@
+﻿@{
+    ViewData["Title"] = "Situasjonskart";
+}
+
+<!-- Leaflet sitt stilark for kartvisning -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Ikoner for kategoriene på kartet -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+<style>
+    /* Kartsiden fyller hele skjermen ved siden av menyen */
+    .app-layout {
+        height: 100dvh;
+        min-height: 0;
+    }
+
+    .main-content {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .crisis-map-page {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    #crisis-map {
+        position: absolute;
+        inset: 0;
+    }
+
+    /* Statuslinje som ligger oppå kartet */
+    .map-topbar {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 1000;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        pointer-events: none;
+    }
+
+        .map-topbar > * {
+            pointer-events: auto;
+        }
+
+    .map-title {
+        background: white;
+        border-radius: 10px;
+        padding: 10px 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-weight: 700;
+        color: var(--primary-green);
+    }
+
+    .map-updated {
+        display: block;
+        font-weight: 400;
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    /* Knapper minst 44 piksler, så de er lette å treffe med fingeren */
+    .map-button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0 14px;
+        border: none;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-weight: 600;
+        color: var(--primary-green);
+    }
+
+    /* Markørene på kartet */
+    .km {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        color: #ffffff;
+        font-size: 15px;
+        line-height: 1;
+        transition: transform 0.15s ease;
+    }
+
+        /* Egne SVG-ikoner (f.eks. drone) skaleres til markøren */
+        .km svg {
+            width: 62%;
+            height: 62%;
+        }
+
+    /* Markøren som er valgt, blir litt større og får mørk kant */
+    .km-selected {
+        transform: scale(1.25);
+        border-color: #1A1A1A;
+    }
+
+    /* Behov er runde, ressurser er firkantede */
+    .km-need {
+        border-radius: 50%;
+    }
+
+    .km-res {
+        border-radius: 6px;
+    }
+
+    /* Behov følger trafikklys: rød = akutt, oransje = haster, gul = planlagt */
+    .km-p-acute {
+        background: #C62828;
+    }
+
+    .km-p-high {
+        background: #F57C00;
+    }
+
+    .km-p-normal {
+        background: #F57C00;
+    }
+
+    .km-p-planned {
+        background: #FDD835;
+        color: #3E2723;
+    }
+
+    /* Ressurser: grønn = tilgjengelig, lilla = reservert */
+    .km-a-available {
+        background: #2E7D32;
+    }
+
+    .km-a-reserved {
+        background: #6A1B9A;
+    }
+
+    .km-a-unavailable {
+        background: #455A64;
+        opacity: 0.7;
+    }
+
+    /* Simulerte punkter får stiplet kant (brukes i beslutningsstøtten senere) */
+    .km-simulated {
+        border-style: dashed;
+    }
+
+    /* Rolig puls rundt akutte behov */
+    .km-need.km-p-acute::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 3px solid #C62828;
+        animation: km-pulse 1.8s ease-out infinite;
+    }
+
+    @@keyframes km-pulse {
+        from {
+            transform: scale(0.7);
+            opacity: 0.9;
+        }
+
+        to {
+            transform: scale(1.4);
+            opacity: 0;
+        }
+    }
+
+    /* Ingen animasjon for brukere som har slått av bevegelse i systemet */
+    @@media (prefers-reduced-motion: reduce) {
+        .km-need.km-p-acute::after {
+            display: none;
+        }
+
+        .km, .map-panel {
+            transition: none;
+        }
+    }
+
+    /* Tegnforklaring nede til venstre */
+    .map-legend {
+        position: absolute;
+        left: 12px;
+        bottom: 24px;
+        z-index: 1000;
+        max-width: 240px;
+        background: white;
+        border-radius: 10px;
+        padding: 10px 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-size: 0.9rem;
+    }
+
+        .map-legend summary {
+            min-height: 28px;
+            font-weight: 700;
+            color: var(--primary-green);
+            cursor: pointer;
+        }
+
+        .map-legend ul {
+            list-style: none;
+            margin: 8px 0 4px;
+            padding: 0;
+        }
+
+        .map-legend li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .map-legend p {
+            margin: 6px 0 0;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+    .lg {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .lg-need {
+        border-radius: 50%;
+    }
+
+    .lg-res {
+        border-radius: 4px;
+    }
+
+    /* Detaljpanel: på PC et panel til høyre */
+    .map-panel {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        bottom: 12px;
+        z-index: 1100;
+        width: 360px;
+        max-width: calc(100% - 24px);
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+        overflow-y: auto;
+        transform: translateX(110%);
+        transition: transform 0.25s ease;
+    }
+
+        .map-panel.is-open {
+            transform: translateX(0);
+        }
+
+    .panel-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid #E1E8E1;
+    }
+
+    .panel-icon {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+    }
+
+    .panel-head h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        line-height: 1.3;
+    }
+
+    .panel-kind {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #666;
+        margin-bottom: 2px;
+    }
+
+    .panel-close {
+        margin-left: auto;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 10px;
+        background: #F0F2F0;
+        font-size: 1.4rem;
+        line-height: 1;
+    }
+
+    .panel-body {
+        padding: 14px 18px;
+    }
+
+    .panel-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 12px;
+    }
+
+    .panel-facts {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 14px;
+        margin: 0;
+    }
+
+        .panel-facts dt {
+            color: #666;
+            font-weight: 400;
+        }
+
+        .panel-facts dd {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .panel-description {
+        margin: 12px 0 0;
+        color: #333;
+    }
+
+    .panel-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 0 18px 18px;
+        margin-top: auto;
+    }
+
+    .panel-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 52px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .panel-call {
+        background: var(--primary-green);
+        color: white;
+    }
+
+    .panel-route {
+        background: #EAF1EB;
+        color: var(--primary-green);
+    }
+
+    /* På mobil glir panelet opp fra bunnen, der tommelen når */
+    @@media (max-width: 768px) {
+        .map-panel {
+            top: auto;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 100%;
+            max-height: 70%;
+            border-radius: 18px 18px 0 0;
+            transform: translateY(110%);
+        }
+
+            .map-panel.is-open {
+                transform: translateY(0);
+            }
+            /* Et lite «håndtak» øverst viser at panelet ligger oppå kartet */
+            .map-panel::before {
+                content: "";
+                display: block;
+                width: 44px;
+                height: 5px;
+                margin: 10px auto 0;
+                border-radius: 3px;
+                background: #CCC;
+            }
+    }
+</style>
+
+<div class="crisis-map-page">
+    <div id="crisis-map" role="application" aria-label="Situasjonskart over behov og ressurser"></div>
+
+    <details class="map-legend" id="map-legend" open>
+        <summary>Tegnforklaring</summary>
+        <ul>
+            <li><span class="lg lg-need km-p-acute"></span> Akutt behov</li>
+            <li><span class="lg lg-need km-p-high"></span> Haster (større = høyere)</li>
+            <li><span class="lg lg-need km-p-planned"></span> Planlagt behov</li>
+            <li><span class="lg lg-res km-a-available"></span> Tilgjengelig ressurs</li>
+            <li><span class="lg lg-res km-a-reserved"></span> Reservert ressurs</li>
+        </ul>
+        <p>Rund = behov · Firkantet = ressurs</p>
+    </details>
+
+    <div class="map-topbar">
+        <div class="map-title">
+            Situasjonskart
+            <span class="map-updated" id="map-updated">Henter data …</span>
+        </div>
+        <button type="button" class="map-button" id="map-refresh">Oppdater</button>
+    </div>
+
+    <!-- Detaljpanel som fylles når man trykker på et punkt -->
+    <aside class="map-panel" id="map-panel" role="dialog" aria-modal="false" aria-labelledby="panel-title" aria-hidden="true">
+        <div class="panel-head">
+            <div class="panel-icon" id="panel-icon"></div>
+            <div>
+                <span class="panel-kind" id="panel-kind"></span>
+                <h2 id="panel-title"></h2>
+            </div>
+            <button type="button" class="panel-close" id="panel-close" aria-label="Lukk">&times;</button>
+        </div>
+        <div class="panel-body">
+            <span class="panel-chip" id="panel-chip"></span>
+            <dl class="panel-facts" id="panel-facts"></dl>
+        </div>
+        <div class="panel-actions">
+            <a class="panel-action panel-call" id="panel-call" href="#">
+                <i class="bi bi-telephone-fill" aria-hidden="true"></i> Ring
+            </a>
+            <a class="panel-action panel-route" id="panel-route" href="#" target="_blank" rel="noopener">
+                <i class="bi bi-sign-turn-right-fill" aria-hidden="true"></i> Veibeskrivelse
+            </a>
+        </div>
+    </aside>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="~/js/crisis-map.js" asp-append-version="true"></script>
+}

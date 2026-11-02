@@ -229,3 +229,16 @@ body {
     }
 }
 
+/* Gjør Logg ut-knappen lik de andre menyvalgene */
+.sidebar-logout-button {
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+    .sidebar-logout-button:hover {
+        background-color: #AFC5B4;
+        border-radius: 8px;
+    }
