@@ -1,4 +1,3 @@
-using Kriseportal.Web;
 using Kriseportal.Web.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Kriseportal.Web.Models.Entities;
@@ -8,10 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Legger til standardoppsettet fra Aspire (helsesjekk, logging og tjenesteoppslag)
 builder.AddServiceDefaults();
-
-// Legger til tjenester i appen
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
 // Legger til MVC med controllers og views
 builder.Services.AddControllersWithViews();
@@ -35,12 +30,6 @@ builder.Services.AddIdentityCore<ApplicationUser>()
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
-{
-    // Adressen «https+http://» betyr at HTTPS brukes hvis det finnes, ellers HTTP.
-    // Aspire finner selv riktig adresse til tjenesten «apiservice».
-    client.BaseAddress = new("https+http://apiservice");
-});
 
 var app = builder.Build();
 
@@ -49,7 +38,7 @@ app.UseRequestLocalization("en-US");
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Home/Error");
     // HSTS ber nettleseren alltid bruke HTTPS. Standardverdien er 30 dager.
     app.UseHsts();
 }
