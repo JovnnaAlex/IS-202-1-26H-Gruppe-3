@@ -1,13 +1,39 @@
+# Starter hele løsningen i Docker: databasen og webappen.
+# Kjør fra rotmappen:  docker compose up --build
+# Åpne deretter:       http://localhost:8080
 services:
   mariadb:
     image: mariadb:11.4
-    container_name: kriseberedskap-db
+    container_name: kriseportal-db
     environment:
-      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_ROOT_PASSWORD: rootpassword   # bare for lokal utvikling
+      MARIADB_DATABASE: kriseportal
     ports:
-      - "3306:3306"
+      - "3308:3306"   # 3308 på PC-en, så den ikke kolliderer med Aspire (3307)
     volumes:
-      - dbdata:/var/lib/mysql
+      - kriseportal-docker-data:/var/lib/mysql
+    # Sjekker at databasen faktisk er klar, ikke bare at containeren har startet
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: Kriseportal.Web/Dockerfile
+    container_name: kriseportal-web
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development   # kjører migrering og testdata ved oppstart
+      # Inne i Docker heter databasen "mariadb" (tjenestenavnet), ikke localhost
+      ConnectionStrings__DefaultConnection: "Server=mariadb;Port=3306;Database=kriseportal;User=root;Password=rootpassword;"
+    ports:
+      - "8080:8080"
+    # Webappen venter til databasen er klar
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
 volumes:
-  dbdata: 
+  kriseportal-docker-data:

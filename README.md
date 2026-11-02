@@ -24,9 +24,27 @@ Prosjektet bruker også .NET Aspire for å starte og kjøre tjenestene i løsnin
 
 ## Drift
 
-Prosjektet kan bygges fra rotmappen med `dotnet build`.
+Løsningen kan kjøres på to måter.
 
-Applikasjonen startes gjennom `Kriseportal.AppHost`. Når AppHost kjører, kan webapplikasjonen åpnes gjennom adressen til `webfrontend` i Aspire-dashboardet.
+**1. Hele løsningen i Docker (app + database)**
+
+Krever Docker Desktop. Kjør fra rotmappen:
+
+    docker compose up --build
+
+Åpne http://localhost:8080. Databasen migreres og fylles med testdata automatisk.
+Testbrukere: `kommune@kriseportal.test` (offentlig aktør) og `ola@kriseportal.test` (ressursleverandør), passord `Kriseportal1!`.
+Innlogging: http://localhost:8080/Account/Login – registrering: http://localhost:8080/Account/Register.
+
+MariaDB er tilgjengelig på port 3308 (f.eks. for DataGrip). Stopp med `docker compose down`. `docker compose down -v` sletter også dataene.
+
+Webappen bygges med en flertrinns Dockerfile (`Kriseportal.Web/Dockerfile`) og kjører som en vanlig bruker, ikke root. Webappen venter til databasen er klar (healthcheck).
+
+*Kjent begrensning:* Nøklene for innloggingscookies lagres inne i containeren, så brukere logges ut når containeren bygges på nytt.
+
+**2. Utvikling med .NET Aspire**
+
+Start `Kriseportal.AppHost`. Aspire starter MariaDB i Docker (port 3307), og webappen åpnes fra Aspire-dashboardet.
 
 ## Testing
 
