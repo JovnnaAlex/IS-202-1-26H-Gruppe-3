@@ -1,4 +1,3 @@
-
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 }
@@ -154,14 +153,12 @@
             </div> <!-- sidebar-bottom -->
 
         </aside> <!-- sidebar -->
-
         <!-- Sideinnhold -->
         <main class="main-content">
             @RenderBody()
         </main>
 
     </div> <!-- app-layout -->
-
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
