@@ -218,24 +218,112 @@
                     <h2 class="need-section-title">
                         Informasjon om behovet
                     </h2>
-
-                    <!-- Type behov. -->
+                    
+                    <!-- Tittel på behovet. -->
                     <div class="need-field">
 
-                        <label asp-for="Type" class="need-label">
-                            Type behov
+                        <label asp-for="Title" class="need-label">
+                            Tittel
                             <span class="required-star">*</span>
                         </label>
 
-                        <input asp-for="Type"
+                        <input asp-for="Title"
                                class="need-input"
-                               placeholder="F.eks. Strømaggregat"
+                               placeholder="F.eks. Behov for strømaggregat"
+                               maxlength="150"
                                aria-required="true" />
 
-                        <span asp-validation-for="Type"></span>
+                        <span asp-validation-for="Title"></span>
 
                     </div>
+                    
+                    <!-- Kategori for behovet. -->
+                    <div class="need-field">
 
+                        <label asp-for="CategoryId" class="need-label">
+                            Kategori
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <select asp-for="CategoryId"
+                                asp-items="ViewBag.Categories"
+                                class="need-input"
+                                aria-required="true">
+
+                            <option value="0">Velg kategori</option>
+
+                        </select>
+
+                        <span asp-validation-for="CategoryId"></span>
+
+                    </div>
+                    <!-- Antall ressurser som trengs. -->
+                    <div class="need-field">
+                        <label asp-for="Quantity" class="need-label">
+                            Antall
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Quantity"
+                               type="number"
+                               class="need-input"
+                               min="1"
+                               step="1"
+                               aria-required="true" />
+
+                        <span asp-validation-for="Quantity"></span>
+                    </div>
+                    
+                    <!-- Velg måleenhet for antallet. -->
+                    <div class="need-field">
+                        <label asp-for="Unit" class="need-label">
+                            Måleenhet
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <select asp-for="Unit" class="need-input" aria-required="true">
+                            <option value="">Velg måleenhet</option>
+                            <option value="stk">Stykk (stk)</option>
+                            <option value="liter">Liter (L)</option>
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="tonn">Tonn</option>
+                            <option value="meter">Meter (m)</option>
+                            <option value="m²">Kvadratmeter (m²)</option>
+                            <option value="timer">Timer</option>
+                            <option value="personer">Personer</option>
+                        </select>
+
+                        <span asp-validation-for="Unit"></span>
+                    </div>
+                    
+                    @* Tidspunktet behovet starter. *@
+                    <div class="need-field">
+                        <label asp-for="NeededFrom" class="need-label">
+                            Behov fra
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="NeededFrom"
+                               type="datetime-local"
+                               class="need-input"
+                               required />
+
+                        <span asp-validation-for="NeededFrom"></span>
+                    </div>
+
+                    @* Tidspunktet behovet eventuelt avsluttes. *@
+                    <div class="need-field">
+                        <label asp-for="NeededTo" class="need-label">
+                            Behov til (valgfritt)
+                        </label>
+
+                        <input asp-for="NeededTo"
+                               type="datetime-local"
+                               class="need-input" />
+
+                        <span asp-validation-for="NeededTo"></span>
+                    </div>
+                    
                     <!-- Beskrivelse av behovet. -->
                     <div class="need-field">
 
@@ -266,9 +354,10 @@
                                 aria-required="true">
 
                             <option value="">Velg prioritet</option>
-                            <option value="Low">Lav</option>
-                            <option value="Medium">Middels</option>
+                            <option value="Acute">Akutt</option>
                             <option value="High">Høy</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Planned">Planlagt</option>
 
                         </select>
 
@@ -281,6 +370,72 @@
                 <!-- Høyre kolonne: Adresse, kart og koordinater. -->
                 <section>
 
+                    <!-- Kontaktinformasjon for behovet. -->
+                    <h2 class="need-section-title">
+                        Kontaktinformasjon
+                    </h2>
+
+                    <!-- Søk og velg kommune. -->
+                    <div class="need-field">
+
+                        <label asp-for="Municipality" class="need-label">
+                            Kommune
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="Municipality"
+                               class="need-input"
+                               list="municipalityOptions"
+                               placeholder="Søk etter kommune"
+                               autocomplete="off"
+                               maxlength="100"
+                               aria-required="true" />
+
+                        <!-- Kommunealternativene lastes fra kommuner.json. -->
+                        <datalist id="municipalityOptions"></datalist>
+
+                        <span asp-validation-for="Municipality"></span>
+
+                    </div>
+                    
+                    <!-- Kontaktperson for behovet. -->
+                    <div class="need-field">
+
+                        <label asp-for="ContactName" class="need-label">
+                            Kontaktperson
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="ContactName"
+                               class="need-input"
+                               placeholder="F.eks. Ola Nordmann"
+                               maxlength="100"
+                               aria-required="true" />
+
+                        <span asp-validation-for="ContactName"></span>
+
+                    </div>
+                    
+                    <!-- Telefonnummer til kontaktpersonen. -->
+                    <div class="need-field">
+
+                        <label asp-for="ContactPhone" class="need-label">
+                            Telefonnummer
+                            <span class="required-star">*</span>
+                        </label>
+
+                        <input asp-for="ContactPhone"
+                               type="tel"
+                               class="need-input"
+                               placeholder="F.eks. +47 123 45 678"
+                               maxlength="20"
+                               autocomplete="tel"
+                               aria-required="true" />
+
+                        <span asp-validation-for="ContactPhone"></span>
+
+                    </div>
+                    
                     <h2 class="need-section-title">
                         Geografisk plassering
                         <span class="required-star">*</span>
@@ -373,3 +528,31 @@
 <!-- Laster inn Leaflet og eksisterende kartfunksjonalitet. -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="~/js/map.js" asp-append-version="true"></script>
+
+<script>
+    // Henter norske kommunenavn fra den lokale JSON-filen.
+    async function loadMunicipalities() {
+        try {
+            const response = await fetch('/data/kommuner.json');
+
+            if (!response.ok) {
+                throw new Error('Kunne ikke hente kommunelisten.');
+            }
+
+            const municipalities = await response.json();
+            const datalist = document.getElementById('municipalityOptions');
+
+            // Lager et søkeforslag for hver kommune.
+            municipalities.forEach(municipality => {
+                const option = document.createElement('option');
+                option.value = municipality;
+                datalist.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Feil ved lasting av kommuner:', error);
+        }
+    }
+
+    // Laster kommunene når siden åpnes.
+    loadMunicipalities();
+</script>
