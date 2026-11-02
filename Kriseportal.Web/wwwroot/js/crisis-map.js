@@ -12,20 +12,20 @@
         topo: 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png'
     };
 
-    // Prioritet på behov: CSS-klasse, norsk tekst, størrelse og hvem som legges øverst.
+    // Prioritet på behov: CSS-klasse, farge, norsk tekst, størrelse og hvem som legges øverst.
     // Høy og normal har samme farge (haster), men høy er større.
     const PRIORITET = {
-        Acute: { css: 'km-p-acute', tekst: 'Akutt', size: 42, z: 400 },
-        High: { css: 'km-p-high', tekst: 'Høy', size: 36, z: 300 },
-        Normal: { css: 'km-p-normal', tekst: 'Normal', size: 28, z: 200 },
-        Planned: { css: 'km-p-planned', tekst: 'Planlagt', size: 28, z: 100 }
+        Acute: { css: 'km-p-acute', farge: '#C62828', tekst: 'Akutt', size: 42, z: 400 },
+        High: { css: 'km-p-high', farge: '#F57C00', tekst: 'Høy', size: 36, z: 300 },
+        Normal: { css: 'km-p-normal', farge: '#F57C00', tekst: 'Normal', size: 28, z: 200 },
+        Planned: { css: 'km-p-planned', farge: '#F9A825', tekst: 'Planlagt', size: 28, z: 100 }
     };
 
     // Tilgjengelighet på ressurser
     const TILGJENGELIGHET = {
-        Available: { css: 'km-a-available', tekst: 'Tilgjengelig' },
-        Reserved: { css: 'km-a-reserved', tekst: 'Reservert' },
-        Unavailable: { css: 'km-a-unavailable', tekst: 'Ikke tilgjengelig' }
+        Available: { css: 'km-a-available', farge: '#2E7D32', tekst: 'Tilgjengelig' },
+        Reserved: { css: 'km-a-reserved', farge: '#6A1B9A', tekst: 'Reservert' },
+        Unavailable: { css: 'km-a-unavailable', farge: '#455A64', tekst: 'Ikke tilgjengelig' }
     };
 
     // Status på behov på norsk
@@ -70,7 +70,8 @@
         map: null,
         pointLayer: null,
         points: [],
-        firstLoad: true
+        firstLoad: true,
+        selectedMarker: null
     };
 
     function initMap() {
@@ -86,6 +87,9 @@
 
         // Eget lag for punktene. Fargede kommuner får et eget lag senere.
         state.pointLayer = L.layerGroup().addTo(state.map);
+
+        // Trykk på selve kartet lukker detaljpanelet
+        state.map.on('click', closePanel);
     }
 
     async function loadData() {
@@ -112,6 +116,7 @@
     // Tegner punktene. Beslutningsstøtten kan senere kalle denne med egne punkter.
     function renderPoints(points) {
         state.pointLayer.clearLayers();
+        state.selectedMarker = null;
         const bounds = [];
 
         points.forEach(function (point) {
@@ -126,27 +131,37 @@
         }
     }
 
-    // Lager én markør med riktig form, farge, størrelse og ikon
-    function createMarker(point) {
-        const isNeed = point.kind === 'need';
-        const style = isNeed
+    // Finner stilen (farge, størrelse, tekst) for et punkt
+    function styleFor(point) {
+        return point.kind === 'need'
             ? (PRIORITET[point.priority] || PRIORITET.Normal)
             : (TILGJENGELIGHET[point.status] || TILGJENGELIGHET.Available);
-        const size = isNeed ? style.size : 30;
+    }
 
+    // Lager HTML for markøren, brukes både på kartet og i panelet
+    function markerHtml(point) {
+        const isNeed = point.kind === 'need';
         const classes = [
             'km',
             isNeed ? 'km-need' : 'km-res',
-            style.css,
+            styleFor(point).css,
             point.isSimulated ? 'km-simulated' : ''
         ].join(' ');
 
+        return '<div class="' + classes + '">' + lagIkonHtml(point.category) + '</div>';
+    }
+
+    // Lager én markør med riktig form, farge, størrelse og ikon
+    function createMarker(point) {
+        const isNeed = point.kind === 'need';
+        const style = styleFor(point);
+        const size = isNeed ? style.size : 30;
+
         const icon = L.divIcon({
             className: '',
-            html: '<div class="' + classes + '">' + lagIkonHtml(point.category) + '</div>',
+            html: markerHtml(point),
             iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2],
-            popupAnchor: [0, -size / 2]
+            iconAnchor: [size / 2, size / 2]
         });
 
         const marker = L.marker([point.lat, point.lng], {
@@ -154,10 +169,16 @@
             // Behov over ressurser, og de mest akutte øverst
             zIndexOffset: isNeed ? style.z : 0,
             title: point.title,
-            alt: point.title
+            alt: point.title,
+            keyboard: true
         });
 
-        marker.bindPopup(createPopup(point, isNeed));
+        marker.on('click', function (event) {
+            // Hindrer at klikket også lukker panelet via kartet
+            L.DomEvent.stopPropagation(event);
+            openPanel(point, marker);
+        });
+
         return marker;
     }
 
@@ -170,21 +191,78 @@
         return '<i class="bi bi-' + ikon + '" aria-hidden="true"></i>';
     }
 
-    function createPopup(point, isNeed) {
-        const merkelapp = isNeed
-            ? (PRIORITET[point.priority]?.tekst || '') + ' · ' + (STATUS[point.status] || point.status)
-            : (TILGJENGELIGHET[point.status]?.tekst || point.status);
+    // Fyller og åpner detaljpanelet
+    function openPanel(point, marker) {
+        const isNeed = point.kind === 'need';
+        const style = styleFor(point);
 
-        return '<strong>' + escapeHtml(point.title) + '</strong><br>' +
-            escapeHtml(point.category) + ' · ' + escapeHtml(point.municipality) + '<br>' +
-            '<small>' + escapeHtml(merkelapp) + '</small>';
+        // Marker valgt punkt på kartet
+        highlightMarker(marker);
+
+        document.getElementById('panel-icon').innerHTML = markerHtml(point);
+        document.getElementById('panel-kind').textContent = isNeed ? 'Behov' : 'Ressurs';
+        document.getElementById('panel-title').textContent = point.title;
+
+        const chip = document.getElementById('panel-chip');
+        chip.textContent = isNeed
+            ? style.tekst + ' · ' + (STATUS[point.status] || point.status)
+            : style.tekst;
+        chip.style.background = style.farge;
+
+        // Fakta som liste. Teksten settes med textContent, så den ikke kan kjøre som kode.
+        const facts = document.getElementById('panel-facts');
+        facts.innerHTML = '';
+        addFact(facts, 'Kategori', point.category);
+        addFact(facts, isNeed ? 'Trenger' : 'Kan bidra med', point.quantity + ' ' + point.unit);
+        addFact(facts, 'Kommune', point.municipality);
+        addFact(facts, 'Kontakt', point.contactName);
+        addFact(facts, 'Telefon', point.contactPhone);
+
+        // Ring-knappen åpner telefonen direkte på mobil
+        const phone = (point.contactPhone || '').replace(/\s/g, '');
+        const call = document.getElementById('panel-call');
+        call.href = 'tel:' + phone;
+        call.setAttribute('aria-label', 'Ring ' + point.contactName);
+
+        // Veibeskrivelse åpner kartappen på telefonen med ruten dit
+        document.getElementById('panel-route').href =
+            'https://www.google.com/maps/dir/?api=1&destination=' + point.lat + ',' + point.lng;
+
+        const panel = document.getElementById('map-panel');
+        panel.classList.add('is-open');
+        panel.setAttribute('aria-hidden', 'false');
+        document.getElementById('panel-close').focus();
+
+        // Flytter kartet litt, så punktet ikke skjules bak panelet
+        state.map.panTo([point.lat, point.lng], { animate: true });
     }
 
-    // Hindrer at tekst fra brukerne kan kjøre som kode i nettleseren (XSS)
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text ?? '';
-        return div.innerHTML;
+    function addFact(list, label, value) {
+        const dt = document.createElement('dt');
+        dt.textContent = label;
+        const dd = document.createElement('dd');
+        dd.textContent = value ?? '';
+        list.appendChild(dt);
+        list.appendChild(dd);
+    }
+
+    function closePanel() {
+        const panel = document.getElementById('map-panel');
+        panel.classList.remove('is-open');
+        panel.setAttribute('aria-hidden', 'true');
+        highlightMarker(null);
+    }
+
+    // Gjør valgt markør større, og fjerner markeringen fra forrige
+    function highlightMarker(marker) {
+        if (state.selectedMarker) {
+            const old = state.selectedMarker.getElement()?.querySelector('.km');
+            old?.classList.remove('km-selected');
+        }
+        state.selectedMarker = marker;
+        if (marker) {
+            marker.getElement()?.querySelector('.km')?.classList.add('km-selected');
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -195,6 +273,15 @@
 
         initMap();
         loadData();
+
         document.getElementById('map-refresh').addEventListener('click', loadData);
+        document.getElementById('panel-close').addEventListener('click', closePanel);
+
+        // Esc lukker panelet
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closePanel();
+            }
+        });
     });
 })();
