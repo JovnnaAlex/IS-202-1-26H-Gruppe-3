@@ -48,6 +48,17 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
 });
 
 var app = builder.Build();
+// Kjører manglende databasemigreringer automatisk under utvikling
+if (app.Environment.IsDevelopment()) //kontrollerer at applikasjonen kjører i utviklingsmiljøet.
+{
+    using var scope = app.Services.CreateScope(); //oppretter et område hvor ASP.NET Core kan hente databasetjenesten.
+
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>(); //henter deres EF Core-databasekontekst.
+
+    dbContext.Database.Migrate(); //kjører eventuelle manglende migreringer.
+}
+
 
 // Setter engelsk som standardspråk, slik at desimaltall bruker punktum og ikke komma
 app.UseRequestLocalization("en-US");
