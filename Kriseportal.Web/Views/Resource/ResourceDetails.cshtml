@@ -1,0 +1,366 @@
+
+@model Kriseportal.Web.Models.Entities.Resource
+@using System.Globalization
+@using Kriseportal.Web.Models.Entities
+
+@{
+    ViewData["Title"] = "Ressursdetaljer";
+
+    // Sara: Gjør koordinatene klare for bruk i Leaflet-kartet.
+    // InvariantCulture sørger for punktum som desimalskilletegn.
+    var latitude = Model.Latitude.ToString(CultureInfo.InvariantCulture);
+    var longitude = Model.Longitude.ToString(CultureInfo.InvariantCulture);
+}
+
+<!-- Sara: Leaflet brukes til å vise ressursens plassering på kart. -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+    /* Sara: Design basert på Figma-prototypen. */
+
+    .resource-details {
+        color: #293B33;
+    }
+
+    .details-back {
+        display: inline-block;
+        margin-bottom: 22px;
+        color: #527667;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .details-back:hover {
+        text-decoration: underline;
+    }
+
+    .details-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+
+    .details-heading h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .details-subtitle {
+        color: #8A6F5A;
+        margin: 0;
+    }
+
+    .details-card {
+        background: #FFFFFF;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 26px;
+        margin-bottom: 22px;
+    }
+
+    .details-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 22px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .details-label {
+        display: block;
+        font-size: 13px;
+        color: #8A6F5A;
+        margin-bottom: 6px;
+    }
+
+    .details-value {
+        font-size: 16px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .details-description {
+        line-height: 1.7;
+        white-space: pre-line;
+    }
+
+    .details-status {
+        display: inline-block;
+        background: #E3F1E7;
+        color: #2F6849;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .details-map {
+        height: 360px;
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #E1E8E1;
+        overflow: hidden;
+    }
+
+    .details-coordinates {
+        color: #7B847D;
+        font-size: 13px;
+        margin-top: 12px;
+    }
+
+    .details-phone {
+        color: #527667;
+        font-weight: 600;
+    }
+
+    /* Sara: Plassering og design for forespørselsknappen. */
+    .details-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    .details-request-button {
+        display: inline-block;
+        background: #527667;
+        color: #FFFFFF;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+    .details-request-button:hover {
+        background: #3E5E50;
+        color: #FFFFFF;
+    }
+
+    .details-request-button:focus-visible {
+        outline: 3px solid #293B33;
+        outline-offset: 3px;
+    }
+
+    @@media (max-width: 768px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .details-card {
+            padding: 18px;
+        }
+
+        .details-map {
+            height: 280px;
+        }
+
+        .details-actions {
+            justify-content: stretch;
+        }
+
+        .details-request-button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="resource-details">
+
+    <!-- Sara: Lenke tilbake til ressursoversikten. -->
+    <a asp-controller="Resource"
+       asp-action="Index"
+       class="details-back">
+        ← Tilbake til ressurser
+    </a>
+
+    <div class="details-heading">
+        <div>
+            <h1>@Model.Name</h1>
+            <p class="details-subtitle">
+                Ressursdetaljer · @Model.Municipality
+            </p>
+        </div>
+
+        <span class="details-status">
+            Tilgjengelig
+        </span>
+    </div>
+
+    <!-- Sara: Viser informasjon fra databasen. -->
+    <section class="details-card">
+
+        <h2>Informasjon om ressursen</h2>
+
+        <div class="details-grid">
+
+            <div>
+                <span class="details-label">Kategori</span>
+                <span class="details-value">
+                    @(Model.Category?.Name ?? "Ukjent kategori")
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Kommune</span>
+                <span class="details-value">
+                    @Model.Municipality
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Antall</span>
+                <span class="details-value">
+                    @Model.Quantity @Model.Unit
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Status</span>
+                <span class="details-value">
+                    @Model.Availability
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Tilgjengelig fra</span>
+                <span class="details-value">
+                    @(Model.AvailableFrom?.ToString("dd.MM.yyyy HH:mm")
+                        ?? "Ikke spesifisert")
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Tilgjengelig til</span>
+                <span class="details-value">
+                    @(Model.AvailableTo?.ToString("dd.MM.yyyy HH:mm")
+                        ?? "Ikke spesifisert")
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Sara: Beskrivelse av ressursen. -->
+    <section class="details-card">
+
+        <h2>Beskrivelse</h2>
+
+        <p class="details-description">
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "Ingen beskrivelse er registrert."
+                : Model.Description)
+        </p>
+
+    </section>
+
+    <!-- Sara: Interaktivt kart med ressursens koordinater. -->
+    <section class="details-card">
+
+        <h2>Ressursens plassering</h2>
+
+        <div id="resourceMap" class="details-map"></div>
+
+        <p class="details-coordinates">
+            Koordinater: @latitude, @longitude
+        </p>
+
+    </section>
+
+    <!-- Sara: Kontaktinformasjon til ressursleverandøren. -->
+    <section class="details-card">
+
+        <h2>Kontaktinformasjon</h2>
+
+        <div class="details-grid">
+
+            <div>
+                <span class="details-label">Kontaktperson</span>
+                <span class="details-value">
+                    @Model.ContactName
+                </span>
+            </div>
+
+            <div>
+                <span class="details-label">Telefonnummer</span>
+                <a class="details-phone"
+                   href="tel:@Model.ContactPhone">
+                    @Model.ContactPhone
+                </a>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Sara: Sender brukeren til forespørselssiden
+         med ID-en til ressursen som er valgt. -->
+    <div class="details-actions">
+        <a asp-controller="Resource"
+           asp-action="SendRequest"
+           asp-route-id="@Model.ResourceId"
+           class="details-request-button">
+            Send forespørsel
+        </a>
+    </div>
+
+</div>
+
+<!-- Sara: Koordinater som JavaScript leser fra siden. -->
+<input type="hidden" id="resourceLatitude" value="@latitude" />
+<input type="hidden" id="resourceLongitude" value="@longitude" />
+
+@section Scripts {
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Sara: Henter ressursens koordinater fra visningen.
+        const latitude = parseFloat(
+            document.getElementById("resourceLatitude").value
+        );
+
+        const longitude = parseFloat(
+            document.getElementById("resourceLongitude").value
+        );
+
+        // Sara: Kontrollerer at koordinatene er gyldige.
+        if (
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude) &&
+            latitude >= -90 &&
+            latitude <= 90 &&
+            longitude >= -180 &&
+            longitude <= 180
+        ) {
+            // Oppretter kartet og sentrerer det på ressursen.
+            const map = L.map("resourceMap").setView(
+                [latitude, longitude],
+                13
+            );
+
+            // Bruker Kartverkets kartgrunnlag.
+            L.tileLayer(
+                "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png",
+                {
+                    maxZoom: 18,
+                    attribution: "&copy; Kartverket"
+                }
+            ).addTo(map);
+
+            // Legger til markør på ressursens posisjon.
+            L.marker([latitude, longitude]).addTo(map);
+        }
+    </script>
+}

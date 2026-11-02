@@ -1,3 +1,4 @@
+
 @{
     // Henter navnet på controlleren for å markere riktig menyvalg.
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
@@ -156,9 +157,11 @@
                 Behov
             </a>
 
-            <!-- Lenke til registrering av ressurser. -->
+            <!-- Sara: Endret Ressurser fra Create til Index,
+                 slik at offentlig aktør får opp ressursoversikten
+                 i stedet for registreringsskjemaet. -->
             <a asp-controller="Resource"
-               asp-action="Create"
+               asp-action="Index"
                class="sidebar-link @(currentController == "Resource" ? "active" : "")">
                 Ressurser
             </a>

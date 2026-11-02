@@ -1,4 +1,3 @@
-using Kriseportal.Web;
 using Kriseportal.Web.DataAccess;
 using Kriseportal.Web.Models.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -9,10 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Legger til standardoppsettet fra Aspire (helsesjekk, logging og tjenesteoppslag)
 builder.AddServiceDefaults();
-
-// Legger til tjenester i appen
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
 // Legger til MVC med controllers og views
 builder.Services.AddControllersWithViews();
@@ -60,12 +55,18 @@ if (app.Environment.IsDevelopment()) //kontrollerer at applikasjonen kjører i u
 }
 
 
+// Fyller databasen med kategorier og testdata under utvikling
+if (app.Environment.IsDevelopment())
+{
+    await DataSeeder.SeedAsync(app.Services);
+}
+
 // Setter engelsk som standardspråk, slik at desimaltall bruker punktum og ikke komma
 app.UseRequestLocalization("en-US");
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Home/Error");
     // HSTS ber nettleseren alltid bruke HTTPS. Standardverdien er 30 dager.
     app.UseHsts();
 }
