@@ -12,8 +12,18 @@
     @* Edgar la til ? for å håndtere mulige nullverdier i Latitude og Longitude. *@
 
     // Bestemmer prioritet og tilhørende farge.
-    var prio = Model.Priority switch { "Høy" => "high", "Medium" => "medium", _ => "low" };
-    var accent = Model.Priority == "Høy" ? "var(--c-urgent)" : "var(--c-planned)";
+    var prio = Model.Priority switch
+    {
+        "Acute" => "high",
+        "High" => "high",
+        "Normal" => "medium",
+        "Planned" => "low",
+        _ => "low"
+    };
+
+    var accent = Model.Priority is "Acute" or "High"
+        ? "var(--c-urgent)"
+        : "var(--c-planned)";
 }
 
 @* Laster inn Leaflet og stilarket for detaljsiden. *@
@@ -31,14 +41,57 @@
 
         @* Viser informasjon om det registrerte behovet. *@
         <dl class="result__facts">
-            <dt>Type behov</dt>
-            <dd>@Model.Type</dd>
+            <dt>Tittel</dt>
+            <dd>@Model.Title</dd>
+
+            <dt>Kategori</dt>
+            <dd>@Model.CategoryName</dd>
+
+            @* Viser hvor mange enheter som trengs. *@
+            <dt>Antall</dt>
+            <dd>@Model.Quantity @Model.Unit</dd>
+            
+            @* Viser når behovet starter. *@
+            <dt>Behov fra</dt>
+            <dd>@Model.NeededFrom?.ToString("dd.MM.yyyy HH:mm")</dd>
+
+            @* Viser når behovet eventuelt avsluttes. *@
+            @if (Model.NeededTo.HasValue)
+            {
+                <dt>Behov til</dt>
+                <dd>@Model.NeededTo.Value.ToString("dd.MM.yyyy HH:mm")</dd>
+            }
+            
             <dt>Prioritet</dt>
-            <dd><span class="badge badge--@prio">@Model.Priority</span></dd>
+            <dd>
+                <span class="badge badge--@prio">
+                    @(Model.Priority switch
+                    {
+                        "Acute" => "Akutt",
+                        "High" => "Høy",
+                        "Normal" => "Normal",
+                        "Planned" => "Planlagt",
+                        _ => Model.Priority
+                    })
+                </span>
+            </dd>
+
             <dt>Beskrivelse</dt>
             <dd>@Model.Description</dd>
-        </dl>
+            
+            @* Viser kommunen behovet er registrert i. *@
+            <dt>Kommune</dt>
+            <dd>@Model.Municipality</dd>
 
+            @* Viser kontaktpersonen for behovet. *@
+            <dt>Kontaktperson</dt>
+            <dd>@Model.ContactName</dd>
+
+            @* Viser telefonnummeret til kontaktpersonen. *@
+            <dt>Telefonnummer</dt>
+            <dd>@Model.ContactPhone</dd>
+        </dl>
+        
         @* Viser kartet og koordinatene til behovet. *@
         <section aria-label="Plassering på kart">
             <div id="map" class="result__map"></div>
