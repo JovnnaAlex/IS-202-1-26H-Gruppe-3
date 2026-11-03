@@ -23,4 +23,4 @@ jobs:
         run: dotnet build Kriseportal.sln --no-restore
 
       - name: Run unit tests
-        run: dotnet test Kriseportal.Tests/Kriseportal.Tests.csproj --no-build --verbosity normals
+        run: dotnet test Kriseportal.Tests/Kriseportal.Tests.csproj --no-build --verbosity normal
