@@ -1,64 +1,184 @@
 # Kriseportal – IS-202 Gruppe 3
 
-Kriseportal er en ASP.NET Core MVC-applikasjon for registrering av behov og ressurser i en krisesituasjon. Brukeren kan fylle ut et skjema, velge geografisk plassering i et Leaflet-kart og sende inn informasjonen. Dataene behandles av en Controller og vises på en egen Details-side.
+Kriseportal er en webapplikasjon utviklet i ASP.NET Core MVC som skal gjøre det enklere å registrere, administrere og få oversikt over tilgjengelige ressurser og behov i en krisesituasjon.
+
+Løsningen skal bidra til å koble offentlige aktører som har behov for ressurser, med privatpersoner, frivillige organisasjoner og bedrifter som kan tilby hjelp.
+
+Applikasjonen bruker MariaDB til lagring av informasjon og ASP.NET Core Identity til brukerregistrering, innlogging og tilgangsstyring. Både webapplikasjonen og databasen kan kjøres i Docker.
 
 ## Funksjonalitet
 
-Applikasjonen har to registreringsflyter:
+Applikasjonen inneholder følgende funksjonalitet:
 
-- **Registrer behov:** `/Need/Create`
-- **Registrer ressurs:** `/Resource/Create`
+- **Brukerregistrering og innlogging:** Brukere kan opprette konto og logge inn. Innlogging og tilgangsstyring håndteres gjennom ASP.NET Core Identity.
+- **Registrering av behov:** Offentlige aktører kan registrere behov gjennom `/Need/Create`. Behovene lagres i MariaDB og knyttes til den innloggede brukeren.
+- **Registrering av ressurser:** Ressursleverandører kan registrere tilgjengelige ressurser gjennom `/Resource/Create`. Informasjonen lagres i databasen.
+- **Geografisk plassering:** Leaflet brukes til å velge geografisk plassering ved registrering av behov og ressurser. Koordinatene sendes sammen med skjemadataene.
+- **Situasjonskart:** Registrerte behov og ressurser kan vises geografisk på kartet.
+- **Oversikt over behov og ressurser:** Brukerne kan se registrert informasjon gjennom egne oversiktssider.
+- **Brukerprofil:** Applikasjonen har egne sider for visning og redigering av brukerprofil.
+- **Tilgangsstyring:** Brukerroller brukes til å begrense hvilke funksjoner ulike aktører har tilgang til.
 
-Begge bruker GET for å vise skjema og POST for å sende inn data. Informasjonen sendes gjennom ViewModels og vises på egne Details-sider.
+Løsningen er fortsatt under utvikling, og enkelte funksjoner og begrensninger kan endres frem mot ferdigstillelse.
 
 ## Systemarkitektur
 
-Applikasjonen følger MVC-strukturen:
+Kriseportalen er utviklet med ASP.NET Core MVC og følger Model-View-Controller-arkitekturen.
 
-- **Models/ViewModels:** `NeedViewModel` og `ResourceViewModel`
-- **Controllers:** `NeedController` og `ResourceController`
-- **Views:** Create- og Details-sider for behov og ressurser
-- **Kart:** Leaflet og `wwwroot/js/map.js` brukes til å registrere geografiske koordinater
+- **Models og ViewModels:** Representerer data og håndterer informasjon mellom brukergrensesnittet og applikasjonen.
+- **Controllers:** Behandler forespørsler fra brukeren, validerer data og kommuniserer med databasen.
+- **Views:** Razor-sider (`.cshtml`) som viser skjemaer, oversikter og detaljer.
+- **Database:** MariaDB brukes til å lagre brukere, behov, ressurser og tilhørende informasjon.
+- **Entity Framework Core:** Brukes til kommunikasjon mellom applikasjonen og databasen gjennom `ApplicationDbContext`.
+- **ASP.NET Core Identity:** Håndterer brukerregistrering, innlogging og rollebasert tilgangsstyring.
+- **Kart:** Leaflet brukes til geografisk plassering og visualisering av behov og ressurser.
+- **Docker:** Docker Compose starter webapplikasjonen og MariaDB som separate containere.
+- **.NET Aspire:** Brukes som alternativt utviklingsmiljø for å starte og administrere applikasjonen og databasen.
 
-Prosjektet bruker også .NET Aspire for å starte og kjøre tjenestene i løsningen.
+### Prosjektstruktur
 
-## Drift
+- `Kriseportal.Web/Controllers/` – Controllers for applikasjonens funksjonalitet.
+- `Kriseportal.Web/Models/` – Datamodeller og entiteter.
+- `Kriseportal.Web/Viewmodels/` – ViewModels for skjemaer og visning.
+- `Kriseportal.Web/Views/` – Razor Views for brukergrensesnittet.
+- `Kriseportal.Web/DataAccess/` – Databasekontekst og datatilgang.
+- `Kriseportal.Web/wwwroot/` – CSS, JavaScript, bilder og andre statiske filer.
+- `Kriseportal.Web/Dockerfile` – Instruksjoner for bygging av webapplikasjonen i Docker.
+- `docker-compose.yml` – Konfigurasjon for oppstart av webapplikasjon og database.
+- `Kriseportal.AppHost/` – Oppstart og administrasjon av tjenester gjennom .NET Aspire.
 
-Løsningen kan kjøres på to måter.
+## Drift og kjøreinstruksjoner
 
-**1. Hele løsningen i Docker (app + database)**
+Kriseportalen kan kjøres på to måter:
+1. Docker Compose – starter både webapplikasjonen og MariaDB.
+2. .NET Aspire – brukes som alternativt utviklingsmiljø.
 
-Krever Docker Desktop. Kjør fra rotmappen:
+### Forutsetninger
 
-    docker compose up --build
+Før oppstart må følgende være installert:
 
-Åpne http://localhost:8080. Databasen migreres og fylles med testdata automatisk.
-Testbrukere: `kommune@kriseportal.test` (offentlig aktør) og `ola@kriseportal.test` (ressursleverandør), passord `Kriseportal1!`.
-Innlogging: http://localhost:8080/Account/Login – registrering: http://localhost:8080/Account/Register.
+- Docker Desktop
+- Git
+- .NET SDK (ved utvikling med Aspire)
+- JetBrains Rider, Visual Studio eller en annen egnet kodeeditor (ved utvikling)
 
-MariaDB er tilgjengelig på port 3308 (f.eks. for DataGrip). Stopp med `docker compose down`. `docker compose down -v` sletter også dataene.
+**Viktig:** Docker Desktop må være startet før applikasjonen kjøres, også ved bruk av Aspire.
 
-Webappen bygges med en flertrinns Dockerfile (`Kriseportal.Web/Dockerfile`) og kjører som en vanlig bruker, ikke root. Webappen venter til databasen er klar (healthcheck).
+### 1. Kjør hele løsningen med Docker Compose
 
-*Kjent begrensning:* Nøklene for innloggingscookies lagres inne i containeren, så brukere logges ut når containeren bygges på nytt.
+Dette er den anbefalte metoden for å starte hele løsningen.
 
-**2. Utvikling med .NET Aspire**
+**Steg 1: Klon prosjektet**
 
-Start `Kriseportal.AppHost`. Aspire starter MariaDB i Docker (port 3307), og webappen åpnes fra Aspire-dashboardet.
+```bash
+git clone https://github.com/JovnnaAlex/IS-202-1-26H-Gruppe-3.git
+cd IS-202-1-26H-Gruppe-3
+```
+**Steg 2: Start Docker Desktop**
+
+Åpne Docker Desktop og vent til Docker Engine kjører.
+
+**Steg 3: Bygg og start applikasjonen**
+
+Kjør følgende kommando fra prosjektets rotmappe:
+
+```bash
+docker compose up --build
+```
+
+Docker Compose vil:
+
+- Starte MariaDB.
+- Bygge og starte webapplikasjonen.
+- Vente til databasen er klar før webapplikasjonen starter.
+- Kjøre databasemigreringer og legge inn testdata ved oppstart.
+
+**Steg 4: Åpne applikasjonen**
+
+Åpne `http://localhost:8080` i nettleseren.
+
+**Steg 5: Logg inn med en testbruker**
+
+| Bruker | E-post | Passord |
+|---|---|---|
+| Offentlig aktør | kommune@kriseportal.test | Kriseportal1! |
+| Ressursleverandør | ola@kriseportal.test | Kriseportal1! |
+
+Innlogging: `http://localhost:8080/Account/Login`
+
+Registrering: `http://localhost:8080/Account/Register`
+
+**Steg 6: Stopp applikasjonen**
+
+Trykk `Ctrl + C` i terminalen, og kjør:
+
+```bash
+docker compose down
+```
+
+For å slette databasen og alle lagrede data:
+
+```bash
+docker compose down -v
+```
+
+**Merk:** `-v` sletter også Docker-volumet som inneholder databasen.
+
+### 2. Kjør løsningen med .NET Aspire
+
+Aspire kan brukes under lokal utvikling.
+
+1. Start Docker Desktop.
+2. Åpne prosjektet i Rider eller Visual Studio.
+3. Start `Kriseportal.AppHost`.
+4. Åpne Aspire-dashboardet og finn adressen til webapplikasjonen.
+
+Portnummeret til webapplikasjonen kan variere mellom utviklingsmiljøer.
+
+### Database
+
+Applikasjonen bruker MariaDB 11.4.
+
+Ved kjøring med Docker Compose:
+
+- Database: `kriseportal`
+- Databaseport på vertsmaskinen: `3308`
+- Intern databaseport: `3306`
+- Databasen lagres i Docker-volumet `kriseportal-docker-data`.
+
+Ved kjøring med Aspire brukes port `3307` for MariaDB i det nåværende oppsettet.
+
+### Kjente begrensninger
+
+- Docker-oppsettet er konfigurert for lokal utvikling og er ikke ment for produksjon.
+- Databasepassordet ligger i `docker-compose.yml` og må håndteres sikrere ved eventuell produksjonssetting.
+- Nøklene for innloggingscookies lagres inne i webcontaineren. Brukere kan derfor bli logget ut når containeren opprettes på nytt.
 
 ## Testing
 
-Applikasjonen er testet lokalt under utviklingen og etter merge til `master`.
+Løsningen er testet lokalt på macOS med Docker Desktop.
 
-- **Build:** `dotnet build` gjennomføres uten errors.
-- **GET:** Registreringssidene for behov og ressurser åpnes.
-- **POST:** Data fra skjemaene sendes til Controller og vises på Details-siden.
-- **Kart:** Kartet reagerer på klikk, viser markør og registrerer Latitude og Longitude.
-- **Responsivitet:** Sidene er utviklet for visning på forskjellige skjermstørrelser.
+### Gjennomførte tester
 
-### Kjent problem
+| Test | Resultat |
+|---|---|
+| `docker compose up --build` | Bestått |
+| Oppstart av MariaDB | Bestått |
+| Database healthcheck | Bestått |
+| Oppstart av webapplikasjonen | Bestått |
+| Åpning av `http://localhost:8080` | Bestått |
+| Innlogging med testbruker | Bestått |
+| Registrering og visning av kartkoordinater | Bestått |
 
-Ved testing av kartdata er det observert at koordinatene kan vises som `0, 0` på Details-siden, selv om koordinatene registreres ved klikk i kartet. Dette krever videre feilsøking.
+### Videre testing
+
+Følgende funksjonalitet bør også kontrolleres:
+
+- Registrering av behov og ressurser.
+- Lagring av informasjon i databasen.
+- Visning av registrerte behov og ressurser.
+- Responsivt design på mobil og PC.
+
 
 ---
 
@@ -126,24 +246,30 @@ Forslag fra KI ble tilpasset prosjektets struktur og testet lokalt før koden bl
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte under utviklingen av kartfunksjonaliteten med Leaflet og `map.js`. KI ble brukt til å forstå hvordan brukeren kan velge en lokasjon ved å klikke på kartet, hvordan en markør kan plasseres og flyttes, og hvordan `Latitude` og `Longitude` kan lagres og sendes videre med registreringsskjemaet.
+Jeg har brukt ChatGPT som en samtalepartner og veileder gjennom utviklingen av Kriseportalen. Jeg kommuniserer med KI omtrent som jeg ville snakket med et menneske. Jeg forklarer hva jeg jobber med, stiller spørsmål, diskuterer forslag og følger opp når jeg ikke forstår noe eller ønsker en annen løsning.
 
-Jeg brukte også ChatGPT til testing og feilsøking etter at gruppens ulike deler ble merget. Dette inkluderte å forstå feilmeldinger, kontrollere samspillet mellom View, ViewModel og Controller, og finne årsaken til problemet med `Scripts`-seksjonen i `_Layout.cshtml`. KI ble også brukt som veiledning for Git og GitHub, blant annet branches, commit, push, pull, merging og kontroll av prosjektet med `dotnet build`.
+Jeg foretrekker å jobbe steg for steg, slik at jeg forstår hva jeg gjør fremfor å bare kopiere ferdig kode.
 
-Forslag fra KI ble testet lokalt og vurdert før endringer ble lagt inn i GitHub.
+**Bruksområder:**
+- **Kartfunksjonalitet:** Utvikling og feilsøking med Leaflet, JavaScript og geografiske koordinater.
+- **Programmering:** Forståelse av ASP.NET Core MVC, Razor Views og feilmeldinger.
+- **Git og GitHub:** Branches, commits, merging, pull requests og håndtering av konflikter.
+- **Docker og testing:** Oppstart av applikasjonen og MariaDB, tolking av terminalmeldinger og testing.
+- **Dokumentasjon:** Strukturering og oppdatering av README med systemarkitektur, kjøreinstruksjoner og testresultater.
 
-**Prompter:**
-- «Hvordan lager jeg et Leaflet-kart hvor brukeren kan klikke på kartet og plassere en markør?»
-- «Hvordan kan Latitude og Longitude lagres når brukeren klikker på kartet?»
+**Eksempler på prompter:**
+- «Hvordan lager jeg et Leaflet-kart hvor brukeren kan klikke og plassere en markør?»
 - «Hvordan kobler jeg map.js til registreringsskjemaet?»
-- «Hva betyr feilen om at Scripts-seksjonen ikke blir vist i _Layout.cshtml?»
-- «Hvordan tester jeg at kart, skjema, Controller og Details-side fungerer sammen?»
-- «Hvordan merger jeg master inn i branchen min og kontrollerer at prosjektet fortsatt bygger?»
-- «Hvordan committer og pusher jeg bare filene jeg faktisk har endret?»
+- «Hva betyr feilen om Scripts-seksjonen i _Layout.cshtml?»
+- «Hvordan merger jeg master inn i branchen min?»
+- «Hvordan tester jeg at Docker Compose starter både appen og databasen?»
+- «Hvordan dokumenterer jeg prosjektets funksjonalitet og testing i README?»
+
+Jeg bruker KI som støtte til å forstå og løse problemer, men gjennomfører arbeidet, vurderer forslagene og tester løsningene selv.
 
 ---
 
-## Emma Sofie Hartvigsen
+## Emma Sofie
 
 **Verktøy:** Claude
 
