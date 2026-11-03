@@ -1,30 +1,39 @@
-﻿using Kriseportal.Web.Models;
+﻿
+using Kriseportal.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace Kriseportal.Web.Controllers;
 
- public class AccountController(
-     UserManager<ApplicationUser> userManager, 
-     SignInManager<ApplicationUser> signInManager) : Controller
- {
+// Sara: Controller for registrering og innlogging.
+public class AccountController(
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) : Controller
+{
     [HttpGet]
     public IActionResult Register()
-     {
-       return View();
-     }
+    {
+        return View();
+    }
 
+    // Sara: Vanlig innlogging for ressursleverandører.
     [HttpGet]
     public IActionResult Login()
     {
         return View();
     }
 
+    // Sara: Viser den separate innloggingssiden for offentlige aktører.
+    [HttpGet]
+    public IActionResult PublicLogin()
+    {
+        return View();
+    }
+
+    // Sara: Beholder eksisterende innloggingslogikk.
     [HttpPost]
-    
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -49,13 +58,14 @@ namespace Kriseportal.Web.Controllers;
         }
 
         ModelState.AddModelError(
-            string.Empty, "Feil e-postadresse eller passord");
+            string.Empty,
+            "Feil e-postadresse eller passord");
 
         return View(model);
     }
 
+    // Sara: Beholder eksisterende registrering av brukere.
     [HttpPost]
-  
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -70,8 +80,10 @@ namespace Kriseportal.Web.Controllers;
             Email = model.Email
         };
 
-        var result = await userManager.CreateAsync(user, model.Password);
-        
+        var result = await userManager.CreateAsync(
+            user,
+            model.Password);
+
         if (result.Succeeded)
         {
             return RedirectToAction(nameof(Login));
@@ -79,19 +91,20 @@ namespace Kriseportal.Web.Controllers;
 
         foreach (var error in result.Errors)
         {
-            ModelState.AddModelError(string.Empty, error.Description);
+            ModelState.AddModelError(
+                string.Empty,
+                error.Description);
         }
 
         return View(model);
     }
 
+    // Sara: Beholder eksisterende utlogging.
     [Authorize]
     [HttpPost]
-    
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
         return RedirectToAction(nameof(Login));
     }
 }
-
