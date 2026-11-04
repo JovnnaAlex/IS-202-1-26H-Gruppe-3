@@ -55,7 +55,8 @@
                    placeholder="Søk etter behov eller kommune..."
                    aria-label="Søk etter behov eller kommune" />
 
-                <!-- Kommunefilter -->
+             <!-- Kommunefilter -->
+            <div class="needs-select-wrapper">
                 <select id="needMunicipalityFilter"
                         class="needs-municipality"
                         aria-label="Filtrer etter kommune">
@@ -70,9 +71,10 @@
                     }
 
                 </select>
+        </div>
 
-            
             <!-- Kategorifilter -->
+            <div class="needs-select-wrapper">
             <select id="needCategoryFilter"
                     class="needs-category"
                     aria-label="Filtrer etter kategori">
@@ -89,6 +91,8 @@
             </select>
 
         </div>
+
+        </div> <!-- Avslutter needs filters -->
 
         <!-- Tabell med oversikt over behov -->
         <div class="needs-table-wrapper">

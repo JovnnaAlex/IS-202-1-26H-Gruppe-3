@@ -412,8 +412,9 @@
     color: #2F6849;
 }
 
-
-/* Samme typografi og layout som Ressurser-siden */
+/* ==================================
+   Samme typografi og layout som Ressurser-siden 
+   ================================== */
 
 .needs-page {
     padding: 32px;
@@ -487,4 +488,37 @@
     .needs-page {
         padding: 20px;
     }
+}
+
+
+/* Samme nedtrekkspiler som Ressurser-side */
+
+.needs-select-wrapper {
+    position: relative;
+    min-width: 0;
+}
+
+.needs-municipality,
+.needs-category {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-left: 16px;
+    padding-right: 48px;
+    cursor: pointer;
+}
+
+/* Egen pil */
+.needs-select-wrapper::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-right: 1.8px solid #293B33;
+    border-bottom: 1.8px solid #293B33;
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
 }
