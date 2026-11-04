@@ -268,3 +268,223 @@
     color: var(--muted-color);
     font-size: 14px;
 }
+
+
+/* ==================================
+   B16 – KATEGORIFILTER OG PLASSERING
+   ================================== */
+
+/* Samme plassering som på Ressurser-siden */
+.needs-filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+}
+
+/* Søk, kommune og kategori fyller tilgjengelig plass */
+.needs-search,
+.needs-municipality,
+.needs-category {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: 44px;
+}
+
+/* Kategorifilter – samme stil som kommunefilter */
+.needs-category {
+    padding: 0 16px;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
+    border: 1px solid #D7DED7;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--heading-color);
+}
+
+    /* Markering ved bruk av kategorifilter */
+    .needs-category:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+/* Mobiltilpasning */
+@media (max-width: 768px) {
+    .needs-filters {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* B16 – Plass til ekstra kolonner */
+.needs-table {
+    min-width: 1000px;
+}
+
+    .needs-table th {
+        width: auto;
+    }
+
+
+/* B16 - Kategori */
+.need-category-badge {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 20px;
+    background: #F3ECE3;
+    color: #856A53;
+    font-size: 13px;
+}
+
+/* B16 - Prioritet fra situasjonskartet */
+.need-priority {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.need-priority-dot {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.need-priority-acute {
+    background: #C62828;
+}
+
+.need-priority-high,
+.need-priority-normal {
+    background: #F57C00;
+}
+
+.need-priority-planned {
+    background: #FDD835;
+}
+
+/* B16 - Status */
+.need-status-badge {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 20px;
+    background: #E3F1E7;
+    color: #2F6849;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* B16 - Handling */
+.need-details-link {
+    color: #527667;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+    .need-details-link:hover {
+        color: #244D3B;
+        text-decoration: underline;
+    }
+
+/* Ny - grå */
+.need-status-new {
+    background-color: #ECEFF1;
+    color: #455A64;
+}
+
+/* Vurderes - oransje */
+.need-status-underreview {
+    background-color: #FFF3E0;
+    color: #995700;
+}
+
+/* Tildelt - blå */
+.need-status-assigned {
+    background-color: #E3F2FD;
+    color: #1565C0;
+}
+
+/* Løst - grønn */
+.need-status-resolved {
+    background-color: #E3F1E7;
+    color: #2F6849;
+}
+
+
+/* Samme typografi og layout som Ressurser-siden */
+
+.needs-page {
+    padding: 32px;
+}
+
+.needs-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.needs-header p {
+    color: #8A6F5A;
+    margin-top: 6px;
+}
+
+.needs-card {
+    margin-top: 36px;
+    min-height: 400px;
+}
+
+    .needs-card h2 {
+        font-size: 21px;
+        font-weight: 700;
+    }
+
+/* Søk og filtre */
+.needs-search,
+.needs-municipality,
+.needs-category {
+    height: 46px;
+    font: inherit;
+}
+
+/* Tabell - samme skriftstørrelse som Sara */
+.needs-table {
+    font-size: 16px;
+}
+
+    .needs-table th {
+        padding: 15px;
+        height: auto;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .needs-table td {
+        padding: 16px 15px;
+    }
+
+    /* Fjern gamle faste kolonnebredder */
+    .needs-table th:nth-child(n) {
+        width: auto;
+    }
+
+    /* Samme bakgrunn og kantlinjer */
+    .needs-table thead {
+        background: #F0F3EF;
+    }
+
+    .needs-table tbody tr {
+        border-bottom: 1px solid #EEEAE4;
+    }
+
+/* Tekst nederst */
+.needs-count {
+    margin-top: 24px;
+    color: #8A6F5A;
+}
+
+@media (max-width: 768px) {
+    .needs-page {
+        padding: 20px;
+    }
+}

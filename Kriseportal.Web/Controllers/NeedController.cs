@@ -13,11 +13,18 @@ namespace Kriseportal.Web.Controllers;
 public class NeedController : Controller
 {
 
-    // Viser oversikten over behov (fra din frontend)
+    // Viser oversikten over behov 
+    // Dette henter registrerte behov og kategoriene deres fra MariaDB.
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var needs = await _context.Needs
+            .AsNoTracking()
+            .Include(n => n.Category)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        return View(needs);
     }
 
     // Database og miljø (fra master)
@@ -187,5 +194,48 @@ public class NeedController : Controller
         model.CategoryName = category.Name;
 
         return View("Details", model);
+    }
+
+    // Viser detaljer for et eksisterende behov fra databasen.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        // Henter behovet og tilhørende kategori.
+        var need = await _context.Needs
+            .AsNoTracking()
+            .Include(n => n.Category)
+            .FirstOrDefaultAsync(n => n.NeedId == id);
+
+        if (need == null)
+        {
+            return NotFound();
+        }
+
+        // Gjør databaseobjektet om til NeedViewModel,
+        // som den eksisterende Details.cshtml bruker.
+        var model = new NeedViewModel
+        {
+            Title = need.Title,
+            Description = need.Description ?? "",
+            CategoryId = need.CategoryId,
+            CategoryName = need.Category?.Name,
+            Quantity = need.Quantity,
+            Unit = need.Unit,
+            NeededFrom = need.NeededFrom,
+            NeededTo = need.NeededTo,
+            Municipality = need.Municipality,
+            ContactName = need.ContactName,
+            ContactPhone = need.ContactPhone,
+            Priority = need.Priority.ToString(),
+            Latitude = (double)need.Latitude,
+            Longitude = (double)need.Longitude
+        };
+
+        ViewData["ExistingNeed"] = true;
+        //Detaljsiden vise riktig status uten at du må endre NeedViewModel
+        ViewData["NeedStatus"] = need.Status.ToString();
+
+        return View(model);
     }
 }

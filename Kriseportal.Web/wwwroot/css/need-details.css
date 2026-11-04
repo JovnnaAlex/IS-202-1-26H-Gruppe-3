@@ -1,0 +1,209 @@
+﻿
+/* Behovsdetaljer - samme design som Ressursdetaljer */
+
+.nd-page {
+    color: #293B33;
+    padding: 32px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Bekreftelse etter registrering */
+.nd-confirmation {
+    background: #E3F1E7;
+    color: #2F6849;
+    border-left: 5px solid #527667;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+/* Tilbake-lenke */
+.nd-back {
+    display: inline-block;
+    margin-bottom: 22px;
+    color: #527667;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .nd-back:hover {
+        text-decoration: underline;
+    }
+
+/* Overskrift */
+.nd-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+    .nd-heading h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .nd-heading p {
+        color: #8A6F5A;
+        margin: 0;
+    }
+
+/* Prioritet og status */
+.nd-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nd-badge {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.nd-priority-acute {
+    background: #FCE8E6;
+    color: #B42318;
+}
+
+.nd-priority-high,
+.nd-priority-normal {
+    background: #FFF0E2;
+    color: #A34F00;
+}
+
+.nd-priority-planned {
+    background: #FFF5CC;
+    color: #735800;
+}
+
+.nd-status-new,
+.nd-status-resolved {
+    background: #E3F1E7;
+    color: #2F6849;
+}
+
+.nd-status-underreview {
+    background: #FFF3E0;
+    color: #995700;
+}
+
+.nd-status-assigned {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+/* Hvite informasjonskort */
+.nd-card {
+    background: #FFFFFF;
+    border: 1px solid #E8E0D7;
+    border-radius: 12px;
+    padding: 26px;
+    margin-bottom: 22px;
+}
+
+    .nd-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 22px;
+    }
+
+/* Informasjon i to kolonner */
+.nd-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.nd-label {
+    display: block;
+    font-size: 13px;
+    color: #8A6F5A;
+    margin-bottom: 6px;
+}
+
+.nd-grid strong {
+    display: block;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+
+/* Beskrivelse */
+.nd-description {
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* Kart */
+.nd-map {
+    width: 100%;
+    height: 360px;
+    border-radius: 10px;
+    border: 1px solid #E1E8E1;
+    overflow: hidden;
+}
+
+.nd-coordinates {
+    color: #7B847D;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+/* Kontaktinformasjon */
+.nd-phone {
+    color: #527667;
+    font-weight: 600;
+}
+
+/* Knapp nederst */
+.nd-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin: 24px 0;
+}
+
+.nd-button {
+    display: inline-block;
+    background: #527667;
+    color: #FFFFFF;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .nd-button:hover {
+        background: #3E5E50;
+        color: #FFFFFF;
+    }
+
+/* Mobiltilpasning */
+@media (max-width: 768px) {
+    .nd-page {
+        padding: 20px;
+    }
+
+    .nd-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nd-card {
+        padding: 18px;
+    }
+
+    .nd-map {
+        height: 280px;
+    }
+
+    .nd-button {
+        width: 100%;
+        text-align: center;
+    }
+}

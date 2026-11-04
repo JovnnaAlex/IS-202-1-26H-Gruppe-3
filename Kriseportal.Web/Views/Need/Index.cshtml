@@ -1,5 +1,20 @@
-﻿@{
+﻿@model List<Kriseportal.Web.Models.Entities.Need>
+
+@{
     ViewData["Title"] = "Behov";
+
+    var municipalities = Model
+        .Select(n => n.Municipality)
+        .Distinct()
+        .OrderBy(m => m)
+        .ToList();
+
+    var categories = Model
+        .Where(n => n.Category != null)
+        .Select(n => n.Category!.Name)
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
 }
 
 @section Styles {
@@ -14,7 +29,7 @@
     <div class="needs-header">
         <div>
             <h1>Behov</h1>
-            <p>Oversikt over behov og ressurser</p>
+            <p>Oversikt over behov</p>
         </div>
 
         <!-- Åpner det eksisterende registreringsskjemaet -->
@@ -35,18 +50,41 @@
 
             <!-- Søkefelt -->
             <input type="search"
+                   id="needSearch"
                    class="needs-search"
                    placeholder="Søk etter behov eller kommune..."
                    aria-label="Søk etter behov eller kommune" />
 
-            <!-- Kommunefilter -->
-            <select class="needs-municipality"
-                    aria-label="Filtrer etter kommune">
+                <!-- Kommunefilter -->
+                <select id="needMunicipalityFilter"
+                        class="needs-municipality"
+                        aria-label="Filtrer etter kommune">
 
-                <option value="">Alle kommuner</option>
-                <option value="Kristiansand">Kristiansand</option>
-                <option value="Vennesla">Vennesla</option>
-                <option value="Grimstad">Grimstad</option>
+                    <option value="">Alle kommuner</option>
+
+                    @foreach (var municipality in municipalities)
+                    {
+                        <option value="@municipality">
+                            @municipality
+                        </option>
+                    }
+
+                </select>
+
+            
+            <!-- Kategorifilter -->
+            <select id="needCategoryFilter"
+                    class="needs-category"
+                    aria-label="Filtrer etter kategori">
+
+                <option value="">Alle kategorier</option>
+
+                @foreach (var category in categories)
+                {
+                    <option value="@category">
+                        @category
+                    </option>
+                }
 
             </select>
 
@@ -62,17 +100,87 @@
                     <tr>
                         <th>Behov</th>
                         <th>Kommune</th>
+                        <th>Kategori</th>
                         <th>Prioritet</th>
+                        <th>Antall</th>
                         <th>Status</th>
                         <th>Handling</th>
                     </tr>
                 </thead>
 
-                <!-- Behovene skal vises her senere -->
+                <!-- Behovene vises som her, hentet fra databasen -->
+                
                 <tbody>
-                    <tr>
-                        <td colspan="5" class="needs-empty">
-                            Ingen behov registrert ennå.
+                    @foreach (var need in Model)
+                    {
+                        <tr class="need-row"
+                            data-title="@need.Title"
+                            data-municipality="@need.Municipality"
+                            data-category="@(need.Category?.Name ?? "")">
+
+                            <!-- Behov -->
+                            <td>@need.Title</td>
+
+                            <!-- Kommune -->
+                            <td>@need.Municipality</td>
+
+                            <!-- Kategori -->
+                            <td>
+                                <span class="need-category-badge">
+                                    @(need.Category?.Name ?? "Ukjent")
+                                </span>
+                            </td>
+
+                            <!-- Prioritet med samme farge som kartet -->
+                            <td>
+                                <span class="need-priority">
+                                    <span class="need-priority-dot need-priority-@(need.Priority.ToString().ToLowerInvariant())"
+                                          aria-hidden="true"></span>
+
+                                    @(need.Priority.ToString() switch
+                                    {
+                                        "Acute" => "Akutt",
+                                        "High" => "Høy",
+                                        "Normal" => "Normal",
+                                        "Planned" => "Planlagt",
+                                        _ => need.Priority.ToString()
+                                    })
+                                </span>
+                            </td>
+
+                            <!-- Antall -->
+                            <td>@need.Quantity @need.Unit</td>
+
+                            <!-- Status -->
+                            <td>
+                                <span class="need-status-badge need-status-@(need.Status.ToString().ToLowerInvariant())">
+                                    @(need.Status.ToString() switch
+                                    {
+                                        "New" => "Ny",
+                                        "UnderReview" => "Vurderes",
+                                        "Assigned" => "Tildelt",
+                                        "Resolved" => "Løst",
+                                        _ => need.Status.ToString()
+                                    })
+                                </span>
+                            </td>
+
+                            <!-- Handling -->
+                            <td>
+                                <a asp-controller="Need"
+                                   asp-action="Details"
+                                   asp-route-id="@need.NeedId"
+                                   class="need-details-link">
+                                    Se detaljer
+                                </a>
+                            </td>
+
+                        </tr>
+                    }
+
+                    <tr id="needsEmptyRow" style="display:none">
+                        <td colspan="7" class="needs-empty">
+                            Ingen behov funnet.
                         </td>
                     </tr>
                 </tbody>
@@ -81,8 +189,108 @@
         </div>
 
         <!-- Antall behov som vises i tabellen -->
-        <p class="needs-count">Viser 0 av 0 behov "Må enda kobles til databasen"</p>
+        <p class="needs-count" id="needsCount">
+            Viser @Model.Count av @Model.Count behov
+        </p>
 
     </section>
 
 </div>
+
+    <!--Samme prinsipp som for filtrering i ressurser-->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const search = document.getElementById("needSearch");
+            const municipality = document.getElementById("needMunicipalityFilter");
+            const category = document.getElementById("needCategoryFilter");
+
+            const rows = document.querySelectorAll(".need-row");
+            const count = document.getElementById("needsCount");
+            const emptyRow = document.getElementById("needsEmptyRow");
+
+            // Kontrollerer at alle HTML-elementene finnes
+            // og er av riktig type.
+            if (!(search instanceof HTMLInputElement) ||
+                !(municipality instanceof HTMLSelectElement) ||
+                !(category instanceof HTMLSelectElement) ||
+                !(count instanceof HTMLElement) ||
+                !(emptyRow instanceof HTMLTableRowElement)) {
+                return;
+            }
+
+            
+            function filterNeeds() {
+
+                // Kontroller elementtypene inne i funksjonen
+                if (!(search instanceof HTMLInputElement) ||
+                    !(municipality instanceof HTMLSelectElement) ||
+                    !(category instanceof HTMLSelectElement) ||
+                    !(count instanceof HTMLElement) ||
+                    !(emptyRow instanceof HTMLTableRowElement)) {
+                    return;
+                }
+
+                const searchValue = search.value.trim().toLowerCase();
+                const municipalityValue = municipality.value.toLowerCase();
+                const categoryValue = category.value.toLowerCase();
+
+                // Resten av funksjonen beholdes uendret
+
+
+                let visible = 0;
+
+                rows.forEach(function (row) {
+
+                    if (!(row instanceof HTMLTableRowElement)) {
+                        return;
+                    }
+
+                    const title = (row.dataset.title || "").toLowerCase();
+                    const rowMunicipality =
+                        (row.dataset.municipality || "").toLowerCase();
+                    const rowCategory =
+                        (row.dataset.category || "").toLowerCase();
+
+                    const matchesSearch =
+                        title.includes(searchValue) ||
+                        rowMunicipality.includes(searchValue) ||
+                        rowCategory.includes(searchValue);
+
+                    const matchesMunicipality =
+                        !municipalityValue ||
+                        rowMunicipality === municipalityValue;
+
+                    const matchesCategory =
+                        !categoryValue ||
+                        rowCategory === categoryValue;
+
+                    const show =
+                        matchesSearch &&
+                        matchesMunicipality &&
+                        matchesCategory;
+
+                    row.style.display = show ? "" : "none";
+
+                    if (show) {
+                        visible++;
+                    }
+                });
+
+                count.textContent =
+                    `Viser ${visible} av ${rows.length} behov`;
+
+                emptyRow.style.display =
+                    visible === 0 ? "" : "none";
+            }
+
+            search.addEventListener("input", filterNeeds);
+            municipality.addEventListener("change", filterNeeds);
+            category.addEventListener("change", filterNeeds);
+
+            filterNeeds();
+        });
+    </script>
+}
+
