@@ -665,10 +665,13 @@
             i en krisesituasjon.
         </p>
 
-        <!-- Sara: Registreringsknappen kobles til backend senere. -->
-        <span class="hero-button">
+        <!-- Sara: Registreringsknappen fører til opprett bruker. -->
+        <a asp-controller="Account"
+           asp-action="Register"
+           class="hero-button"
+           style="text-decoration: none;">
             Bli en ressursleverandør
-        </span>
+        </a>
 
     </div>
 
@@ -713,7 +716,16 @@
                 </div>
                 <div>
                     <h3>1. Opprett bruker</h3>
-                    <p>Registrer deg som ressursleverandør.</p>
+                    <p>
+                        Registrer deg som ressursleverandør.
+                        <br />
+                        <!-- Sara: Lenke til registrering. -->
+                        <a asp-controller="Account"
+                           asp-action="Register"
+                           style="color: #244D3B; font-weight: 600; text-decoration: underline; text-underline-offset: 3px;">
+                            (Opprett bruker her)
+                        </a>
+                    </p>
                 </div>
             </article>
 
