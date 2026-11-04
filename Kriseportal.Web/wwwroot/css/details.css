@@ -45,3 +45,30 @@
 }
 /* Desktop */
 @media (min-width: 1200px) { .result__map { height: 440px; } }
+
+
+/* Egen styling når man åpner et eksisterende behov */
+.result--existing {
+    max-width: none;
+    width: 100%;
+    padding: 32px;
+}
+
+    /* Overskrift med fargene fra dashboard */
+    .result--existing .result__banner {
+        background: #F0F3EF;
+        border-left-color: #527667;
+    }
+
+    /* Grønn hovedknapp */
+    .result--existing .result__actions a.primary {
+        background: #527667;
+        border-color: #527667;
+    }
+
+/* Mobil */
+@media (max-width: 768px) {
+    .result--existing {
+        padding: 20px;
+    }
+}
