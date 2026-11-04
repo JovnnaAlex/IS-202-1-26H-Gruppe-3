@@ -1,0 +1,26 @@
+name: .NET Build and Tests
+
+on:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Kriseportal.sln
+
+      - name: Build solution
+        run: dotnet build Kriseportal.sln --no-restore
+
+      - name: Run unit tests
+        run: dotnet test Kriseportal.Tests/Kriseportal.Tests.csproj --no-build --verbosity normal
