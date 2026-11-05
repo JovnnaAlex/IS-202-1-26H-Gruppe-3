@@ -206,19 +206,23 @@ Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble 
 ## Alex
 
 **Verktøy:** ChatGPT
+Jeg har brukt ChatGPT som støtte gjennom utviklingen av Kriseportalen i IS-202. KI har hovedsakelig blitt brukt til å forstå programmeringskonsepter, få veiledning under implementering, feilsøking og bruk av Git og GitHub.
 
-Jeg brukte ChatGPT som støtte under utviklingen av `Views/Need/Create.cshtml`. KI ble brukt til å forstå Razor Views, koblingen til `NeedViewModel`, bruk av `asp-for`, validering og hvordan kart og koordinater kunne kobles til skjemaet.
+**Bruksområder:**
+- **ASP.NET Core MVC:** Veiledning i utviklingen av Views/Need/Create.cshtml, inkludert Razor Views, asp-for, ViewModels, validering og skjemafunksjonalitet.
+- **Leaflet og kart:** Hjelp til å forstå hvordan kartet kobles til registreringsskjemaet, og hvordan breddegrad og lengdegrad håndteres. Git og GitHub: Veiledning om opprettelse av branches, merging, oppdatering fra master, håndtering av merge konflikter og feilmeldinger. 
+-**Frontend og design:** Diskusjoner om hvordan felles layout og navigasjon kunne utvikles i samarbeid med Figma-designet. Prosjektplanlegging: Veiledning rundt GitHub Projects, backlog, sprintplanlegging, arbeidsfordeling og avhengigheter mellom oppgaver. 
+-**Testing og dokumentasjon:** Hjelp til å forstå hvilke tester som bør gjennomføres for å kontrollere at funksjonaliteten oppfyller prosjektkravene.
+  
+Eksempler på prompts jeg har brukt:
 
-Jeg brukte også ChatGPT til feilsøking av `@model` og namespaces, samt veiledning rundt Git og merging.
 
-Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
-
-**Prompter:**
-- «Hvordan kobler jeg inputfeltene til NeedViewModel med asp-for?»
-- «Hvordan lager jeg Priority som en dropdown med Low, Medium og High?»
-- «Hvordan kobler jeg Leaflet og map.js til id="map" i Create.cshtml?»
-- «Hvordan legger jeg til validering med asp-validation-for?»
-- «Kan du kontrollere om Create.cshtml er riktig strukturert med skjema, validering, kart og submit-knapp?»
+**Eksempler på prompter:**
+-«Hvordan bruker jeg asp-for for å koble inputfeltene i skjemaet til properties i NeedViewModel?»
+-«Hvordan lager jeg Priority som en dropdown med Low, Medium og High i Razor View-en?»
+-«Hvordan kobler jeg Leaflet og map.js til id="map" i `Create.cshtml`?»
+-«Hvordan legger jeg til validering med asp-validation-for?»
+-«Hva kan jeg gjøre for min del av prosjektet basert på kravene i IS-202?»
 
 ---
 
