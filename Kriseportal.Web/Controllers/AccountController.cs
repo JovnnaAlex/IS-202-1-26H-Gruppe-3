@@ -32,8 +32,9 @@ public class AccountController(
         return View();
     }
 
-    // Sara: Beholder eksisterende innloggingslogikk.
+    // Sara: Håndterer innlogging kun for ressursleverandører.
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -43,7 +44,9 @@ public class AccountController(
 
         var user = await userManager.FindByEmailAsync(model.Email);
 
-        if (user is not null)
+        // Sara: Kontrollerer at brukeren har ressursleverandørrollen.
+        if (user is not null &&
+            await userManager.IsInRoleAsync(user, AppRoles.ResourceProvider))
         {
             var result = await signInManager.PasswordSignInAsync(
                 user,
@@ -53,7 +56,8 @@ public class AccountController(
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Index", "Home");
+                // Sara: Sender ressursleverandøren til sin egen portal.
+                return RedirectToAction("Index", "ResourceProvider");
             }
         }
 
@@ -64,8 +68,9 @@ public class AccountController(
         return View(model);
     }
 
-    // Sara: Beholder eksisterende registrering av brukere.
+    // Sara: Registrerer nye brukere som ressursleverandører.
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -80,13 +85,32 @@ public class AccountController(
             Email = model.Email
         };
 
+        // Sara: Oppretter brukeren i Identity-databasen.
         var result = await userManager.CreateAsync(
             user,
             model.Password);
 
         if (result.Succeeded)
         {
-            return RedirectToAction(nameof(Login));
+            // Sara: Gir nye brukere rollen Ressursleverandør.
+            var roleResult = await userManager.AddToRoleAsync(
+                user,
+                AppRoles.ResourceProvider);
+
+            if (roleResult.Succeeded)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            // Sara: Viser feil dersom rolletildelingen mislykkes.
+            foreach (var error in roleResult.Errors)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    error.Description);
+            }
+
+            return View(model);
         }
 
         foreach (var error in result.Errors)
@@ -99,12 +123,14 @@ public class AccountController(
         return View(model);
     }
 
-    // Sara: Beholder eksisterende utlogging.
+    // Sara: Logger ut brukeren.
     [Authorize]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
+
         return RedirectToAction(nameof(Login));
     }
 }
