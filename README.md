@@ -210,8 +210,10 @@ Jeg har brukt ChatGPT som støtte gjennom utviklingen av Kriseportalen i IS-202.
 
 **Bruksområder:**
 - **ASP.NET Core MVC:** Veiledning i utviklingen av Views/Need/Create.cshtml, inkludert Razor Views, asp-for, ViewModels, validering og skjemafunksjonalitet.
-- **Leaflet og kart:** Hjelp til å forstå hvordan kartet kobles til registreringsskjemaet, og hvordan breddegrad og lengdegrad håndteres. Git og GitHub: Veiledning om opprettelse av branches, merging, oppdatering fra master, håndtering av merge konflikter og feilmeldinger. 
--**Frontend og design:** Diskusjoner om hvordan felles layout og navigasjon kunne utvikles i samarbeid med Figma-designet. Prosjektplanlegging: Veiledning rundt GitHub Projects, backlog, sprintplanlegging, arbeidsfordeling og avhengigheter mellom oppgaver. 
+- **Leaflet og kart:** Hjelp til å forstå hvordan kartet kobles til registreringsskjemaet, og hvordan breddegrad og lengdegrad håndteres.
+- **Git og GitHub:** Veiledning om opprettelse av branches, merging, oppdatering fra master, håndtering av merge konflikter og feilmeldinger. 
+-**Frontend og design:** Diskusjoner om hvordan felles layout og navigasjon kunne utvikles i samarbeid med Figma-designet.
+-**Prosjektplanlegging:** Veiledning rundt GitHub Projects, backlog, sprintplanlegging, arbeidsfordeling og avhengigheter mellom oppgaver. 
 -**Testing og dokumentasjon:** Hjelp til å forstå hvilke tester som bør gjennomføres for å kontrollere at funksjonaliteten oppfyller prosjektkravene.
   
 Eksempler på prompts jeg har brukt:
