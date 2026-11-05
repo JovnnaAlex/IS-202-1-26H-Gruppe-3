@@ -232,19 +232,28 @@ Eksempler på prompts jeg har brukt:
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte under utviklingen av `NeedController` og `ResourceController`. KI ble brukt til å forstå hvordan Controllers fungerer i ASP.NET Core MVC, hvordan GET brukes til å vise skjemaene, og hvordan POST mottar data gjennom ViewModels og sender dem videre til Details-sidene.
+Jeg har brukt ChatGPT som støtte under utviklingen av Kriseportalen i IS-202. KI har hovedsakelig blitt brukt til veiledning innen ASP.NET Core MVC, frontendutvikling, design, feilsøking og Git/GitHub.
 
-Jeg brukte også ChatGPT til testing og feilsøking da Controller-koden skulle integreres med resten av gruppeprosjektet. Dette inkluderte tilpasning av namespaces og ViewModels, håndtering av merge-konflikter og kontroll av at Controllers, Views og ViewModels fungerte sammen etter merge. KI ble også brukt som veiledning for Git og GitHub.
+**Bruksområder:**
 
-Forslag fra KI ble tilpasset prosjektets struktur og testet lokalt før koden ble lagt inn i GitHub.
+- **ASP.NET Core MVC:** Veiledning i utviklingen av Controllers, bruk av GET og POST, ViewModels og hvordan ulike deler av systemet kommuniserer.
+- **Innlogging og brukerroller:** Støtte til implementering av registrering og innlogging med ASP.NET Core Identity, samt rollebasert tilgang for ressursleverandører.
+- **Frontend og design:** Brukt som støtte til utviklingen av ressursleverandørportalen, inkludert dashboard, navigasjon, layout, fargevalg og ikoner.
+- **Logo og visualisering:** Brukt KI til å visualisere egne designideer og skisser basert på krav og ønsker jeg har definert, samt videreutvikle logo og visuelle elementer.
+- **Testing og feilsøking:** Veiledning ved integrering av Controllers, Views og ViewModels, samt feilsøking knyttet til Docker, Aspire og databasen.
+- **Git og GitHub:** Støtte til branching, merging, håndtering av konflikter og oppdatering av kode i gruppens repository.
 
-**Prompter:**
-- «Hvordan lager jeg NeedController og ResourceController med GET og POST i ASP.NET Core MVC?»
-- «Hvordan tester jeg at GET og POST fungerer, og at data fra skjemaet vises på Details-siden?»
-- «Hvordan tilpasser jeg Controller-koden til ViewModels og Views i prosjektet?»
-- «Hvordan løser jeg merge-konflikter uten å overskrive de andre gruppemedlemmenes arbeid?»
-- «Hvordan oppdaterer jeg branchen min med siste versjon av master?»
-- «Hvordan tester jeg prosjektet etter at koden er merget?»
+KI-forslagene ble vurdert og tilpasset prosjektets eksisterende struktur, funksjonelle krav og design. Jeg har selv tatt valg knyttet til utforming, funksjonalitet og videre utvikling av løsningen.
+
+**Eksempler på prompter:**
+
+- «Hvordan kan jeg strukturere Controllers og Views for å sikre god sammenheng mellom frontend og backend?»
+- «Hvordan kan jeg implementere rollebasert innlogging med ASP.NET Core Identity?»
+- «Hvordan kan jeg utvikle et oversiktlig dashboard med god navigasjon og tydelig visuell struktur?»
+- «Hvordan kan jeg visualisere og videreutvikle et design basert på egne skisser og krav?»
+- «Hvordan kan jeg koble eksisterende funksjonalitet til nye sider uten å påvirke andre deler av systemet?»
+- «Hvordan kan jeg feilsøke problemer med Docker og Aspire under lokal utvikling?»
+- «Hvordan kan jeg håndtere merge-konflikter og holde min branch oppdatert?»
 
 ---
 
