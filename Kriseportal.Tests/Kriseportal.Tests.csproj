@@ -18,6 +18,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- B12: trengs for å lese [Authorize]-attributtene i AuthorizationTests -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Kriseportal.Web\Kriseportal.Web.csproj" />
   </ItemGroup>

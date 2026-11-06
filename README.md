@@ -189,17 +189,26 @@ Følgende funksjonalitet bør også kontrolleres:
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte i arbeidet med ViewModels. KI ble brukt til å forklare hva en ViewModel er og hvilken rolle den har i MVC, foreslå struktur for `NeedViewModel` og `ResourceViewModel`, forklare datatyper som `string`, `bool` og `double`, og hjelpe med navngivning av properties som `Type`, `Priority`, `Available`, `Latitude` og `Longitude`.
+Jeg har brukt ChatGPT som støtte under utviklingen av Kriseportalen i IS-202. KI ble brukt til kodeforslag, stegvis veiledning, forklaring av programmeringsbegreper og feilsøking.
 
-Jeg brukte også ChatGPT til å finne og forstå feil i koden, blant annet manglende `public`, feil property-navn og problemer med namespaces.
+**Bruksområder:**
 
-Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
+- **ViewModels:** Forklaringer og forslag til struktur for `NeedViewModel`, `ResourceViewModel`, `RegisterViewModel` og `LoginViewModel`. Dette inkluderte datatyper, properties, navngivning og valideringsregler.
+- **Skjemaer og validering:** Hjelp med koblingen mellom registreringsskjemaer og ViewModels, kontroll av innsendte opplysninger med `ModelState.IsValid` og visning av feilmeldinger med `asp-validation-for`, blant annet i `Views/Need/Create.cshtml`.
+- **Registrering, innlogging og utlogging:** Kodeforslag og veiledning under arbeidet med `AccountController`, `Views/Account/Register.cshtml` og `Views/Account/Login.cshtml`. Funksjonaliteten ble tilpasset prosjektets eksisterende `ApplicationUser` og ASP.NET Core Identity.
+- **Kodeforståelse og feilsøking:** Forklaringer av GET og POST og hvordan Controllers, Views og ViewModels samarbeider. KI ble også brukt til hjelp med manglende `public`, feil property-navn og problemer med namespaces.
+- **Testing og oppstart:** Veiledning ved testing av validering, brukerregistrering, innlogging, utlogging og feil innlogging, samt feilsøking ved oppstart med Visual Studio, Docker og Aspire.
+- **Git og GitHub:** Hjelp med branches, commits, push, pull requests, oppdatering fra master, merging og håndtering av merge-konflikter.
 
-**Prompter:**
-- «Hva er en ViewModel og hva skal den gjøre?»
-- «Hvor skal jeg lage ViewModels-mappen i prosjektet?»
-- «Hva betyr feilen NeedViewModel could not be found?»
-- «Hvordan legger jeg ViewModel-koden til GitHub?»
+Jeg har brukt konkrete kodeforslag fra KI og fått hjelp til å legge dem inn og tilpasse dem til prosjektets struktur. Registrering, innlogging, utlogging og feil innlogging ble testet lokalt. Jeg har også brukt KI til å forklare koden underveis, og har hatt behov for flere gjennomganger for å forstå logikken bak forslagene.
+
+**Eksempler på spørsmål og temaer fra samtalene:**
+
+- Hva er en ViewModel, og hva skal den gjøre?
+- Hvordan kontrollerer vi skjemaopplysninger og viser feilmeldinger?
+- Hvordan bygger vi registrering og innlogging på Identity-oppsettet som allerede finnes?
+- Hvordan får jeg gruppens endringer inn i min branch?
+- Hvordan håndterer jeg merge-konflikter og sender endringene mine til GitHub?
 
 ---
 
@@ -283,23 +292,24 @@ Jeg foretrekker å jobbe steg for steg, slik at jeg forstår hva jeg gjør fremf
 Jeg bruker KI som støtte til å forstå og løse problemer, men gjennomfører arbeidet, vurderer forslagene og tester løsningene selv.
 
 ---
-
 ## Emma Sofie
 
 **Verktøy:** Claude
 
-Jeg brukte Claude som støtte under utviklingen av `Views/Resource/Create.cshtml`. KI ble brukt til å kontrollere at skjemaet dekket relevante krav i oppgaven, forklare en steg-for-steg-fremgangsmåte for å bygge en MVC-side og gi støtte til forståelsen av Razor og MVC.
+Jeg brukte Claude som støtte under utviklingen av `Views/Resource/Create.cshtml`. KI ble brukt til å forstå Razor og MVC, hvordan `asp-for` kobler skjemafeltene til `ResourceViewModel`, og hvorfor koordinatene sendes gjennom skjulte felt. Under testing ble KI brukt til feilsøking da koordinatene på resultatsiden ble vist som `0,0`.
 
-Jeg brukte også Claude til å forstå forskjellen mellom HTML og Razor-filer (`.cshtml`), hvordan `asp-for` kobler skjemafeltene til `ResourceViewModel`, hvorfor koordinatene sendes gjennom skjulte felt, og hvordan filstruktur og navngivning brukes av MVC.
+Senere brukte jeg Claude som støtte i arbeidet med databasen og kartet. KI ble brukt til å forklare EF Core og migrasjoner, foreslå struktur for testdataene i `DataSeeder` og dele opp situasjonskartet med Leaflet i mindre steg. Jeg brukte også KI til feilsøking i Docker Compose og til å forstå en sårbarhet i MySqlConnector.
 
-Under testing ble KI brukt som støtte til feilsøking da koordinatene på resultatsiden ble vist som `0,0`. Mulige årsaker knyttet til behandling av desimaltall og koordinater ble undersøkt og videreformidlet til gruppen for videre testing.
+Jeg ba om forklaringer steg for steg, slik at jeg forsto koden før jeg skrev den inn selv. I felles filer gjorde jeg bare små, målrettede endringer, og jeg sjekket `git diff --stat` før hver commit.
 
-Forslag fra KI ble vurdert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
+Forslag fra KI ble vurdert, tilpasset prosjektets struktur og testet lokalt før koden ble lagt inn i GitHub.
 
 **Prompter:**
-- «Dette er oppgaven vår og gruppas arbeidsfordeling. Jeg er person nummer 4 og har ansvar for Registrer ressurs. Jeg ønsker støtte til koden min og at jeg har forstått oppgaven riktig. Jeg trenger også steg for steg hvordan det er lurt å begynne og hvor jeg kan finne god info om å sette opp oppgaven riktig. Jeg vil dobbeltsjekke med deg som støtte underveis.»
-- «Filen min skal være en html, men jeg forstår også at det er noe som heter cshtml, hva er forskjellen?»
-- «Markøren på resultatsiden havner midt i havet og der ønsker vi ikke at den skal være. Vi tror det har noe med koordinatene å gjøre, hva kan eventuelt være feilen?»
+- «Filen min skal være en html, men det finnes også cshtml. Hva er forskjellen?»
+- «Markøren på resultatsiden havner midt i havet. Vi tror det har med koordinatene å gjøre. Hva kan være feilen?»
+- «Hvordan kobler jeg ASP.NET Core til MariaDB med EF Core og Pomelo?»
+- «Jeg vil lage et situasjonskart med Leaflet der behovene vises etter prioritet. Kan du dele det opp i steg jeg kan gjøre selv?»
+- «Webappen finner ikke databasen når jeg kjører Docker Compose. Hva kan være feilen?»
 
 ---
 
@@ -312,3 +322,7 @@ Jeg brukte Claude som støtte under arbeidet med `Views/Need/Details.cshtml`, `V
 KI ble brukt som støtte under utviklingen og til å forstå hvordan Details-sidene kunne kobles til dataene som ble sendt inn gjennom ViewModels. Jeg skrev selv koden inn i VS Code, satte sammen filene i prosjektet, rettet feil og fulgte opp arbeidet gjennom Git og GitHub.
 
 Forslag fra KI ble vurdert og tilpasset prosjektet før koden ble lagt inn i GitHub.
+
+**Oppgave 2 (backend):**
+
+I oppgave 2 hadde jeg ansvar for B06 (ApplicationUser og roller), B08 (fjerne rester fra Aspire-malen) og B12 (tilgangsstyring). Jeg kartla hva som manglet ut fra casen og koden i master, planla arbeidet, testet med `dotnet build` og `dotnet test`, og håndterte grener, merge og pull requests. Claude ble brukt som støtte til kodeutkast, forklaringer og feilsøking. Jeg gikk gjennom og godkjente alle endringer før de ble pushet.

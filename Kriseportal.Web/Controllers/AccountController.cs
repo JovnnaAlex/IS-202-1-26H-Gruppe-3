@@ -68,6 +68,50 @@ public class AccountController(
         return View(model);
     }
 
+    // B12: Håndterer innlogging kun for offentlige aktører.
+    // Samme feilmelding som vanlig innlogging, så ingen kan finne ut hvilke kontoer som finnes.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublicLogin(LoginViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var user = await userManager.FindByEmailAsync(model.Email);
+
+        // B12: Kontrollerer at brukeren har rollen offentlig aktør.
+        if (user is not null &&
+            await userManager.IsInRoleAsync(user, AppRoles.PublicAuthority))
+        {
+            var result = await signInManager.PasswordSignInAsync(
+                user,
+                model.Password,
+                isPersistent: false,
+                lockoutOnFailure: true);
+
+            if (result.Succeeded)
+            {
+                // B12: Sender den offentlige aktøren til beredskapsoversikten.
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        ModelState.AddModelError(
+            string.Empty,
+            "Feil e-postadresse eller passord");
+
+        return View(model);
+    }
+
+    // B12: Vises når en innlogget bruker prøver å åpne en side rollen ikke har tilgang til.
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
     // Sara: Registrerer nye brukere som ressursleverandører.
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -131,6 +175,7 @@ public class AccountController(
     {
         await signInManager.SignOutAsync();
 
-        return RedirectToAction(nameof(Login));
+        // B12: Sender alle til forsiden etter utlogging, uansett rolle.
+        return RedirectToAction("Index", "Front");
     }
 }

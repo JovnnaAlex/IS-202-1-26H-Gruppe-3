@@ -1,11 +1,14 @@
 ﻿using Kriseportal.Web.DataAccess;
 using Kriseportal.Web.Models.Entities;
 using Kriseportal.Web.Models.Map;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kriseportal.Web.Controllers;
 
+// B12: Situasjonskartet og dataene bak det (med kontaktinformasjon) er bare for offentlige aktører
+[Authorize(Roles = AppRoles.PublicAuthority)]
 public class MapController : Controller
 {
     private readonly ApplicationDbContext _context;
