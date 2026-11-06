@@ -153,7 +153,7 @@ Ved kjøring med Aspire brukes port `3307` for MariaDB i det nåværende oppsett
 - Docker-oppsettet er konfigurert for lokal utvikling og er ikke ment for produksjon.
 - Databasepassordet ligger i `docker-compose.yml` og må håndteres sikrere ved eventuell produksjonssetting.
 - Nøklene for innloggingscookies lagres inne i webcontaineren. Brukere kan derfor bli logget ut når containeren opprettes på nytt.
-- Sletting av ressurser er foreløpig ikke bekreftet implementert. Ressurser kan deaktiveres og reaktiveres.
+- Ressursleverandører kan slette egne ressurser, men ressurser med status «Reservert» kan ikke slettes.
 - Ressursleverandørens dashboard har foreløpig begrenset visning av registrerte ressurser og statistikk.
 
 ## Testing
@@ -233,7 +233,6 @@ Testene er gjennomført som manuelle funksjons- og brukervennlighetskontroller u
 
 Følgende funksjoner bør kontrolleres nærmere:
 
-- Hele flyten for behovsregistrering bør gjennomgås og dokumenteres.
 - Ressursoversikten på dashboardet bør kontrolleres mot dataene i databasen.
 - Responsivt design bør testes systematisk på flere skjermstørrelser.
 - Applikasjonen fungerer i mobilvisning, men det responsive designet er ikke optimalt. Videre forbedringer av mobiltilpasning og brukeropplevelse er planlagt frem mot Expo.
