@@ -21,4 +21,4 @@ namespace Kriseportal.Web.Controllers
             return View();
         }
     }
-}
+}

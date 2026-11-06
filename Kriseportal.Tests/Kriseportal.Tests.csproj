@@ -27,4 +27,4 @@
     <ProjectReference Include="..\Kriseportal.Web\Kriseportal.Web.csproj" />
   </ItemGroup>
 
-</Project>
+</Project>

@@ -258,4 +258,4 @@ public class ResourceController : Controller
     }
 }
 
-// la til en if statement for modelstate validation Edgar
+// la til en if statement for modelstate validation Edgar

@@ -82,4 +82,4 @@ public class MapController : Controller
 
         return Json(new { updatedAt = DateTime.UtcNow, points });
     }
-}
+}

@@ -19,4 +19,4 @@ public class HomeController : Controller
     {
         return Content("Noe gikk galt. Prøv igjen senere.");
     }
-}
+}

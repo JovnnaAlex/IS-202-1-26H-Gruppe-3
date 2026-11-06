@@ -324,7 +324,4 @@ Forslag fra KI ble vurdert og tilpasset prosjektet før koden ble lagt inn i Git
 
 **Oppgave 2 (backend):**
 
-I oppgave 2 jobbet jeg med B06 (ApplicationUser og roller), B08 (fjerne rester fra Aspire-malen) og B12 (tilgangsstyring). Jeg kartla hva som manglet ut fra casen og koden i master, planla arbeidet, testet med `dotnet build` og `dotnet test`, og håndterte grener, merge og pull requests selv. Claude ble brukt som støtte til kodeutkast, forklaringer og feilsøking. Jeg gikk gjennom og godkjente alle endringer før de ble pushet.
-
-**Eksempel på prompt:**
-- «Jeg må gjøre B12, det er min oppgave. Hent alt nytt fra GitHub så du er oppdatert på hva gruppa har gjort, så lager vi B12, fordi de venter på at jeg skal lage den.»
+I oppgave 2 hadde jeg ansvar for B06 (ApplicationUser og roller), B08 (fjerne rester fra Aspire-malen) og B12 (tilgangsstyring). Jeg kartla hva som manglet ut fra casen og koden i master, planla arbeidet, testet med `dotnet build` og `dotnet test`, og håndterte grener, merge og pull requests. Claude ble brukt som støtte til kodeutkast, forklaringer og feilsøking. Jeg gikk gjennom og godkjente alle endringer før de ble pushet.
