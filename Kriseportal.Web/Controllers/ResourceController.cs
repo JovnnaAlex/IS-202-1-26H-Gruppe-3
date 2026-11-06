@@ -63,6 +63,8 @@ public class ResourceController : Controller
     }
 
     // Sara: Viser oversikten over tilgjengelige ressurser.
+    // B12: Bare offentlige aktører kan se ledige ressurser.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -85,6 +87,8 @@ public class ResourceController : Controller
 
     // Sara: Henter én bestemt ressurs fra databasen
     // og viser den på den nye detaljsiden.
+    // B12: Bare offentlige aktører kan åpne detaljer om ressurser.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     
     public async Task<IActionResult> ResourceDetails(int id)
@@ -115,6 +119,8 @@ public class ResourceController : Controller
 
     // Sara: Åpner den nye siden for å sende forespørsel.
     // Foreløpig er dette bare frontend, uten lagring i databasen.
+    // B12: Bare offentlige aktører kan sende forespørsel om en ressurs.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     public IActionResult SendRequest()
     {

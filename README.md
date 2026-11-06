@@ -321,3 +321,7 @@ Jeg brukte Claude som støtte under arbeidet med `Views/Need/Details.cshtml`, `V
 KI ble brukt som støtte under utviklingen og til å forstå hvordan Details-sidene kunne kobles til dataene som ble sendt inn gjennom ViewModels. Jeg skrev selv koden inn i VS Code, satte sammen filene i prosjektet, rettet feil og fulgte opp arbeidet gjennom Git og GitHub.
 
 Forslag fra KI ble vurdert og tilpasset prosjektet før koden ble lagt inn i GitHub.
+
+**Oppgave 2 (backend):**
+
+I oppgave 2 hadde jeg ansvar for B06 (ApplicationUser og roller), B08 (fjerne rester fra Aspire-malen) og B12 (tilgangsstyring). Jeg kartla hva som manglet ut fra casen og koden i master, planla arbeidet, testet med `dotnet build` og `dotnet test`, og håndterte grener, merge og pull requests. Claude ble brukt som støtte til kodeutkast, forklaringer og feilsøking. Jeg gikk gjennom og godkjente alle endringer før de ble pushet.
