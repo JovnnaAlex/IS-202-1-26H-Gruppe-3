@@ -292,23 +292,24 @@ Jeg foretrekker å jobbe steg for steg, slik at jeg forstår hva jeg gjør fremf
 Jeg bruker KI som støtte til å forstå og løse problemer, men gjennomfører arbeidet, vurderer forslagene og tester løsningene selv.
 
 ---
-
 ## Emma Sofie
 
 **Verktøy:** Claude
 
-Jeg brukte Claude som støtte under utviklingen av `Views/Resource/Create.cshtml`. KI ble brukt til å kontrollere at skjemaet dekket relevante krav i oppgaven, forklare en steg-for-steg-fremgangsmåte for å bygge en MVC-side og gi støtte til forståelsen av Razor og MVC.
+Jeg brukte Claude som støtte under utviklingen av `Views/Resource/Create.cshtml`. KI ble brukt til å forstå Razor og MVC, hvordan `asp-for` kobler skjemafeltene til `ResourceViewModel`, og hvorfor koordinatene sendes gjennom skjulte felt. Under testing ble KI brukt til feilsøking da koordinatene på resultatsiden ble vist som `0,0`.
 
-Jeg brukte også Claude til å forstå forskjellen mellom HTML og Razor-filer (`.cshtml`), hvordan `asp-for` kobler skjemafeltene til `ResourceViewModel`, hvorfor koordinatene sendes gjennom skjulte felt, og hvordan filstruktur og navngivning brukes av MVC.
+Senere brukte jeg Claude som støtte i arbeidet med databasen og kartet. KI ble brukt til å forklare EF Core og migrasjoner, foreslå struktur for testdataene i `DataSeeder` og dele opp situasjonskartet med Leaflet i mindre steg. Jeg brukte også KI til feilsøking i Docker Compose og til å forstå en sårbarhet i MySqlConnector.
 
-Under testing ble KI brukt som støtte til feilsøking da koordinatene på resultatsiden ble vist som `0,0`. Mulige årsaker knyttet til behandling av desimaltall og koordinater ble undersøkt og videreformidlet til gruppen for videre testing.
+Jeg ba om forklaringer steg for steg, slik at jeg forsto koden før jeg skrev den inn selv. I felles filer gjorde jeg bare små, målrettede endringer, og jeg sjekket `git diff --stat` før hver commit.
 
-Forslag fra KI ble vurdert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
+Forslag fra KI ble vurdert, tilpasset prosjektets struktur og testet lokalt før koden ble lagt inn i GitHub.
 
 **Prompter:**
-- «Dette er oppgaven vår og gruppas arbeidsfordeling. Jeg er person nummer 4 og har ansvar for Registrer ressurs. Jeg ønsker støtte til koden min og at jeg har forstått oppgaven riktig. Jeg trenger også steg for steg hvordan det er lurt å begynne og hvor jeg kan finne god info om å sette opp oppgaven riktig. Jeg vil dobbeltsjekke med deg som støtte underveis.»
-- «Filen min skal være en html, men jeg forstår også at det er noe som heter cshtml, hva er forskjellen?»
-- «Markøren på resultatsiden havner midt i havet og der ønsker vi ikke at den skal være. Vi tror det har noe med koordinatene å gjøre, hva kan eventuelt være feilen?»
+- «Filen min skal være en html, men det finnes også cshtml. Hva er forskjellen?»
+- «Markøren på resultatsiden havner midt i havet. Vi tror det har med koordinatene å gjøre. Hva kan være feilen?»
+- «Hvordan kobler jeg ASP.NET Core til MariaDB med EF Core og Pomelo?»
+- «Jeg vil lage et situasjonskart med Leaflet der behovene vises etter prioritet. Kan du dele det opp i steg jeg kan gjøre selv?»
+- «Webappen finner ikke databasen når jeg kjører Docker Compose. Hva kan være feilen?»
 
 ---
 
