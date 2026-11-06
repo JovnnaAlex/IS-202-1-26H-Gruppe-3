@@ -35,6 +35,31 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// B12: Hvor brukeren sendes når innlogging mangler eller rollen er feil
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+
+    // Sider for ressursleverandører sender til vanlig innlogging,
+    // alle andre beskyttede sider sender til innlogging for offentlige aktører
+    options.Events.OnRedirectToLogin = context =>
+    {
+        var path = context.Request.Path;
+        var isProviderPage =
+            path.StartsWithSegments("/ResourceProvider") ||
+            path.StartsWithSegments("/Resource/Create") ||
+            path.StartsWithSegments("/Resource/EditPreview") ||
+            path.StartsWithSegments("/Resource/ConfirmPreview");
+
+        context.Response.Redirect(isProviderPage
+            ? "/Account/Login"
+            : "/Account/PublicLogin");
+
+        return Task.CompletedTask;
+    };
+});
+
 
 var app = builder.Build();
 // Kjører manglende databasemigreringer automatisk under utvikling
@@ -86,4 +111,4 @@ app.MapControllerRoute(
 
 app.MapDefaultEndpoints();
 
-app.Run();
+app.Run();

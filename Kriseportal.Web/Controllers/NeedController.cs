@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Kriseportal.Web.Controllers;
 
+// B12: Bare offentlige aktører kan se, registrere og åpne behov
+[Authorize(Roles = AppRoles.PublicAuthority)]
 public class NeedController : Controller
 {
 
