@@ -231,7 +231,7 @@ Testene er gjennomført som manuelle funksjons- og brukervennlighetskontroller u
 
 Følgende funksjoner bør kontrolleres nærmere:
 
-- Sletting av ressurser er ikke bekreftet implementert. Deaktivering er tilgjengelig, men er ikke det samme som sletting.
+- Sletting av egne ressurser er implementert, men funksjonen er ikke manuelt verifisert. Reserverte ressurser kan ikke slettes.
 - Hele flyten for behovsregistrering bør gjennomgås og dokumenteres.
 - Ressursoversikten på dashboardet bør kontrolleres mot dataene i databasen.
 - Responsivt design bør testes systematisk på flere skjermstørrelser.
