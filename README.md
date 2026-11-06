@@ -153,32 +153,88 @@ Ved kjøring med Aspire brukes port `3307` for MariaDB i det nåværende oppsett
 - Docker-oppsettet er konfigurert for lokal utvikling og er ikke ment for produksjon.
 - Databasepassordet ligger i `docker-compose.yml` og må håndteres sikrere ved eventuell produksjonssetting.
 - Nøklene for innloggingscookies lagres inne i webcontaineren. Brukere kan derfor bli logget ut når containeren opprettes på nytt.
+- Sletting av ressurser er foreløpig ikke bekreftet implementert. Ressurser kan deaktiveres og reaktiveres.
+- Ressursleverandørens dashboard har foreløpig begrenset visning av registrerte ressurser og statistikk.
 
 ## Testing
 
-Løsningen er testet lokalt på macOS med Docker Desktop.
+Løsningen er testet lokalt på macOS med Docker Desktop. Testingen omfatter automatiserte tester og manuelle kontroller av sentrale funksjoner.
 
-### Gjennomførte tester
+### 1. Automatiserte tester
 
-| Test | Resultat |
-|---|---|
-| `docker compose up --build` | Bestått |
-| Oppstart av MariaDB | Bestått |
-| Database healthcheck | Bestått |
-| Oppstart av webapplikasjonen | Bestått |
-| Åpning av `http://localhost:8080` | Bestått |
-| Innlogging med testbruker | Bestått |
-| Registrering og visning av kartkoordinater | Bestått |
+Prosjektet inneholder automatiserte tester i `Kriseportal.Tests/`.
 
-### Videre testing
+Testene kjøres fra prosjektets rotmappe med:
 
-Følgende funksjonalitet bør også kontrolleres:
+```bash
+dotnet test
+```
 
-- Registrering av behov og ressurser.
-- Lagring av informasjon i databasen.
-- Visning av registrerte behov og ressurser.
-- Responsivt design på mobil og PC.
+**Resultat fra siste testkjøring:**
 
+- Totalt: 28 tester
+- Bestått: 28
+- Feilet: 0
+
+Testprosjektet inneholder blant annet `AuthorizationTests.cs`, som kontrollerer tilgangsstyring.
+
+De automatiserte testene er gjennomført etter at endringene fra `master` ble integrert.
+
+### 2. Systemtesting
+
+Systemtesting er gjennomført manuelt for å kontrollere at applikasjonens komponenter fungerer sammen.
+
+| Testscenario | Forventet resultat | Resultat |
+|---|---|---|
+| Starte applikasjonen med `docker compose up --build` | Webapplikasjonen og MariaDB starter | Bestått |
+| Kontrollere MariaDB | Databasen starter og blir markert som healthy | Bestått |
+| Åpne applikasjonen | Forsiden vises på `localhost:8080` | Bestått |
+| Logge inn som offentlig aktør | Brukeren får tilgang til offentlig dashboard | Bestått |
+| Logge inn som ressursleverandør | Brukeren får tilgang til ressursleverandørens dashboard | Bestått |
+| Registrere en ressurs | Registreringsskjemaet kan fylles ut og sendes inn | Bestått |
+| Lagre ressurs i databasen | Ressursen lagres og kan hentes frem igjen | Bestått |
+| Redigere en ressurs | Endringene lagres | Bestått |
+| Deaktivere og reaktivere ressurs | Ressursens status kan endres | Bestått |
+| Velge geografisk plassering | Brukeren kan plassere en markør på kartet | Bestått |
+| Vise ressursdetaljer | Registrert informasjon og kartpunkt vises | Bestått |
+
+### 3. Sikkerhetstesting
+
+Sikkerhetstesting er gjennomført for å kontrollere at rollebasert tilgangsstyring fungerer.
+
+| Testscenario | Forventet resultat | Resultat |
+|---|---|---|
+| Offentlig aktør logger inn | Brukeren sendes til riktig dashboard | Bestått |
+| Ressursleverandør logger inn | Brukeren sendes til riktig dashboard | Bestått |
+| Offentlig aktør forsøker å åpne ressursleverandørens dashboard | Tilgang nektes | Bestått |
+| Ressursleverandør forsøker å åpne offentlig dashboard | Tilgang nektes | Bestått |
+
+Applikasjonen benytter ASP.NET Core Identity for autentisering og rollebasert autorisering.
+
+Sikkerhetstiltakene er testet gjennom automatiserte tester og manuelle kontroller. Dette er ikke en fullstendig sikkerhetsrevisjon.
+
+### 4. Brukervennlighetstesting
+
+Det er gjennomført manuelle kontroller av navigasjon og registreringsflyt.
+
+| Testscenario | Forventet resultat | Resultat |
+|---|---|---|
+| Navigere fra ressursleverandørens sidemeny | Menyvalgene åpner riktige sider | Bestått |
+| Åpne registreringsskjemaet | Riktig layout og sidemeny vises | Bestått |
+| Gå fra registrering til forhåndsvisning | Informasjonen vises i riktig layout | Bestått |
+| Åpne bekreftelsessiden | Bekreftelsen vises med riktig layout | Bestått |
+| Trykke «Tilbake til dashboard» | Brukeren sendes til ressursleverandørens dashboard | Bestått |
+
+Testene er gjennomført som manuelle funksjons- og brukervennlighetskontroller under utviklingen. Det er ikke gjennomført en formell brukertest med eksterne testpersoner.
+
+### 5. Videre testing og kjente mangler
+
+Følgende funksjoner bør kontrolleres nærmere:
+
+- Sletting av ressurser er ikke bekreftet implementert. Deaktivering er tilgjengelig, men er ikke det samme som sletting.
+- Hele flyten for behovsregistrering bør gjennomgås og dokumenteres.
+- Ressursoversikten på dashboardet bør kontrolleres mot dataene i databasen.
+- Responsivt design bør testes systematisk på flere skjermstørrelser.
 
 ---
 
