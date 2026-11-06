@@ -189,36 +189,51 @@ Følgende funksjonalitet bør også kontrolleres:
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte i arbeidet med ViewModels. KI ble brukt til å forklare hva en ViewModel er og hvilken rolle den har i MVC, foreslå struktur for `NeedViewModel` og `ResourceViewModel`, forklare datatyper som `string`, `bool` og `double`, og hjelpe med navngivning av properties som `Type`, `Priority`, `Available`, `Latitude` og `Longitude`.
+Jeg har brukt ChatGPT som støtte under utviklingen av Kriseportalen i IS-202. KI ble brukt til kodeforslag, stegvis veiledning, forklaring av programmeringsbegreper og feilsøking.
 
-Jeg brukte også ChatGPT til å finne og forstå feil i koden, blant annet manglende `public`, feil property-navn og problemer med namespaces.
+**Bruksområder:**
 
-Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
+- **ViewModels:** Forklaringer og forslag til struktur for `NeedViewModel`, `ResourceViewModel`, `RegisterViewModel` og `LoginViewModel`. Dette inkluderte datatyper, properties, navngivning og valideringsregler.
+- **Skjemaer og validering:** Hjelp med koblingen mellom registreringsskjemaer og ViewModels, kontroll av innsendte opplysninger med `ModelState.IsValid` og visning av feilmeldinger med `asp-validation-for`, blant annet i `Views/Need/Create.cshtml`.
+- **Registrering, innlogging og utlogging:** Kodeforslag og veiledning under arbeidet med `AccountController`, `Views/Account/Register.cshtml` og `Views/Account/Login.cshtml`. Funksjonaliteten ble tilpasset prosjektets eksisterende `ApplicationUser` og ASP.NET Core Identity.
+- **Kodeforståelse og feilsøking:** Forklaringer av GET og POST og hvordan Controllers, Views og ViewModels samarbeider. KI ble også brukt til hjelp med manglende `public`, feil property-navn og problemer med namespaces.
+- **Testing og oppstart:** Veiledning ved testing av validering, brukerregistrering, innlogging, utlogging og feil innlogging, samt feilsøking ved oppstart med Visual Studio, Docker og Aspire.
+- **Git og GitHub:** Hjelp med branches, commits, push, pull requests, oppdatering fra master, merging og håndtering av merge-konflikter.
 
-**Prompter:**
-- «Hva er en ViewModel og hva skal den gjøre?»
-- «Hvor skal jeg lage ViewModels-mappen i prosjektet?»
-- «Hva betyr feilen NeedViewModel could not be found?»
-- «Hvordan legger jeg ViewModel-koden til GitHub?»
+Jeg har brukt konkrete kodeforslag fra KI og fått hjelp til å legge dem inn og tilpasse dem til prosjektets struktur. Registrering, innlogging, utlogging og feil innlogging ble testet lokalt. Jeg har også brukt KI til å forklare koden underveis, og har hatt behov for flere gjennomganger for å forstå logikken bak forslagene.
+
+**Eksempler på spørsmål og temaer fra samtalene:**
+
+- Hva er en ViewModel, og hva skal den gjøre?
+- Hvordan kontrollerer vi skjemaopplysninger og viser feilmeldinger?
+- Hvordan bygger vi registrering og innlogging på Identity-oppsettet som allerede finnes?
+- Hvordan får jeg gruppens endringer inn i min branch?
+- Hvordan håndterer jeg merge-konflikter og sender endringene mine til GitHub?
 
 ---
 
 ## Alex
 
 **Verktøy:** ChatGPT
+Jeg har brukt ChatGPT som støtte gjennom utviklingen av Kriseportalen i IS-202. KI har hovedsakelig blitt brukt til å forstå programmeringskonsepter, få veiledning under implementering, feilsøking og bruk av Git og GitHub.
 
-Jeg brukte ChatGPT som støtte under utviklingen av `Views/Need/Create.cshtml`. KI ble brukt til å forstå Razor Views, koblingen til `NeedViewModel`, bruk av `asp-for`, validering og hvordan kart og koordinater kunne kobles til skjemaet.
+**Bruksområder:**
+- **ASP.NET Core MVC:** Veiledning i utviklingen av Views/Need/Create.cshtml, inkludert Razor Views, asp-for, ViewModels, validering og skjemafunksjonalitet.
+- **Leaflet og kart:** Hjelp til å forstå hvordan kartet kobles til registreringsskjemaet, og hvordan breddegrad og lengdegrad håndteres.
+- **Git og GitHub:** Veiledning om opprettelse av branches, merging, oppdatering fra master, håndtering av merge konflikter og feilmeldinger. 
+-**Frontend og design:** Diskusjoner om hvordan felles layout og navigasjon kunne utvikles i samarbeid med Figma-designet.
+-**Prosjektplanlegging:** Veiledning rundt GitHub Projects, backlog, sprintplanlegging, arbeidsfordeling og avhengigheter mellom oppgaver. 
+-**Testing og dokumentasjon:** Hjelp til å forstå hvilke tester som bør gjennomføres for å kontrollere at funksjonaliteten oppfyller prosjektkravene.
+  
+Eksempler på prompts jeg har brukt:
 
-Jeg brukte også ChatGPT til feilsøking av `@model` og namespaces, samt veiledning rundt Git og merging.
 
-Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
-
-**Prompter:**
-- «Hvordan kobler jeg inputfeltene til NeedViewModel med asp-for?»
-- «Hvordan lager jeg Priority som en dropdown med Low, Medium og High?»
-- «Hvordan kobler jeg Leaflet og map.js til id="map" i Create.cshtml?»
-- «Hvordan legger jeg til validering med asp-validation-for?»
-- «Kan du kontrollere om Create.cshtml er riktig strukturert med skjema, validering, kart og submit-knapp?»
+**Eksempler på prompter:**
+-«Hvordan bruker jeg asp-for for å koble inputfeltene i skjemaet til properties i NeedViewModel?»
+-«Hvordan lager jeg Priority som en dropdown med Low, Medium og High i Razor View-en?»
+-«Hvordan kobler jeg Leaflet og map.js til id="map" i `Create.cshtml`?»
+-«Hvordan legger jeg til validering med asp-validation-for?»
+-«Hva kan jeg gjøre for min del av prosjektet basert på kravene i IS-202?»
 
 ---
 
@@ -226,19 +241,28 @@ Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble 
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte under utviklingen av `NeedController` og `ResourceController`. KI ble brukt til å forstå hvordan Controllers fungerer i ASP.NET Core MVC, hvordan GET brukes til å vise skjemaene, og hvordan POST mottar data gjennom ViewModels og sender dem videre til Details-sidene.
+Jeg har brukt ChatGPT som støtte under utviklingen av Kriseportalen i IS-202. KI har hovedsakelig blitt brukt til veiledning innen ASP.NET Core MVC, frontendutvikling, design, feilsøking og Git/GitHub.
 
-Jeg brukte også ChatGPT til testing og feilsøking da Controller-koden skulle integreres med resten av gruppeprosjektet. Dette inkluderte tilpasning av namespaces og ViewModels, håndtering av merge-konflikter og kontroll av at Controllers, Views og ViewModels fungerte sammen etter merge. KI ble også brukt som veiledning for Git og GitHub.
+**Bruksområder:**
 
-Forslag fra KI ble tilpasset prosjektets struktur og testet lokalt før koden ble lagt inn i GitHub.
+- **ASP.NET Core MVC:** Veiledning i utviklingen av Controllers, bruk av GET og POST, ViewModels og hvordan ulike deler av systemet kommuniserer.
+- **Innlogging og brukerroller:** Støtte til implementering av registrering og innlogging med ASP.NET Core Identity, samt rollebasert tilgang for ressursleverandører.
+- **Frontend og design:** Brukt som støtte til utviklingen av ressursleverandørportalen, inkludert dashboard, navigasjon, layout, fargevalg og ikoner.
+- **Logo og visualisering:** Brukt KI til å visualisere egne designideer og skisser basert på krav og ønsker jeg har definert, samt videreutvikle logo og visuelle elementer.
+- **Testing og feilsøking:** Veiledning ved integrering av Controllers, Views og ViewModels, samt feilsøking knyttet til Docker, Aspire og databasen.
+- **Git og GitHub:** Støtte til branching, merging, håndtering av konflikter og oppdatering av kode i gruppens repository.
 
-**Prompter:**
-- «Hvordan lager jeg NeedController og ResourceController med GET og POST i ASP.NET Core MVC?»
-- «Hvordan tester jeg at GET og POST fungerer, og at data fra skjemaet vises på Details-siden?»
-- «Hvordan tilpasser jeg Controller-koden til ViewModels og Views i prosjektet?»
-- «Hvordan løser jeg merge-konflikter uten å overskrive de andre gruppemedlemmenes arbeid?»
-- «Hvordan oppdaterer jeg branchen min med siste versjon av master?»
-- «Hvordan tester jeg prosjektet etter at koden er merget?»
+KI-forslagene ble vurdert og tilpasset prosjektets eksisterende struktur, funksjonelle krav og design. Jeg har selv tatt valg knyttet til utforming, funksjonalitet og videre utvikling av løsningen.
+
+**Eksempler på prompter:**
+
+- «Hvordan kan jeg strukturere Controllers og Views for å sikre god sammenheng mellom frontend og backend?»
+- «Hvordan kan jeg implementere rollebasert innlogging med ASP.NET Core Identity?»
+- «Hvordan kan jeg utvikle et oversiktlig dashboard med god navigasjon og tydelig visuell struktur?»
+- «Hvordan kan jeg visualisere og videreutvikle et design basert på egne skisser og krav?»
+- «Hvordan kan jeg koble eksisterende funksjonalitet til nye sider uten å påvirke andre deler av systemet?»
+- «Hvordan kan jeg feilsøke problemer med Docker og Aspire under lokal utvikling?»
+- «Hvordan kan jeg håndtere merge-konflikter og holde min branch oppdatert?»
 
 ---
 
@@ -297,3 +321,10 @@ Jeg brukte Claude som støtte under arbeidet med `Views/Need/Details.cshtml`, `V
 KI ble brukt som støtte under utviklingen og til å forstå hvordan Details-sidene kunne kobles til dataene som ble sendt inn gjennom ViewModels. Jeg skrev selv koden inn i VS Code, satte sammen filene i prosjektet, rettet feil og fulgte opp arbeidet gjennom Git og GitHub.
 
 Forslag fra KI ble vurdert og tilpasset prosjektet før koden ble lagt inn i GitHub.
+
+**Oppgave 2 (backend):**
+
+I oppgave 2 jobbet jeg med B06 (ApplicationUser og roller), B08 (fjerne rester fra Aspire-malen) og B12 (tilgangsstyring). Jeg kartla hva som manglet ut fra casen og koden i master, planla arbeidet, testet med `dotnet build` og `dotnet test`, og håndterte grener, merge og pull requests selv. Claude ble brukt som støtte til kodeutkast, forklaringer og feilsøking. Jeg gikk gjennom og godkjente alle endringer før de ble pushet.
+
+**Eksempel på prompt:**
+- «Jeg må gjøre B12, det er min oppgave. Hent alt nytt fra GitHub så du er oppdatert på hva gruppa har gjort, så lager vi B12, fordi de venter på at jeg skal lage den.»
