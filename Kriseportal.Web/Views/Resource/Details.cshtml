@@ -4,6 +4,7 @@
 @{
     // Setter sidetittelen.
     ViewData["Title"] = "Forhåndsvisning av ressurs";
+    Layout = "_ResourceProviderLayout";
 
     // Henter koordinatene og sørger for riktig desimalformat.
     var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);

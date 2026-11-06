@@ -488,8 +488,9 @@
                 </a>
 
                 <!-- Sara: Disse sidene kobles til når vi bygger funksjonene. -->
-                <span class="provider-sidebar-link"
-                      style="opacity: 0.65; cursor: default;">
+                <a asp-controller="ResourceProvider"
+                   asp-action="MyResources"
+                   class="provider-sidebar-link @(currentAction == "MyResources" ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -504,10 +505,11 @@
                     </svg>
 
                     Mine ressurser
-                </span>
+                </a>
 
-                <span class="provider-sidebar-link"
-                      style="opacity: 0.65; cursor: default;">
+                <a asp-controller="Resource"
+                   asp-action="Create"
+                   class="provider-sidebar-link">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -521,8 +523,7 @@
                     </svg>
 
                     Legg til ressurs
-                </span>
-
+                </a>
                 <span class="provider-sidebar-link"
                       style="opacity: 0.65; cursor: default;">
 
