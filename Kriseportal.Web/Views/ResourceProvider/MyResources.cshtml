@@ -1,0 +1,737 @@
+
+@model IEnumerable<Kriseportal.Web.Models.Entities.Resource>
+@using Kriseportal.Web.Models.Entities
+@using System.Linq
+
+@{
+    // Sara: Viser kun ressursene controlleren har hentet for innlogget leverandør.
+    ViewData["Title"] = "Mine ressurser";
+    Layout = "_ResourceProviderLayout";
+
+    var resources = Model?.ToList() ?? new List<Resource>();
+    var available = resources.Count(r => r.Availability == ResourceAvailability.Available);
+    var unavailable = resources.Count(r => r.Availability == ResourceAvailability.Unavailable);
+    var reserved = resources.Count(r => r.Availability == ResourceAvailability.Reserved);
+}
+
+<style>
+    /* Sara: Design for oversikten over egne ressurser. */
+    .my-resources-page {
+        padding: 42px 28px 70px;
+        background: #F0F3EA;
+        min-height: 80vh;
+    }
+
+    .my-resources-container {
+        max-width: 1220px;
+        margin: 0 auto;
+    }
+
+    .my-resources-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .my-resources-top h1 {
+        color: #244D3B;
+        font-size: 34px;
+        font-weight: 750;
+        margin: 0 0 8px;
+    }
+
+    .my-resources-subtitle {
+        color: #66766B;
+        margin: 0;
+    }
+
+    .my-resources-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 19px;
+        border-radius: 11px;
+        background: #244D3B;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    .my-resources-add:hover {
+        background: #193B2D;
+        color: #fff;
+    }
+
+    .my-resources-info {
+        background: #E7EFE5;
+        border: 1px solid #CFDDCF;
+        border-radius: 14px;
+        padding: 19px 22px;
+        margin-bottom: 24px;
+    }
+
+    .my-resources-info h2 {
+        font-size: 15px;
+        color: #244D3B;
+        font-weight: 700;
+        margin: 0 0 9px;
+    }
+
+    .my-resources-info p {
+        font-size: 13px;
+        color: #506657;
+        line-height: 1.7;
+        margin: 0 0 7px;
+    }
+
+    .my-resources-info p:last-child {
+        margin-bottom: 0;
+    }
+
+    .my-resources-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 24px;
+    }
+
+    .my-resources-stat {
+        background: white;
+        border: 1px solid #DEE7DE;
+        border-radius: 15px;
+        padding: 20px;
+    }
+
+    .my-resources-stat span {
+        color: #6D7D71;
+        font-size: 13px;
+    }
+
+    .my-resources-stat strong {
+        display: block;
+        color: #244D3B;
+        font-size: 29px;
+        margin-top: 6px;
+    }
+
+    .my-resources-panel {
+        background: white;
+        border: 1px solid #DEE7DE;
+        border-radius: 17px;
+        overflow: hidden;
+    }
+
+    .my-resources-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 20px;
+        border-bottom: 1px solid #E6ECE5;
+    }
+
+    .my-resources-toolbar input,
+    .my-resources-toolbar select {
+        background: #fff;
+        border: 1px solid #CBD8CB;
+        border-radius: 9px;
+        padding: 11px 13px;
+        color: #263D30;
+    }
+
+    .my-resources-toolbar input {
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .my-resources-toolbar select {
+        min-width: 175px;
+    }
+
+    .my-resources-table-wrap {
+        overflow-x: auto;
+    }
+
+    .my-resources-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+
+    .my-resources-table th {
+        background: #F5F8F3;
+        color: #65796B;
+        font-size: 11px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        text-align: left;
+        padding: 15px 19px;
+    }
+
+    .my-resources-table td {
+        border-top: 1px solid #EBEFEB;
+        padding: 17px 19px;
+        color: #33463A;
+        font-size: 13px;
+        vertical-align: middle;
+    }
+
+    .my-resources-identity {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .my-resources-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: #E8EFE8;
+        color: #244D3B;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+        flex-shrink: 0;
+    }
+
+    .my-resources-name {
+        font-weight: 700;
+        font-size: 14px;
+        color: #244D3B;
+    }
+
+    .my-resources-category {
+        color: #718076;
+        margin-top: 3px;
+        font-size: 12px;
+    }
+
+    .my-resources-status {
+        display: inline-block;
+        padding: 7px 10px;
+        border-radius: 30px;
+        font-weight: 650;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .my-resources-status.available {
+        background: #E2F2E7;
+        color: #287449;
+    }
+
+    .my-resources-status.reserved {
+        background: #E9EDEB;
+        color: #59675F;
+    }
+
+    .my-resources-status.unavailable {
+        background: #FBE7E7;
+        color: #A63D3D;
+    }
+
+    .my-resources-actions {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+    }
+
+    .my-resources-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #D4DFD4;
+        border-radius: 8px;
+        padding: 8px 11px;
+        font-size: 12px;
+        color: #425B48;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .my-resources-action:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .my-resources-action:not(:disabled):hover {
+        background: #E8EFE7;
+        border-color: #244D3B;
+        color: #244D3B;
+    }
+
+    .my-resources-message {
+        padding: 13px 18px;
+        margin-bottom: 18px;
+        background: #E7EFE5;
+        border: 1px solid #CFDDCF;
+        border-radius: 10px;
+        color: #244D3B;
+        font-size: 14px;
+    }
+
+    /* Sara: Meldinger kan lukkes og bruker samme farger som ressursstatusene. */
+    .my-resources-notice {
+        position: relative;
+        padding-right: 54px;
+    }
+
+    .my-resources-notice-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: inherit;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .my-resources-notice-close:hover,
+    .my-resources-notice-close:focus-visible {
+        background: rgba(36, 77, 59, .09);
+        outline-offset: 2px;
+    }
+
+    .my-resources-message.is-deactivated {
+        background: #FBE7E7;
+        border-color: #EFC7C7;
+        color: #923B3B;
+    }
+
+    .my-resources-message.is-reserved {
+        background: #E9EDEB;
+        border-color: #D5DDD8;
+        color: #52635A;
+    }
+
+    .my-resources-notice[hidden] {
+        display: none !important;
+    }
+
+    .my-resources-action.is-locked {
+        background: #EFF1EF;
+        color: #65746B;
+        border-color: #D7DFD9;
+    }
+
+    .my-resources-action.is-locked:disabled {
+        opacity: 1;
+    }
+
+    .my-resources-actions form {
+        margin: 0;
+    }
+
+    .my-resources-empty {
+        text-align: center;
+        padding: 52px 24px;
+        color: #6D7D71;
+    }
+
+    .my-resources-empty h3 {
+        color: #244D3B;
+        font-size: 18px;
+    }
+
+    .my-resources-footer {
+        padding: 14px 20px;
+        border-top: 1px solid #E6ECE5;
+        font-size: 12px;
+        color: #718076;
+    }
+
+    @@media (max-width: 850px) {
+        .my-resources-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .my-resources-page {
+            padding: 26px 14px 50px;
+        }
+
+        .my-resources-top {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .my-resources-top h1 {
+            font-size: 28px;
+        }
+
+        .my-resources-add {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .my-resources-toolbar select {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="my-resources-page">
+    <div class="my-resources-container">
+
+        <div class="my-resources-top">
+            <div>
+                <h1>Mine ressurser</h1>
+                <p class="my-resources-subtitle">
+                    Få oversikt over og administrer ressursene du har registrert.
+                </p>
+            </div>
+
+            <a asp-controller="Resource"
+               asp-action="Create"
+               class="my-resources-add">
+                ＋ Legg til ressurs
+            </a>
+        </div>
+
+        <!-- Sara: Kort veiledning om hvordan egne ressurser vises og administreres. -->
+        <section id="myResourcesInfo"
+                 class="my-resources-info my-resources-notice"
+                 aria-label="Slik administrerer du ressursene dine">
+
+            <button type="button"
+                    class="my-resources-notice-close"
+                    data-dismiss-notice
+                    aria-label="Lukk veiledningen"
+                    title="Lukk">&times;</button>
+
+            <h2>ⓘ Slik administrerer du ressursene dine</h2>
+
+            <p>
+                Her ser du ressursene du har registrert.
+                Tilgjengelige ressurser kan vises til offentlige aktører
+                som søker etter utstyr og hjelp.
+            </p>
+
+            <p>
+                Du kan deaktivere en ressurs for å skjule den fra offentlige
+                aktører uten å slette den. Ressursen kan aktiveres igjen
+                når du ønsker.
+            </p>
+
+            <p>
+                Velg «Rediger» for å oppdatere ressursinformasjon,
+                plassering og tilgjengelighet, eller for å slette ressursen permanent.
+            </p>
+        </section>
+
+        @* Sara: Viser bekreftelse etter endringer i ressursene. *@
+        @if (TempData["ResourceMessage"] is string resourceMessage)
+        {
+            var messageStyle = resourceMessage.Contains(
+                "deaktivert", StringComparison.OrdinalIgnoreCase)
+                ? "is-deactivated"
+                : resourceMessage.Contains(
+                    "reservert", StringComparison.OrdinalIgnoreCase)
+                    ? "is-reserved"
+                    : "is-activated";
+
+            <div class="my-resources-message my-resources-notice @messageStyle"
+                 role="status">
+
+                <span>@resourceMessage</span>
+
+                <button type="button"
+                        class="my-resources-notice-close"
+                        data-dismiss-notice
+                        aria-label="Lukk statusmeldingen"
+                        title="Lukk">&times;</button>
+            </div>
+        }
+
+        <!-- Sara: Tallene beregnes fra den innloggede brukerens ressurser. -->
+        <section class="my-resources-stats"
+                 aria-label="Ressursstatistikk">
+
+            <div class="my-resources-stat">
+                <span>Totalt registrert</span>
+                <strong>@resources.Count</strong>
+            </div>
+
+            <div class="my-resources-stat">
+                <span>Tilgjengelige</span>
+                <strong>@available</strong>
+            </div>
+
+            <div class="my-resources-stat">
+                <span>Reserverte</span>
+                <strong>@reserved</strong>
+            </div>
+
+            <div class="my-resources-stat">
+                <span>Ikke tilgjengelige</span>
+                <strong>@unavailable</strong>
+            </div>
+        </section>
+
+        <section class="my-resources-panel"
+                 aria-label="Liste over mine ressurser">
+
+            <div class="my-resources-toolbar">
+
+                <input id="myResourcesSearch"
+                       type="search"
+                       placeholder="Søk etter ressurs, kategori eller kommune ..."
+                       aria-label="Søk i egne ressurser" />
+
+                <select id="myResourcesStatus"
+                        aria-label="Filtrer etter status">
+
+                    <option value="all">Alle statuser</option>
+                    <option value="available">Tilgjengelig</option>
+                    <option value="reserved">Reservert</option>
+                    <option value="unavailable">Ikke tilgjengelig</option>
+                </select>
+            </div>
+
+            @if (resources.Count == 0)
+            {
+                <div class="my-resources-empty">
+                    <h3>Du har ikke registrert noen ressurser ennå</h3>
+
+                    <p>
+                        Velg «Legg til ressurs» for å registrere din første ressurs.
+                    </p>
+
+                    <a asp-controller="Resource"
+                       asp-action="Create"
+                       class="my-resources-add">
+                        ＋ Legg til ressurs
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="my-resources-table-wrap">
+                    <table class="my-resources-table">
+
+                        <thead>
+                            <tr>
+                                <th>Ressurs</th>
+                                <th>Kommune</th>
+                                <th>Antall</th>
+                                <th>Status</th>
+                                <th>Handlinger</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var resource in resources)
+                            {
+                                var category = resource.Category?.Name
+                                    ?? "Ukjent kategori";
+
+                                var icon = category.ToLowerInvariant() switch
+                                {
+                                    "maskiner" => "🚜",
+                                    "strøm" => "⚡",
+                                    "drone" => "🛸",
+                                    "transport" => "🚚",
+                                    "båt" => "🚤",
+                                    "mannskap" => "👥",
+                                    "lokaler" => "🏢",
+                                    "samband" => "📡",
+                                    "snørydding" => "❄️",
+                                    "sand og grus" => "🪨",
+                                    "evakuering" => "🛟",
+                                    _ => "📦"
+                                };
+
+                                var statusKey = resource.Availability switch
+                                {
+                                    ResourceAvailability.Available => "available",
+                                    ResourceAvailability.Reserved => "reserved",
+                                    _ => "unavailable"
+                                };
+
+                                var statusText = resource.Availability switch
+                                {
+                                    ResourceAvailability.Available => "Tilgjengelig",
+                                    ResourceAvailability.Reserved => "Reservert",
+                                    _ => "Ikke tilgjengelig"
+                                };
+
+                                <tr class="my-resource-row"
+                                    data-status="@statusKey"
+                                    data-search="@($"{resource.Name} {category} {resource.Municipality}".ToLowerInvariant())">
+
+                                    <td>
+                                        <div class="my-resources-identity">
+                                            <span class="my-resources-icon"
+                                                  aria-hidden="true">@icon</span>
+
+                                            <div>
+                                                <div class="my-resources-name">
+                                                    @resource.Name
+                                                </div>
+
+                                                <div class="my-resources-category">
+                                                    @category
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>@resource.Municipality</td>
+
+                                    <td>@resource.Quantity @resource.Unit</td>
+
+                                    <td>
+                                        <span class="my-resources-status @statusKey">
+                                            @statusText
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="my-resources-actions">
+
+                                            @* Sara: Åpner redigeringssiden med riktig ressurs-ID. *@
+                                            <a asp-controller="ResourceProvider"
+                                               asp-action="Edit"
+                                               asp-route-id="@resource.ResourceId"
+                                               class="my-resources-action">
+                                                Rediger
+                                            </a>
+
+                                            @* Sara: Reserverte ressurser kan ikke aktiveres eller deaktiveres. *@
+                                            @if (resource.Availability == ResourceAvailability.Reserved)
+                                            {
+                                                <button type="button"
+                                                        class="my-resources-action is-locked"
+                                                        disabled
+                                                        title="Reserverte ressurser kan ikke deaktiveres">
+                                                    &#128274; Reservert
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                @* Sara: Statusendring lagres med POST og beskyttes mot CSRF. *@
+                                                <form asp-controller="ResourceProvider"
+                                                      asp-action="ToggleAvailability"
+                                                      method="post">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <input type="hidden"
+                                                           name="id"
+                                                           value="@resource.ResourceId" />
+
+                                                    <button type="submit"
+                                                            class="my-resources-action">
+                                                        @(resource.Availability == ResourceAvailability.Unavailable
+                                                            ? "Aktiver"
+                                                            : "Deaktiver")
+                                                    </button>
+                                                </form>
+                                            }
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="myResourcesNoMatch"
+                     class="my-resources-empty"
+                     hidden>
+                    Ingen ressurser passer til søket eller filteret.
+                </div>
+
+                <div class="my-resources-footer"
+                     id="myResourcesCount">
+                    Viser @resources.Count av @resources.Count ressurser
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+<script>
+    // Sara: Lukker informasjons- og statusmeldinger uten å påvirke ressursdata.
+    (() => {
+        const info = document.getElementById('myResourcesInfo');
+        const storageKey = 'kriseportalen-myresources-info-dismissed';
+
+        // Sara: Husker lukking av veiledningen under denne nettleserøkten.
+        try {
+            if (info && sessionStorage.getItem(storageKey) === 'true') {
+                info.hidden = true;
+            }
+        } catch (_) {
+            /* Siden fungerer også hvis nettleseren blokkerer lagring. */
+        }
+
+        document.querySelectorAll('[data-dismiss-notice]').forEach(button => {
+            button.addEventListener('click', () => {
+                const notice = button.closest('.my-resources-notice');
+
+                if (!notice) return;
+
+                notice.hidden = true;
+
+                if (notice === info) {
+                    try {
+                        sessionStorage.setItem(storageKey, 'true');
+                    } catch (_) { }
+                }
+            });
+        });
+    })();
+
+    // Sara: Filtrerer kun ressursene som er hentet for innlogget bruker.
+    (() => {
+        const search = document.getElementById('myResourcesSearch');
+        const filter = document.getElementById('myResourcesStatus');
+        const rows = Array.from(document.querySelectorAll('.my-resource-row'));
+        const count = document.getElementById('myResourcesCount');
+        const noMatch = document.getElementById('myResourcesNoMatch');
+
+        if (!search || !filter || !count) return;
+
+        function updateList() {
+            const term = search.value.trim().toLocaleLowerCase('nb-NO');
+            const status = filter.value;
+            let visible = 0;
+
+            rows.forEach(row => {
+                const matches =
+                    row.dataset.search.includes(term) &&
+                    (status === 'all' || row.dataset.status === status);
+
+                row.hidden = !matches;
+
+                if (matches) visible++;
+            });
+
+            count.textContent = `Viser ${visible} av ${rows.length} ressurser`;
+
+            if (noMatch) {
+                noMatch.hidden = visible !== 0;
+            }
+        }
+
+        search.addEventListener('input', updateList);
+        filter.addEventListener('change', updateList);
+    })();
+</script>
