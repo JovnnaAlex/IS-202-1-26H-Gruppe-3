@@ -189,17 +189,26 @@ Følgende funksjonalitet bør også kontrolleres:
 
 **Verktøy:** ChatGPT
 
-Jeg brukte ChatGPT som støtte i arbeidet med ViewModels. KI ble brukt til å forklare hva en ViewModel er og hvilken rolle den har i MVC, foreslå struktur for `NeedViewModel` og `ResourceViewModel`, forklare datatyper som `string`, `bool` og `double`, og hjelpe med navngivning av properties som `Type`, `Priority`, `Available`, `Latitude` og `Longitude`.
+Jeg har brukt ChatGPT som støtte under utviklingen av Kriseportalen i IS-202. KI ble brukt til kodeforslag, stegvis veiledning, forklaring av programmeringsbegreper og feilsøking.
 
-Jeg brukte også ChatGPT til å finne og forstå feil i koden, blant annet manglende `public`, feil property-navn og problemer med namespaces.
+**Bruksområder:**
 
-Forslag fra KI ble kontrollert og tilpasset prosjektets struktur før koden ble lagt inn i GitHub.
+- **ViewModels:** Forklaringer og forslag til struktur for `NeedViewModel`, `ResourceViewModel`, `RegisterViewModel` og `LoginViewModel`. Dette inkluderte datatyper, properties, navngivning og valideringsregler.
+- **Skjemaer og validering:** Hjelp med koblingen mellom registreringsskjemaer og ViewModels, kontroll av innsendte opplysninger med `ModelState.IsValid` og visning av feilmeldinger med `asp-validation-for`, blant annet i `Views/Need/Create.cshtml`.
+- **Registrering, innlogging og utlogging:** Kodeforslag og veiledning under arbeidet med `AccountController`, `Views/Account/Register.cshtml` og `Views/Account/Login.cshtml`. Funksjonaliteten ble tilpasset prosjektets eksisterende `ApplicationUser` og ASP.NET Core Identity.
+- **Kodeforståelse og feilsøking:** Forklaringer av GET og POST og hvordan Controllers, Views og ViewModels samarbeider. KI ble også brukt til hjelp med manglende `public`, feil property-navn og problemer med namespaces.
+- **Testing og oppstart:** Veiledning ved testing av validering, brukerregistrering, innlogging, utlogging og feil innlogging, samt feilsøking ved oppstart med Visual Studio, Docker og Aspire.
+- **Git og GitHub:** Hjelp med branches, commits, push, pull requests, oppdatering fra master, merging og håndtering av merge-konflikter.
 
-**Prompter:**
-- «Hva er en ViewModel og hva skal den gjøre?»
-- «Hvor skal jeg lage ViewModels-mappen i prosjektet?»
-- «Hva betyr feilen NeedViewModel could not be found?»
-- «Hvordan legger jeg ViewModel-koden til GitHub?»
+Jeg har brukt konkrete kodeforslag fra KI og fått hjelp til å legge dem inn og tilpasse dem til prosjektets struktur. Registrering, innlogging, utlogging og feil innlogging ble testet lokalt. Jeg har også brukt KI til å forklare koden underveis, og har hatt behov for flere gjennomganger for å forstå logikken bak forslagene.
+
+**Eksempler på spørsmål og temaer fra samtalene:**
+
+- Hva er en ViewModel, og hva skal den gjøre?
+- Hvordan kontrollerer vi skjemaopplysninger og viser feilmeldinger?
+- Hvordan bygger vi registrering og innlogging på Identity-oppsettet som allerede finnes?
+- Hvordan får jeg gruppens endringer inn i min branch?
+- Hvordan håndterer jeg merge-konflikter og sender endringene mine til GitHub?
 
 ---
 
