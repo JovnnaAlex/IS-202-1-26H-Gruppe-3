@@ -197,6 +197,7 @@ Systemtesting er gjennomført manuelt for å kontrollere at applikasjonens kompo
 | Deaktivere og reaktivere ressurs | Ressursens status kan endres | Bestått |
 | Velge geografisk plassering | Brukeren kan plassere en markør på kartet | Bestått |
 | Vise ressursdetaljer | Registrert informasjon og kartpunkt vises | Bestått |
+| Slette en ressurs | Ressursen slettes, brukeren sendes til «Mine ressurser», og oversikten oppdateres | Bestått |
 
 ### 3. Sikkerhetstesting
 
@@ -224,6 +225,7 @@ Det er gjennomført manuelle kontroller av navigasjon og registreringsflyt.
 | Gå fra registrering til forhåndsvisning | Informasjonen vises i riktig layout | Bestått |
 | Åpne bekreftelsessiden | Bekreftelsen vises med riktig layout | Bestått |
 | Trykke «Tilbake til dashboard» | Brukeren sendes til ressursleverandørens dashboard | Bestått |
+| Teste applikasjonen i mobilvisning | Sider, navigasjon og skjemaer skal kunne brukes på mindre skjermer | Bestått med forbedringsbehov |
 
 Testene er gjennomført som manuelle funksjons- og brukervennlighetskontroller under utviklingen. Det er ikke gjennomført en formell brukertest med eksterne testpersoner.
 
@@ -231,10 +233,10 @@ Testene er gjennomført som manuelle funksjons- og brukervennlighetskontroller u
 
 Følgende funksjoner bør kontrolleres nærmere:
 
-- Sletting av egne ressurser er implementert, men funksjonen er ikke manuelt verifisert. Reserverte ressurser kan ikke slettes.
 - Hele flyten for behovsregistrering bør gjennomgås og dokumenteres.
 - Ressursoversikten på dashboardet bør kontrolleres mot dataene i databasen.
 - Responsivt design bør testes systematisk på flere skjermstørrelser.
+- Applikasjonen fungerer i mobilvisning, men det responsive designet er ikke optimalt. Videre forbedringer av mobiltilpasning og brukeropplevelse er planlagt frem mot Expo.
 
 ---
 
