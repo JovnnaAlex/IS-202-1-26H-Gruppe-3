@@ -1,9 +1,13 @@
+using Kriseportal.Web.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kriseportal.Web.Controllers;
 
 public class HomeController : Controller
 {
+    // B12: Beredskapsoversikten er bare for offentlige aktører
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     public IActionResult Index()
     {
         return View();

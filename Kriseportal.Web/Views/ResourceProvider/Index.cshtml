@@ -1,0 +1,402 @@
+
+@{
+    // Sara: Dashboardet bruker egen layout for ressursleverandører.
+    ViewData["Title"] = "Din oversikt";
+    Layout = "_ResourceProviderLayout";
+}
+
+<style>
+    /* Sara: Farger og hovedoppsett for ressursleverandørens dashboard. */
+    .provider-page {
+        background: #F0F3EA;
+        min-height: 85vh;
+        padding: 48px 24px 80px;
+        font-family: inherit;
+    }
+
+    .provider-container {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    .provider-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .provider-heading h1 {
+        color: #244D3B;
+        font-size: 36px;
+        margin: 0 0 10px;
+        font-weight: 750;
+    }
+
+    .provider-heading p {
+        color: #64746A;
+        font-size: 15px;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .provider-add-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        background: #244D3B;
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+
+    /* Sara: Fire statuskort med egne farger og forklaringer. */
+    .provider-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 36px;
+    }
+
+    .provider-stat {
+        background: white;
+        border: 1px solid #E0E8DF;
+        border-radius: 18px;
+        padding: 23px;
+        min-height: 175px;
+        box-shadow: 0 4px 16px rgba(36, 77, 59, 0.035);
+    }
+
+    .provider-stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .provider-stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Sara: Gir alle ikonene samme størrelse og strektykkelse. */
+    .provider-stat-icon svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .provider-stat-number {
+        font-size: 32px;
+        font-weight: 750;
+    }
+
+    .provider-stat h2 {
+        color: #244D3B;
+        font-size: 15px;
+        margin: 0 0 8px;
+        font-weight: 650;
+    }
+
+    .provider-stat p {
+        color: #718077;
+        font-size: 12px;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .provider-stat.resources .provider-stat-icon {
+        background: #E6EEE7;
+        color: #244D3B;
+    }
+
+    .provider-stat.resources .provider-stat-number {
+        color: #244D3B;
+    }
+
+    .provider-stat.available .provider-stat-icon {
+        background: #E3F3E7;
+        color: #287A4D;
+    }
+
+    .provider-stat.available .provider-stat-number {
+        color: #287A4D;
+    }
+
+    .provider-stat.requests .provider-stat-icon {
+        background: #FFF1D5;
+        color: #A66B14;
+    }
+
+    .provider-stat.requests .provider-stat-number {
+        color: #A66B14;
+    }
+
+    .provider-stat.urgent .provider-stat-icon {
+        background: #FCE6E4;
+        color: #B74242;
+    }
+
+    .provider-stat.urgent .provider-stat-number {
+        color: #B74242;
+    }
+
+    /* Sara: Innholdskort under statistikken. */
+    .provider-content {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 22px;
+    }
+
+    .provider-panel {
+        background: #FFFFFF;
+        border: 1px solid #E0E8DF;
+        border-radius: 18px;
+        padding: 26px;
+    }
+
+    .provider-panel h2 {
+        font-size: 19px;
+        color: #244D3B;
+        margin: 0 0 8px;
+        font-weight: 650;
+    }
+
+    .provider-panel-description {
+        color: #718077;
+        font-size: 13px;
+        margin: 0 0 26px;
+    }
+
+    .provider-empty {
+        text-align: center;
+        background: #F7F9F5;
+        border: 1px dashed #CCD9CC;
+        border-radius: 14px;
+        padding: 35px 20px;
+    }
+
+    .provider-empty-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #244D3B;
+        margin-bottom: 12px;
+    }
+
+    /* Sara: Samme ikonstil i de nederste informasjonsboksene. */
+    .provider-empty-icon svg {
+        width: 30px;
+        height: 30px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .provider-empty h3 {
+        color: #244D3B;
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    .provider-empty p {
+        color: #718077;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Sara: Tilpasser dashboardet til mindre skjermer. */
+    @@media (max-width: 1200px) {
+        .provider-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 950px) {
+        .provider-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .provider-heading {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .provider-heading h1 {
+            font-size: 29px;
+        }
+
+        .provider-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .provider-page {
+            padding: 30px 16px 60px;
+        }
+    }
+</style>
+
+<!-- Sara: Hovedinnholdet i ressursleverandørens dashboard. -->
+<div class="provider-page">
+    <div class="provider-container">
+
+        <!-- Sara: Overskrift og hovedhandling. -->
+        <div class="provider-heading">
+            <div>
+                <h1>Din oversikt</h1>
+                <p>
+                    Administrer ressursene dine og hold oversikt over
+                    forespørsler fra offentlige aktører.
+                </p>
+            </div>
+
+            <!-- Sara: Knappen kobles til registrering av ressurser senere. -->
+            <span class="provider-add-button">
+                <span>＋</span>
+                Legg til ressurs
+            </span>
+        </div>
+
+        <!-- Sara: Statuskort. Tallene kobles til databasen senere. -->
+        <section class="provider-stats" aria-label="Din status">
+
+            <!-- Sara: Pakkeikon for alle registrerte ressurser. -->
+            <div class="provider-stat resources">
+                <div class="provider-stat-top">
+                    <span class="provider-stat-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                            <path d="m3.3 7 8.7 5 8.7-5"></path>
+                            <path d="M12 22V12"></path>
+                        </svg>
+                    </span>
+                    <span class="provider-stat-number">—</span>
+                </div>
+
+                <h2>Mine ressurser</h2>
+                <p>Totalt antall registrerte ressurser</p>
+            </div>
+
+            <!-- Sara: Grønn hake i sirkel for tilgjengelige ressurser. -->
+            <div class="provider-stat available">
+                <div class="provider-stat-top">
+                    <span class="provider-stat-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m8 12 3 3 5-6"></path>
+                        </svg>
+                    </span>
+                    <span class="provider-stat-number">—</span>
+                </div>
+
+                <h2>Tilgjengelige ressurser</h2>
+                <p>Ressurser som er klare til bruk</p>
+            </div>
+
+            <!-- Sara: Konvoluttikon for nye forespørsler. -->
+            <div class="provider-stat requests">
+                <div class="provider-stat-top">
+                    <span class="provider-stat-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="m22 7-10 6L2 7"></path>
+                        </svg>
+                    </span>
+                    <span class="provider-stat-number">—</span>
+                </div>
+
+                <h2>Nye forespørsler</h2>
+                <p>Henvendelser som venter på svar</p>
+            </div>
+
+            <!-- Sara: Rødt varseltrekantikon for hasteforespørsler. -->
+            <div class="provider-stat urgent">
+                <div class="provider-stat-top">
+                    <span class="provider-stat-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m10.3 3.9-8.2 14.2A2 2 0 0 0 3.8 21h16.4a2 2 0 0 0 1.7-2.9L13.7 3.9a2 2 0 0 0-3.4 0Z"></path>
+                            <path d="M12 9v4"></path>
+                            <path d="M12 17h.01"></path>
+                        </svg>
+                    </span>
+                    <span class="provider-stat-number">—</span>
+                </div>
+
+                <h2>Hasteforespørsler</h2>
+                <p>Henvendelser som krever rask respons</p>
+            </div>
+
+        </section>
+
+        <!-- Sara: Ressurser og forespørsler vises her senere. -->
+        <section class="provider-content">
+
+            <div class="provider-panel">
+                <h2>Mine ressurser</h2>
+
+                <p class="provider-panel-description">
+                    Her får du oversikt over ressursene du har registrert.
+                </p>
+
+                <div class="provider-empty">
+                    <div class="provider-empty-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                            <path d="m3.3 7 8.7 5 8.7-5"></path>
+                            <path d="M12 22V12"></path>
+                        </svg>
+                    </div>
+
+                    <h3>Ressursoversikt</h3>
+
+                    <p>
+                        Registrerte ressurser vil vises her
+                        når vi kobler til databasen.
+                    </p>
+                </div>
+            </div>
+
+            <div class="provider-panel">
+                <h2>Siste forespørsler</h2>
+
+                <p class="provider-panel-description">
+                    Følg med på henvendelser fra offentlige aktører.
+                </p>
+
+                <div class="provider-empty">
+                    <div class="provider-empty-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="m22 7-10 6L2 7"></path>
+                        </svg>
+                    </div>
+
+                    <h3>Ingen forespørsler vist ennå</h3>
+
+                    <p>
+                        Forespørsler og prioritet vil vises her
+                        når funksjonen er koblet til.
+                    </p>
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>

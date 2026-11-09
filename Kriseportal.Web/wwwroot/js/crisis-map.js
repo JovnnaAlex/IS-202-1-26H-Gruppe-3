@@ -70,8 +70,17 @@
         map: null,
         pointLayer: null,
         points: [],
+        markers: new Map(),   // punktnøkkel → markør, så lista kan finne riktig markør
         firstLoad: true,
-        selectedMarker: null
+        selectedMarker: null,
+        // Filtrene som er valgt nå. Alt vises når siden åpnes.
+        filters: {
+            showNeeds: true,
+            showResources: true,
+            priorities: new Set(['Acute', 'High', 'Normal', 'Planned']),
+            category: '',
+            municipality: ''
+        }
     };
 
     function initMap() {
@@ -103,7 +112,8 @@
 
             const data = await response.json();
             state.points = data.points;
-            renderPoints(state.points);
+            fillFilterOptions();
+            applyFilters();
 
             const time = new Date(data.updatedAt).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
             updated.textContent = 'Oppdatert kl. ' + time;
@@ -113,14 +123,16 @@
         }
     }
 
-    // Tegner punktene. Beslutningsstøtten kan senere kalle denne med egne punkter.
+ // Tegner punktene. Beslutningsstøtten kan senere kalle denne med egne punkter.
     function renderPoints(points) {
         state.pointLayer.clearLayers();
+        state.markers.clear();
         state.selectedMarker = null;
         const bounds = [];
 
         points.forEach(function (point) {
-            createMarker(point).addTo(state.pointLayer);
+            const marker = createMarker(point).addTo(state.pointLayer);
+            state.markers.set(pointKey(point), marker);
             bounds.push([point.lat, point.lng]);
         });
 
@@ -231,7 +243,7 @@
         const panel = document.getElementById('map-panel');
         panel.classList.add('is-open');
         panel.setAttribute('aria-hidden', 'false');
-        document.getElementById('panel-close').focus();
+        document.getElementById('panel-close').focus({ preventScroll: true });
 
         // Flytter kartet litt, så punktet ikke skjules bak panelet
         state.map.panTo([point.lat, point.lng], { animate: true });
@@ -265,10 +277,256 @@
         }
     }
 
+        // ---------- B29: filter og «Akutt nå»-liste ----------
+
+    // Rekkefølgen behovene sorteres i: det mest akutte først
+    const PRIORITET_REKKEFOLGE = ['Acute', 'High', 'Normal', 'Planned'];
+
+    // Unik nøkkel for et punkt, siden et behov og en ressurs kan ha samme id
+    function pointKey(point) {
+        return point.kind + '-' + point.id;
+    }
+
+    // Sjekker om ett punkt passer med filtrene som er valgt nå
+    function matchesFilters(point) {
+        const f = state.filters;
+
+        if (point.kind === 'need' && !f.showNeeds) {
+            return false;
+        }
+        if (point.kind === 'resource' && !f.showResources) {
+            return false;
+        }
+        // Prioritet gjelder bare behov
+        if (point.kind === 'need' && !f.priorities.has(point.priority)) {
+            return false;
+        }
+        if (f.category && point.category !== f.category) {
+            return false;
+        }
+        if (f.municipality && point.municipality !== f.municipality) {
+            return false;
+        }
+        return true;
+    }
+
+    // Filtrerer punktene og tegner kart, liste og teller på nytt.
+    // Alt skjer i nettleseren, så det går raskt og krever ingen ny henting.
+    function applyFilters() {
+        const visible = state.points.filter(matchesFilters);
+
+        renderPoints(visible);
+        renderNeedList(visible);
+        updateFilterSummary(visible.length);
+    }
+
+    // Fyller kommune- og kategorilistene med verdiene som finnes i dataene,
+    // så man aldri kan velge en kommune uten punkter
+    function fillFilterOptions() {
+        state.filters.municipality = fillSelect('filter-municipality',
+            state.points.map(p => p.municipality), 'Alle kommuner', state.filters.municipality);
+        state.filters.category = fillSelect('filter-category',
+            state.points.map(p => p.category), 'Alle kategorier', state.filters.category);
+    }
+
+    // Lager valgene i en nedtrekksliste, sortert alfabetisk med æ, ø og å riktig
+    function fillSelect(id, values, allText, selected) {
+        const select = document.getElementById(id);
+        const unique = [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'nb'));
+
+        select.innerHTML = '';
+        select.appendChild(new Option(allText, ''));
+        unique.forEach(function (value) {
+            select.appendChild(new Option(value, value));
+        });
+
+        // Beholder valget etter «Oppdater», hvis verdien fortsatt finnes
+        select.value = unique.includes(selected) ? selected : '';
+        return select.value;
+    }
+
+    // Viser hvor mange punkter som vises, og markerer filterknappen
+    function updateFilterSummary(visibleCount) {
+        document.getElementById('filter-count').textContent =
+            'Viser ' + visibleCount + ' av ' + state.points.length + ' punkter';
+
+        document.getElementById('map-filter')
+            .classList.toggle('is-active', visibleCount < state.points.length);
+    }
+
+    // Lager lista over synlige behov, sortert etter hvor mye de haster
+    function renderNeedList(visible) {
+        const needs = visible
+            .filter(p => p.kind === 'need')
+            .sort(function (a, b) {
+                return PRIORITET_REKKEFOLGE.indexOf(a.priority) - PRIORITET_REKKEFOLGE.indexOf(b.priority)
+                    || a.title.localeCompare(b.title, 'nb');
+            });
+
+        const list = document.getElementById('need-list');
+        list.innerHTML = '';
+        document.getElementById('need-list-count').textContent = needs.length;
+
+        if (needs.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'need-list-empty';
+            empty.textContent = 'Ingen behov med disse filtrene.';
+            list.appendChild(empty);
+            return;
+        }
+
+        needs.forEach(function (point) {
+            // Ikonet lages av vår egen kode. All tekst fra databasen settes med textContent.
+            const icon = document.createElement('span');
+            icon.className = 'need-row-icon';
+            icon.innerHTML = markerHtml(point);
+
+            const title = document.createElement('span');
+            title.className = 'need-row-title';
+            title.textContent = point.title;
+
+            const meta = document.createElement('span');
+            meta.className = 'need-row-meta';
+            meta.textContent = styleFor(point).tekst + ' · ' + point.municipality +
+                ' · ' + point.quantity + ' ' + point.unit;
+
+            const text = document.createElement('span');
+            text.className = 'need-row-text';
+            text.append(title, meta);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'need-row';
+            button.append(icon, text);
+            button.addEventListener('click', function () {
+                showPointFromList(point);
+            });
+
+            const item = document.createElement('li');
+            item.appendChild(button);
+            list.appendChild(item);
+        });
+    }
+
+    // Trykk i lista: zoomer til punktet og åpner detaljene
+    function showPointFromList(point) {
+        const marker = state.markers.get(pointKey(point));
+        if (!marker) {
+            return;
+        }
+
+        // På mobil lukkes lista, så kartet og detaljene synes
+        if (window.innerWidth < 768) {
+            closeFilterPanel();
+        }
+
+        state.map.setZoom(Math.max(state.map.getZoom(), 13), { animate: false });
+        openPanel(point, marker);
+    }
+
+    function openFilterPanel() {
+        // Detaljpanelet lukkes, så panelene ikke ligger oppå hverandre på mobil
+        closePanel();
+
+        const panel = document.getElementById('filter-panel');
+        panel.classList.add('is-open');
+        panel.setAttribute('aria-hidden', 'false');
+        document.getElementById('map-filter').setAttribute('aria-expanded', 'true');
+        // preventScroll: ellers ruller nettleseren kartet mens panelet glir inn
+        document.getElementById('filter-close').focus({ preventScroll: true });
+    }
+
+    function closeFilterPanel() {
+        const panel = document.getElementById('filter-panel');
+        panel.classList.remove('is-open');
+        panel.setAttribute('aria-hidden', 'true');
+        document.getElementById('map-filter').setAttribute('aria-expanded', 'false');
+    }
+
+    // Leser av/på-knappene og lagrer valgene i state.filters
+    function readChips() {
+        const isOn = chip => chip.getAttribute('aria-pressed') === 'true';
+
+        state.filters.showNeeds = isOn(document.querySelector('#filter-panel [data-kind="need"]'));
+        state.filters.showResources = isOn(document.querySelector('#filter-panel [data-kind="resource"]'));
+        state.filters.priorities = new Set(
+            [...document.querySelectorAll('#filter-panel [data-priority]')]
+                .filter(isOn)
+                .map(chip => chip.dataset.priority));
+    }
+
+    // Slår av eller på alle knappene som passer med selektoren
+    function setChips(selector, on) {
+        document.querySelectorAll('#filter-panel ' + selector).forEach(function (chip) {
+            chip.setAttribute('aria-pressed', String(on));
+        });
+    }
+
+    function resetFilters() {
+        setChips('.chip', true);
+        document.getElementById('filter-municipality').value = '';
+        document.getElementById('filter-category').value = '';
+        state.filters.municipality = '';
+        state.filters.category = '';
+        readChips();
+        applyFilters();
+    }
+
+    // «Akutt nå»: viser bare akutte behov og åpner lista.
+    // Velg kommune etterpå, så har man alle akutte behov der med to trykk.
+    function showAcuteNow() {
+        setChips('[data-priority]', false);
+        setChips('[data-priority="Acute"]', true);
+        setChips('[data-kind="need"]', true);
+        readChips();
+        applyFilters();
+        openFilterPanel();
+    }
+
+    // Kobler knappene og listene i filterpanelet til funksjonene over
+    function initFilters() {
+        document.getElementById('map-filter').addEventListener('click', function () {
+            if (document.getElementById('filter-panel').classList.contains('is-open')) {
+                closeFilterPanel();
+            } else {
+                openFilterPanel();
+            }
+        });
+        document.getElementById('filter-close').addEventListener('click', closeFilterPanel);
+        document.getElementById('map-acute').addEventListener('click', showAcuteNow);
+        document.getElementById('filter-reset').addEventListener('click', resetFilters);
+
+        document.querySelectorAll('#filter-panel .chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                const on = chip.getAttribute('aria-pressed') !== 'true';
+                chip.setAttribute('aria-pressed', String(on));
+                readChips();
+                applyFilters();
+            });
+        });
+
+        document.getElementById('filter-municipality').addEventListener('change', function (event) {
+            state.filters.municipality = event.target.value;
+            applyFilters();
+        });
+        document.getElementById('filter-category').addEventListener('change', function (event) {
+            state.filters.category = event.target.value;
+            applyFilters();
+        });
+
+        // Trykk på kartet over panelet lukker det på mobil
+        state.map.on('click', function () {
+            if (window.innerWidth < 768) {
+                closeFilterPanel();
+            }
+        });
+    }
+    
     document.addEventListener('DOMContentLoaded', function () {
         // Tegnforklaringen er foldet sammen på små skjermer, så kartet får plass
         if (window.innerWidth < 768) {
             document.getElementById('map-legend').removeAttribute('open');
+            document.getElementById('filter-more').removeAttribute('open');
         }
 
         initMap();
@@ -276,11 +534,13 @@
 
         document.getElementById('map-refresh').addEventListener('click', loadData);
         document.getElementById('panel-close').addEventListener('click', closePanel);
+        initFilters();
 
         // Esc lukker panelet
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 closePanel();
+                closeFilterPanel();;
             }
         });
     });

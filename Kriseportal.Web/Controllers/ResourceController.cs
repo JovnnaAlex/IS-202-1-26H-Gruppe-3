@@ -1,6 +1,7 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 // Sara: Lagt til for å hente ressurser fra databasen.
 using Kriseportal.Web.DataAccess;
@@ -14,9 +15,15 @@ public class ResourceController : Controller
     // Sara: Kobler ResourceController til databasen.
     private readonly ApplicationDbContext _context;
 
-    public ResourceController(ApplicationDbContext context)
+    // Henter informasjon om den innloggede brukeren.
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public ResourceController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     // Sara: MIDLERTIDIG TEST.
@@ -56,6 +63,8 @@ public class ResourceController : Controller
     }
 
     // Sara: Viser oversikten over tilgjengelige ressurser.
+    // B12: Bare offentlige aktører kan se ledige ressurser.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -78,6 +87,8 @@ public class ResourceController : Controller
 
     // Sara: Henter én bestemt ressurs fra databasen
     // og viser den på den nye detaljsiden.
+    // B12: Bare offentlige aktører kan åpne detaljer om ressurser.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     
     public async Task<IActionResult> ResourceDetails(int id)
@@ -108,29 +119,143 @@ public class ResourceController : Controller
 
     // Sara: Åpner den nye siden for å sende forespørsel.
     // Foreløpig er dette bare frontend, uten lagring i databasen.
+    // B12: Bare offentlige aktører kan sende forespørsel om en ressurs.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
     public IActionResult SendRequest()
     {
         return View();
     }
 
-    // Eksisterende funksjon for ressursregistrering.
+    // Henter kategorier fra databasen når registreringsskjemaet åpnes.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        ViewBag.Categories = await _context.Categories
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
         return View();
     }
 
-    // Eksisterende funksjon for registreringsbekreftelse.
+    // Validerer ressursregistreringen og viser forhåndsvisningen.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpPost]
-    public IActionResult Create(ResourceViewModel model)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(ResourceViewModel model)
     {
+        // Kontrollerer at den valgte kategorien finnes i databasen.
+    
+        if (model.CategoryId.HasValue &&
+            !await _context.Categories.AnyAsync(c =>
+                c.CategoryId == model.CategoryId.Value))
+        {
+            ModelState.AddModelError(
+                nameof(model.CategoryId),
+                "Du må velge en gyldig ressurskategori.");
+        }
+
         if (!ModelState.IsValid)
         {
+            // Henter kategoriene på nytt dersom skjemaet har feil.
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
             return View(model);
         }
 
+        // Henter kategorinavnet til bekreftelsessiden.
+        ViewBag.CategoryName = await _context.Categories
+            .Where(c => c.CategoryId == model.CategoryId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync();
+
+        // Foreløpig ingen lagring i databasen.
         return View("Details", model);
     }
+
+    // Sender brukeren tilbake til skjemaet med tidligere utfylte opplysninger.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditPreview(ResourceViewModel model)
+    {
+        // Henter kategoriene på nytt slik at nedtrekkslisten fungerer.
+        ViewBag.Categories = await _context.Categories
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        // Viser skjemaet med informasjonen brukeren allerede har fylt ut.
+        return View("Create", model);
+    }
+
+    // Viser bekreftelsessiden når brukeren godkjenner opplysningene.
+    [Authorize(Roles = AppRoles.ResourceProvider)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmPreview(ResourceViewModel model)
+    {
+        // Kontrollerer at den valgte kategorien finnes i databasen.
+        if (model.CategoryId.HasValue &&
+            !await _context.Categories.AnyAsync(c =>
+                c.CategoryId == model.CategoryId.Value))
+        {
+            ModelState.AddModelError(
+                nameof(model.CategoryId),
+                "Du må velge en gyldig ressurskategori.");
+        }
+
+        // Kontrollerer at alle opplysningene er gyldige.
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View("Create", model);
+        }
+        // Henter brukeren som registrerer ressursen.
+        var user = await _userManager.GetUserAsync(User);
+
+        // Kontrollerer at brukeren finnes.
+        if (user == null)
+        {
+            return Challenge();
+        }
+        // Oppretter en ny ressurs med informasjon fra skjemaet.
+        var resource = new Resource
+        {
+            Name = model.Name,
+            Description = model.Description,
+            CategoryId = model.CategoryId!.Value,
+            Quantity = model.Quantity,
+            Unit = model.Unit,
+            Availability = model.Availability,
+
+            AvailableFrom = model.AvailableFrom,
+            AvailableTo = model.AvailableTo,
+
+            Municipality = model.Municipality,
+            Latitude = Math.Round(Convert.ToDecimal(model.Latitude!.Value), 6),
+            Longitude = Math.Round(Convert.ToDecimal(model.Longitude!.Value), 6),
+
+            ContactName = model.ContactName,
+            ContactPhone = model.ContactPhone,
+
+            ProviderId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        // Legger ressursen til i databasen.
+        _context.Resources.Add(resource);
+
+        // Lagrer endringene i MariaDB.
+        await _context.SaveChangesAsync();
+
+        // Viser bekreftelsessiden etter vellykket lagring.
+        return View("Confirmation");
+    }
 }
+
 // la til en if statement for modelstate validation Edgar

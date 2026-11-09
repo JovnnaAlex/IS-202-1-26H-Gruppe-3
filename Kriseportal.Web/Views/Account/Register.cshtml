@@ -1,25 +1,291 @@
-﻿@model Kriseportal.Web.Models.RegisterViewModel
+﻿
+@model Kriseportal.Web.Models.RegisterViewModel
 
-<h1>Oprett konto</h1>
+@{
+    // Sara: Bruker den offentlige layouten på registreringssiden.
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Opprett bruker";
+}
 
-<form method="post">
-<div asp-validation-summary=ModelOnly></div>
-<label asp-for="Name">Name:</label>
-<input asp-for="Name" />
-<span asp-validation-for="Name"></span>
+<style>
+    /* Sara: Bakgrunn og plassering av registreringskortet. */
+    .register-section {
+        background: #F0F3EA;
+        min-height: 720px;
+        padding: 70px 22px 100px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
 
-<label asp-for="Password">Password:</label>
-<input asp-for="Password" type="password" />
-<span asp-validation-for="Password"></span>
+    .register-card {
+        width: 100%;
+        max-width: 440px;
+        background: #FFFFFF;
+        border: 1px solid #E7EBE4;
+        border-radius: 17px;
+        padding: 40px 38px;
+        box-shadow: 0 8px 28px rgba(36, 77, 59, 0.04);
+    }
 
-<label asp-for="ConfirmPassword">Confirm Password:</label>
-<input asp-for="ConfirmPassword" type="password" />
-<span asp-validation-for="ConfirmPassword"></span>
+    /* Sara: Overskrift og forklaring. */
+    .register-heading {
+        text-align: center;
+        margin-bottom: 34px;
+    }
 
-<label asp-for="Email">Email:</label>
-<input asp-for="Email" type="email" />
-<span asp-validation-for="Email"></span>
+    .register-title {
+        color: #244D3B;
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
 
-<button type="submit">Register</button>
+    .register-description {
+        color: #53645A;
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0;
+    }
 
-</form>
+    /* Sara: Skjemafeltene. */
+    .register-field {
+        margin-bottom: 20px;
+    }
+
+    .register-label {
+        display: block;
+        color: #244D3B;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 9px;
+    }
+
+    .register-input {
+        width: 100%;
+        height: 45px;
+        border: 1px solid #DCE5DC;
+        border-radius: 8px;
+        padding: 0 14px;
+        background: #FFFFFF;
+        color: #244D3B;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .register-input:focus {
+        border-color: #244D3B;
+        box-shadow: 0 0 0 3px rgba(36, 77, 59, 0.1);
+    }
+
+    .register-input::placeholder {
+        color: #91A095;
+    }
+
+    /* Sara: Feilmeldinger fra registreringsskjemaet. */
+    .register-validation {
+        display: block;
+        color: #B42318;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .register-validation-summary {
+        color: #B42318;
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+    /* Sara: Registreringsknapp. */
+    .register-button {
+        width: 100%;
+        background: #244D3B;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+
+    .register-button:hover {
+        background: #193B2D;
+    }
+
+    /* Sara: Lenke tilbake til innlogging. */
+    .register-login {
+        text-align: center;
+        margin-top: 25px;
+        color: #53645A;
+        font-size: 13px;
+    }
+
+    .register-login a {
+        color: #244D3B;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .register-login a:hover {
+        text-decoration: underline;
+    }
+
+    /* Sara: Informasjon om offentlig aktør. */
+    .register-footer {
+        border-top: 1px solid #E7EBE4;
+        margin-top: 26px;
+        padding-top: 23px;
+        text-align: center;
+    }
+
+    .register-footer p {
+        color: #53645A;
+        font-size: 12px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* Sara: Tilpasning for mobil. */
+    @@media (max-width: 768px) {
+        .register-section {
+            padding: 45px 18px 65px;
+            min-height: auto;
+        }
+
+        .register-card {
+            padding: 32px 24px;
+        }
+
+        .register-title {
+            font-size: 27px;
+        }
+    }
+</style>
+
+<!-- Sara: Registrering for nye ressursleverandører. -->
+<section class="register-section">
+
+    <div class="register-card">
+
+        <div class="register-heading">
+
+            <h1 class="register-title">
+                Opprett bruker
+            </h1>
+
+            <p class="register-description">
+                Registrer deg som ressursleverandør
+                og bli en del av samfunnets beredskap.
+            </p>
+
+        </div>
+
+        <!-- Sara: Beholder koblingen til eksisterende backend. -->
+        <form asp-controller="Account"
+              asp-action="Register"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="register-validation-summary">
+            </div>
+
+            <!-- Sara: Fullt navn. -->
+            <div class="register-field">
+
+                <label asp-for="Name" class="register-label">
+                    Fullt navn
+                </label>
+
+                <input asp-for="Name"
+                       class="register-input"
+                       placeholder="Skriv inn ditt fulle navn"
+                       autocomplete="name" />
+
+                <span asp-validation-for="Name"
+                      class="register-validation"></span>
+
+            </div>
+
+            <!-- Sara: E-postadresse. -->
+            <div class="register-field">
+
+                <label asp-for="Email" class="register-label">
+                    E-postadresse
+                </label>
+
+                <input asp-for="Email"
+                       type="email"
+                       class="register-input"
+                       placeholder="Skriv inn e-postadressen din"
+                       autocomplete="email" />
+
+                <span asp-validation-for="Email"
+                      class="register-validation"></span>
+
+            </div>
+
+            <!-- Sara: Passord. -->
+            <div class="register-field">
+
+                <label asp-for="Password" class="register-label">
+                    Passord
+                </label>
+
+                <input asp-for="Password"
+                       type="password"
+                       class="register-input"
+                       placeholder="Opprett et passord"
+                       autocomplete="new-password" />
+
+                <span asp-validation-for="Password"
+                      class="register-validation"></span>
+
+            </div>
+
+            <!-- Sara: Bekreft passord. -->
+            <div class="register-field">
+
+                <label asp-for="ConfirmPassword" class="register-label">
+                    Bekreft passord
+                </label>
+
+                <input asp-for="ConfirmPassword"
+                       type="password"
+                       class="register-input"
+                       placeholder="Skriv inn passordet på nytt"
+                       autocomplete="new-password" />
+
+                <span asp-validation-for="ConfirmPassword"
+                      class="register-validation"></span>
+
+            </div>
+
+            <!-- Sara: Sender registreringen til AccountController. -->
+            <button type="submit" class="register-button">
+                Opprett bruker
+            </button>
+
+        </form>
+
+        <!-- Sara: Eksisterende brukere kan gå til innlogging. -->
+        <div class="register-login">
+            Har du allerede en bruker?
+            <a asp-controller="Account" asp-action="Login">
+                Logg inn
+            </a>
+        </div>
+
+        <!-- Sara: Offentlige aktører skal ikke registrere seg her. -->
+        <div class="register-footer">
+            <p>
+                Representerer du en offentlig aktør?
+                <br />
+                Denne registreringen er for ressursleverandører.
+            </p>
+        </div>
+
+    </div>
+
+</section>

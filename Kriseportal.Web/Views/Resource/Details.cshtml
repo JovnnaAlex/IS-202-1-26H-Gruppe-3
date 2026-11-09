@@ -3,7 +3,8 @@
 
 @{
     // Setter sidetittelen.
-    ViewData["Title"] = "Ressurs registrert";
+    ViewData["Title"] = "Forhåndsvisning av ressurs";
+    Layout = "_ResourceProviderLayout";
 
     // Henter koordinatene og sørger for riktig desimalformat.
     var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);
@@ -18,9 +19,12 @@
 
 <main class="result" style="--accent:var(--c-resource)">
 
-    @* Viser bekreftelse på at ressursen er registrert. *@
+    @* Viser en forhåndsvisning av ressursinformasjonen. *@
     <div class="result__banner" role="status">
-        <h1>Ressursen er registrert</h1>
+        <h1>Forhåndsvisning av ressurs</h1>
+        <p>
+            Opplysningene er kontrollert, men ressursen er ikke lagret ennå.
+        </p>
     </div>
 
     <div class="result__grid">
@@ -29,14 +33,46 @@
         <dl class="result__facts">
             <dt>Navn</dt>
             <dd>@Model.Name</dd>
-            <dt>Type ressurs</dt>
-            <dd>@Model.ResourceType</dd>
+            @* Viser kommunen der ressursen befinner seg. *@
+            <dt>Kommune</dt>
+            <dd>@Model.Municipality</dd>
+            @* Viser kontaktinformasjon for ressursen. *@
+            <dt>Kontaktperson</dt>
+            <dd>@Model.ContactName</dd>
+
+            <dt>Telefonnummer</dt>
+            <dd>@Model.ContactPhone</dd>
+            @* Viser hvor mye av ressursen som tilbys. *@
+            <dt>Antall</dt>
+            <dd>@Model.Quantity @Model.Unit</dd>
+            @* Viser navnet på ressurskategorien fra databasen. *@
+            <dt>Ressurskategori</dt>
+            <dd>@ViewBag.CategoryName</dd>
             <dt>Beskrivelse</dt>
             <dd>@Model.Description</dd>
+            @* Viser perioden ressursen er tilgjengelig. *@
+            <dt>Tilgjengelig fra</dt>
+            <dd>
+                @(Model.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")
+            </dd>
+
+            <dt>Tilgjengelig til</dt>
+            <dd>
+                @(Model.AvailableTo?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")
+            </dd>
+            @* Viser ressursens tilgjengelighetsstatus. *@
             <dt>Status</dt>
             <dd>
-                <span class="badge @(Model.Available ? "badge--available" : "badge--unavailable")">
-                    @(Model.Available ? "Tilgjengelig" : "Ikke tilgjengelig")
+                <span class="badge @(Model.Availability == Kriseportal.Web.Models.Entities.ResourceAvailability.Available
+                                       ? "badge--available"
+                                       : "badge--unavailable")">
+                    @(Model.Availability switch
+                    {
+                        Kriseportal.Web.Models.Entities.ResourceAvailability.Available => "Tilgjengelig",
+                        Kriseportal.Web.Models.Entities.ResourceAvailability.Reserved => "Reservert",
+                        Kriseportal.Web.Models.Entities.ResourceAvailability.Unavailable => "Ikke tilgjengelig",
+                        _ => "Ukjent"
+                    })
                 </span>
             </dd>
         </dl>
@@ -48,12 +84,73 @@
         </section>
     </div>
 
-    @* Lenker for å registrere en ny ressurs eller gå tilbake til forsiden. *@
+    @* Navigasjon fra forhåndsvisningen. *@
     <div class="result__actions">
-        <a class="primary" asp-controller="Resource" asp-action="Create">Registrer ny ressurs</a>
-        <a asp-controller="Home" asp-action="Index">Til forsiden</a>
+
+        <form asp-controller="Resource"
+              asp-action="EditPreview"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            @* Beholder informasjonen når brukeren går tilbake. *@
+            <input type="hidden" asp-for="Name" />
+            <input type="hidden" asp-for="CategoryId" />
+            <input type="hidden" asp-for="Description" />
+            <input type="hidden" asp-for="Quantity" />
+            <input type="hidden" asp-for="Unit" />
+            <input type="hidden" asp-for="Availability" />
+            <input type="hidden" asp-for="AvailableFrom" />
+            <input type="hidden" asp-for="AvailableTo" />
+            <input type="hidden" asp-for="Municipality" />
+            <input type="hidden" asp-for="ContactName" />
+            <input type="hidden" asp-for="ContactPhone" />
+            <input type="hidden" asp-for="Latitude" />
+            <input type="hidden" asp-for="Longitude" />
+
+            <button type="submit" class="primary">
+                Tilbake og rediger
+            </button>
+
+        </form>
+
+        @* Bekrefter opplysningene og sender ressursinformasjonen videre. *@
+        <form asp-controller="Resource"
+              asp-action="ConfirmPreview"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            @* Informasjon om ressursen *@
+            <input type="hidden" asp-for="Name" />
+            <input type="hidden" asp-for="CategoryId" />
+            <input type="hidden" asp-for="Description" />
+            <input type="hidden" asp-for="Quantity" />
+            <input type="hidden" asp-for="Unit" />
+            <input type="hidden" asp-for="Availability" />
+
+            @* Tilgjengelighetsperiode *@
+            <input type="hidden" asp-for="AvailableFrom" />
+            <input type="hidden" asp-for="AvailableTo" />
+
+            @* Plassering *@
+            <input type="hidden" asp-for="Municipality" />
+            <input type="hidden" asp-for="Latitude" />
+            <input type="hidden" asp-for="Longitude" />
+
+            @* Kontaktinformasjon *@
+            <input type="hidden" asp-for="ContactName" />
+            <input type="hidden" asp-for="ContactPhone" />
+
+            <button type="submit" class="primary">
+                Bekreft registrering
+            </button>
+
+        </form>
+
     </div>
 </main>
+
 
 @* Lagrer koordinatene i skjulte felt slik at JavaScript kan hente dem. *@
 <input type="hidden" id="Latitude" value="@lat" />

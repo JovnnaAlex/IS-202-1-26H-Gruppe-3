@@ -1,0 +1,678 @@
+
+@{
+    // Sara: Egen layout for innloggede ressursleverandører.
+    // Den offentlige forsiden og offentlige aktørers sider påvirkes ikke.
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - Kriseportalen</title>
+
+    <!-- Sara: Bootstrap for responsivt oppsett. -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
+    <!-- Sara: Leaflet for fremtidig kartvisning av ressurser. -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Sara: Fargepalett for ressursleverandørportalen. */
+        :root {
+            --provider-primary: #244D3B;
+            --provider-dark: #193B2D;
+            --provider-sage: #E8EFE7;
+            --provider-background: #F0F3EA;
+            --provider-text: #24382D;
+            --provider-muted: #65766B;
+            --provider-border: #DCE5DB;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--provider-background);
+            color: var(--provider-text);
+            font-family: Arial, sans-serif;
+        }
+
+        /* Sara: Toppmeny med den ekte Kriseportalen-logoen. */
+        .provider-header {
+            height: 94px;
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--provider-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 36px;
+            gap: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .provider-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        /* Sara: Holder hele logoen innenfor den hvite toppmenyen. */
+        .provider-brand > a {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+
+        .provider-logo {
+            display: block;
+            width: auto;
+            max-width: 240px;
+            height: auto;
+            max-height: 68px;
+            object-fit: contain;
+        }
+
+        .provider-header-divider {
+            height: 36px;
+            width: 1px;
+            background: #DCE5DB;
+        }
+
+        .provider-header-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--provider-primary);
+            line-height: 1.5;
+        }
+
+        .provider-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .provider-header-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #E8F2E9;
+            color: var(--provider-primary);
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .provider-user-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--provider-primary);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sara: Portalens sidemeny og hovedinnhold. */
+        .provider-shell {
+            display: flex;
+            min-height: calc(100vh - 94px);
+            align-items: stretch;
+        }
+
+        .provider-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #E8EFE7;
+            border-right: 1px solid #D5E1D5;
+            padding: 34px 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .provider-sidebar-heading {
+            color: #7B8B7E;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.3px;
+            padding: 0 15px;
+            margin-bottom: 16px;
+        }
+
+        .provider-sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .provider-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 14px 15px;
+            color: #425D4B;
+            text-decoration: none;
+            border-radius: 11px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .provider-sidebar-link:hover {
+            background: #D9E7D9;
+            color: var(--provider-primary);
+        }
+
+        .provider-sidebar-link.active {
+            background: var(--provider-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(36, 77, 59, 0.12);
+        }
+
+        .provider-sidebar-link svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Sara: Profil og utlogging står rett under resten av menyen. */
+        .provider-sidebar-bottom {
+            margin-top: 8px;
+            padding-top: 0;
+        }
+
+        .provider-sidebar-divider {
+            height: 1px;
+            background: #D1DED1;
+            margin: 18px 12px;
+        }
+
+        .provider-logout-form {
+            margin: 0;
+        }
+
+        .provider-logout {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .provider-logout:hover {
+            background: #F7E6E3;
+            color: #A63E3E;
+        }
+
+        .provider-main-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .provider-page-content {
+            flex: 1;
+        }
+
+        /* Sara: Bunntekst med informasjon som er relevant for ressursleverandører. */
+        /* Sara: Footer ligger utenfor sidemenyen og dekker hele bredden. */
+        .provider-footer {
+            background: var(--provider-dark);
+            color: #FFFFFF;
+            width: 100%;
+        }
+
+        .provider-footer-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            padding: 40px 48px 34px;
+        }
+
+        .provider-footer-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 15px;
+            color: #FFFFFF;
+        }
+
+        .provider-footer-section h3 svg {
+            color: #B7D7B8;
+            width: 21px;
+            height: 21px;
+        }
+
+        .provider-footer-section p {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #D7E5DA;
+            margin: 0;
+            max-width: 450px;
+        }
+
+        .provider-footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 19px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            color: #C4D7CA;
+            font-size: 12px;
+        }
+
+        /* Sara: Mobiltilpasning for mindre skjermer. */
+        @@media (max-width: 1000px) {
+            .provider-sidebar {
+                width: 220px;
+            }
+
+            .provider-header {
+                padding: 12px 22px;
+            }
+
+            .provider-logo {
+                max-width: 190px;
+                max-height: 62px;
+            }
+
+            .provider-footer-inner {
+                padding: 35px 28px;
+                gap: 25px;
+            }
+
+            .provider-footer-bottom {
+                padding: 18px 28px;
+            }
+        }
+
+        @@media (max-width: 760px) {
+            .provider-header {
+                height: auto;
+                min-height: 82px;
+                flex-wrap: wrap;
+            }
+
+            .provider-header-divider,
+            .provider-header-label {
+                display: none;
+            }
+
+            .provider-header-pill {
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+
+            .provider-shell {
+                display: block;
+            }
+
+            .provider-sidebar {
+                width: 100%;
+                padding: 15px;
+                border-right: none;
+                border-bottom: 1px solid var(--provider-border);
+            }
+
+            .provider-sidebar-heading {
+                display: none;
+            }
+
+            .provider-sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .provider-sidebar-link {
+                font-size: 12px;
+                padding: 10px;
+                gap: 7px;
+            }
+
+            .provider-sidebar-link svg {
+                width: 17px;
+                height: 17px;
+            }
+
+            .provider-sidebar-bottom {
+                margin-top: 8px;
+                padding-top: 0;
+            }
+
+            .provider-sidebar-divider {
+                display: none;
+            }
+
+            .provider-footer-inner {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .provider-logo {
+                max-width: 170px;
+                max-height: 58px;
+            }
+
+            .provider-header-actions {
+                gap: 8px;
+            }
+
+            .provider-user-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .provider-footer-inner {
+                padding: 30px 20px;
+            }
+
+            .provider-footer-bottom {
+                padding: 18px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sara: Toppmeny for innloggede ressursleverandører. -->
+    <header class="provider-header">
+
+        <div class="provider-brand">
+
+            <a asp-controller="ResourceProvider"
+               asp-action="Index"
+               aria-label="Gå til din oversikt">
+
+                <img src="~/image/kriseportalen-logo.png"
+                     asp-append-version="true"
+                     alt="Kriseportalen"
+                     class="provider-logo" />
+
+            </a>
+
+            <div class="provider-header-divider"></div>
+
+            <span class="provider-header-label">
+                Ressursleverandørportal
+            </span>
+
+        </div>
+
+        <div class="provider-header-actions">
+
+            <span class="provider-header-pill">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="16" height="16"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="m8 12 3 3 5-6"></path>
+                </svg>
+                Ressursleverandør
+            </span>
+
+            <div class="provider-user-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="21" height="21"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                </svg>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="provider-shell">
+
+        <!-- Sara: Egen navigasjon for ressursleverandører. -->
+        <aside class="provider-sidebar">
+            <div class="provider-sidebar-heading">
+                Min portal
+            </div>
+
+            <nav class="provider-sidebar-nav"
+                 aria-label="Ressursleverandørmeny">
+
+                <a asp-controller="ResourceProvider"
+                   asp-action="Index"
+                   class="provider-sidebar-link @(currentAction == "Index" ? "active" : "")">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                    </svg>
+
+                    Din oversikt
+                </a>
+
+                <!-- Sara: Disse sidene kobles til når vi bygger funksjonene. -->
+                <a asp-controller="ResourceProvider"
+                   asp-action="MyResources"
+                   class="provider-sidebar-link @(currentAction == "MyResources" ? "active" : "")">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+                        <rect x="3" y="7" width="18" height="14" rx="2"></rect>
+                        <path d="M3 11h18"></path>
+                        <path d="M8 7V4h8v3"></path>
+                    </svg>
+
+                    Mine ressurser
+                </a>
+
+                <a asp-controller="Resource"
+                   asp-action="Create"
+                   class="provider-sidebar-link">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <path d="M12 7v10M7 12h10"></path>
+                    </svg>
+
+                    Legg til ressurs
+                </a>
+                <span class="provider-sidebar-link"
+                      style="opacity: 0.65; cursor: default;">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                        <path d="m3 7 9 6 9-6"></path>
+                    </svg>
+
+                    Forespørsler
+                </span>
+
+            </nav>
+
+            <div class="provider-sidebar-bottom">
+
+                <div class="provider-sidebar-divider"></div>
+
+                <span class="provider-sidebar-link"
+                      style="opacity: 0.65; cursor: default;">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"></circle>
+                        <path d="M4 21a8 8 0 0 1 16 0"></path>
+                    </svg>
+
+                    Min profil
+                </span>
+
+                <!-- Sara: Utlogging bruker eksisterende POST-metode. -->
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post"
+                      class="provider-logout-form">
+
+                    <button type="submit"
+                            class="provider-sidebar-link provider-logout">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             aria-hidden="true">
+                            <path d="M10 17l5-5-5-5"></path>
+                            <path d="M15 12H3"></path>
+                            <path d="M12 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6"></path>
+                        </svg>
+
+                        Logg ut
+                    </button>
+                </form>
+
+            </div>
+        </aside>
+
+        <div class="provider-main-area">
+
+            <!-- Sara: Her vises dashboardet og fremtidige portalsider. -->
+            <main class="provider-page-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Sara: Bunnteksten ligger utenfor provider-shell og dekker hele siden. -->
+    <footer class="provider-footer">
+
+                <div class="provider-footer-inner">
+
+                    <section class="provider-footer-section">
+                        <h3>
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 aria-hidden="true">
+                                <path d="M8 12l3 3 5-6"></path>
+                                <circle cx="12" cy="12" r="9"></circle>
+                            </svg>
+
+                            Takk for at du bidrar!
+                        </h3>
+
+                        <p>
+                            Som ressursleverandør bidrar du til å styrke
+                            samfunnets beredskap. Sammen gjør vi det enklere
+                            å stille opp når behov oppstår.
+                        </p>
+                    </section>
+
+                    <section class="provider-footer-section">
+                        <h3>
+                            <svg viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 aria-hidden="true">
+                                <path d="M4 7h16M7 12h10M10 17h4"></path>
+                                <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+
+                            Du har kontroll
+                        </h3>
+
+                        <p>
+                            Her kan du administrere ressursene dine,
+                            følge opp forespørsler og oppdatere
+                            tilgjengeligheten. Ressurser kan deaktiveres
+                            eller slettes når som helst når disse
+                            funksjonene er implementert.
+                        </p>
+                    </section>
+
+                </div>
+
+                <div class="provider-footer-bottom">
+                    <span>
+                        © @DateTime.Now.Year Kriseportalen – Studentprosjekt
+                    </span>
+
+                    <span>
+                        Sammen styrker vi beredskapen
+                    </span>
+                </div>
+
+    </footer>
+
+    <!-- Sara: Leaflet JavaScript for fremtidige kartfunksjoner. -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Sara: Lar portalsidene bruke egne skript ved behov. -->
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

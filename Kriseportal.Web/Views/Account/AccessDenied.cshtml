@@ -1,0 +1,69 @@
+@{
+    // B12: Vises når en innlogget bruker åpner en side rollen ikke har tilgang til.
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Ingen tilgang";
+}
+
+<style>
+    .access-denied-section {
+        min-height: 60vh;
+        background: #F0F3EA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 20px;
+    }
+
+    .access-denied-card {
+        background: #FFFFFF;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        color: #293B33;
+    }
+
+    .access-denied-card h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .access-denied-card p {
+        margin-bottom: 24px;
+    }
+
+    .access-denied-button {
+        display: inline-block;
+        background: #527667;
+        color: #FFFFFF;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .access-denied-button:hover {
+        background: #3E5E50;
+        color: #FFFFFF;
+    }
+</style>
+
+<section class="access-denied-section">
+    <div class="access-denied-card" role="alert">
+        <h1>Ingen tilgang</h1>
+
+        <p>
+            Brukeren din har ikke tilgang til denne siden.
+            Logg inn med en konto som har riktig rolle.
+        </p>
+
+        <a asp-controller="Front"
+           asp-action="Index"
+           class="access-denied-button">
+            Til forsiden
+        </a>
+    </div>
+</section>

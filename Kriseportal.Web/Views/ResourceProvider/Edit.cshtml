@@ -1,0 +1,245 @@
+@model Kriseportal.Web.Models.ResourceViewModel
+@using Kriseportal.Web.Models.Entities
+@using System.Globalization
+@using System.Collections.Generic
+
+@{
+    // Sara: Bruker ressursleverandørportalens layout og eksisterende redigeringsdata.
+    Layout = "_ResourceProviderLayout";
+    ViewData["Title"] = "Rediger ressurs";
+    var resourceId = (int)ViewBag.ResourceId;
+    var createdAt = (DateTime)ViewBag.CreatedAt;
+    var isReserved = (bool)ViewBag.IsReserved;
+    var categories = ViewBag.Categories as IEnumerable<Category> ?? Enumerable.Empty<Category>();
+    var latitude = Model.Latitude?.ToString(CultureInfo.InvariantCulture) ?? "58.1467";
+    var longitude = Model.Longitude?.ToString(CultureInfo.InvariantCulture) ?? "7.9956";
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+    /* Sara: Kompakt redigeringsside i samme visuelle stil som leverandørportalen. */
+    .edit-page { background:#F0F3EA; min-height:80vh; padding:35px 24px 65px; color:#294232; }
+    .edit-wrap { max-width:980px; margin:auto; }
+    .edit-back { display:inline-flex; gap:7px; color:#496754; text-decoration:none; font-size:13px; margin-bottom:15px; }
+    .edit-header { display:flex; justify-content:space-between; align-items:flex-start; gap:15px; margin-bottom:22px; }
+    .edit-header h1 { margin:0 0 7px; font-size:30px; color:#244D3B; }
+    .edit-header p { margin:0; color:#64796A; font-size:14px; }
+    .edit-tag { background:#E1EDE2; color:#315B41; border-radius:30px; padding:8px 13px; font-size:12px; white-space:nowrap; }
+    .edit-tag.reserved { background:#EBEEEB; color:#57665B; }
+    .edit-note { background:#E7EFE5; border:1px solid #D0DED0; padding:14px 17px; border-radius:12px; font-size:13px; line-height:1.6; margin-bottom:18px; }
+    .edit-note.reserved { background:#F0F1EE; border-color:#D9DFD9; }
+    .edit-card { background:white; border:1px solid #DEE7DE; border-radius:16px; padding:23px; margin-bottom:17px; }
+    .edit-card h2 { font-size:17px; margin:0 0 18px; color:#244D3B; }
+    .edit-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .edit-field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+    .edit-field.full { grid-column:1/-1; }
+    .edit-field label { font-size:13px; font-weight:650; color:#3C5845; }
+    .edit-field input, .edit-field select, .edit-field textarea { width:100%; box-sizing:border-box; border:1px solid #CEDBCF; border-radius:9px; padding:11px 12px; font:inherit; font-size:14px; background:white; color:#294232; }
+    .edit-field textarea { resize:vertical; min-height:85px; }
+    .edit-field input:focus, .edit-field select:focus, .edit-field textarea:focus { outline:2px solid #8FB59A; outline-offset:1px; }
+    .edit-field input[readonly] { background:#EDF1ED; color:#738176; cursor:not-allowed; }
+    .edit-hint { font-size:12px; color:#6B7B70; margin:0; }
+    .edit-error { color:#B33232; font-size:12px; }
+    .edit-validation { color:#B33232; font-size:13px; margin-bottom:12px; }
+    .edit-map { height:255px; border:1px solid #D9E2D8; border-radius:11px; overflow:hidden; margin-top:12px; }
+    .edit-actions { display:flex; justify-content:flex-end; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0 25px; }
+    .edit-btn { display:inline-flex; justify-content:center; align-items:center; padding:12px 19px; border-radius:9px; border:1px solid #C9D7CB; font:inherit; font-size:14px; font-weight:650; text-decoration:none; cursor:pointer; }
+    .edit-btn.primary { background:#244D3B; border-color:#244D3B; color:white; }
+    .edit-btn.primary:hover { background:#193B2D; }
+    .edit-btn.secondary { background:white; color:#345640; }
+    .edit-btn.danger { background:white; color:#A42E2E; border-color:#E5BEBE; }
+    .edit-danger { border:1px solid #E8CACA; background:#FFFDFD; border-radius:15px; padding:21px 23px; }
+    .edit-danger h2 { margin:0 0 6px; font-size:16px; color:#943434; }
+    .edit-danger p { font-size:13px; color:#775F5F; margin:0 0 14px; }
+    .edit-delete-confirm { display:none; padding:14px; margin-top:13px; background:#FFF1F1; border-radius:10px; }
+    .edit-delete-confirm.open { display:block; }
+    .edit-delete-confirm p { margin-bottom:12px; }
+    .edit-delete-buttons { display:flex; gap:9px; flex-wrap:wrap; }
+    @@media(max-width:650px) { .edit-page { padding:22px 13px 45px; } .edit-grid { grid-template-columns:1fr; } .edit-card { padding:17px; } .edit-header h1 { font-size:25px; } .edit-actions { justify-content:stretch; } .edit-actions .edit-btn { flex:1; } }
+</style>
+
+<main class="edit-page">
+    <div class="edit-wrap">
+        <a asp-controller="ResourceProvider" asp-action="MyResources" class="edit-back">← Tilbake til mine ressurser</a>
+        <header class="edit-header">
+            <div>
+                <h1>Rediger ressurs</h1>
+                <p>Oppdater opplysningene om ressursen din.</p>
+            </div>
+            <span class="edit-tag @(isReserved ? "reserved" : "")">@(isReserved ? "🔒 Reservert" : "Ressurs #" + resourceId)</span>
+        </header>
+
+        @if (TempData["ResourceMessage"] is string message)
+        {
+            <div class="edit-note" role="status">@message</div>
+        }
+
+        @if (isReserved)
+        {
+            @* Sara: Reserverte ressurser kan kun få endret kontaktopplysninger. *@
+            <div class="edit-note reserved">🔒 Denne ressursen er reservert. Ressursinformasjon, tilgjengelighet og plassering er låst. Du kan fortsatt oppdatere kontaktinformasjonen.</div>
+
+            <section class="edit-card">
+                <h2>Ressursinformasjon</h2>
+                <div class="edit-grid">
+                    <div class="edit-field"><label>Ressursnavn</label><input value="@Model.Name" readonly /></div>
+                    <div class="edit-field"><label>Kategori</label><input value="@(categories.FirstOrDefault(c => c.CategoryId == Model.CategoryId)?.Name ?? "Ukjent")" readonly /></div>
+                    <div class="edit-field"><label>Antall og enhet</label><input value="@Model.Quantity @Model.Unit" readonly /></div>
+                    <div class="edit-field"><label>Kommune</label><input value="@Model.Municipality" readonly /></div>
+                </div>
+            </section>
+
+            <form asp-controller="ResourceProvider" asp-action="EditReservedContact" asp-route-id="@resourceId" method="post">
+                @Html.AntiForgeryToken()
+                <section class="edit-card">
+                    <h2>Kontaktinformasjon</h2>
+                    <div class="edit-grid">
+                        <div class="edit-field"><label for="contactName">Kontaktperson</label><input id="contactName" name="contactName" value="@Model.ContactName" maxlength="100" required /></div>
+                        <div class="edit-field"><label for="contactPhone">Telefonnummer</label><input id="contactPhone" name="contactPhone" value="@Model.ContactPhone" maxlength="20" pattern="\+?[0-9 ]{8,20}" required /></div>
+                    </div>
+                </section>
+                <div class="edit-actions">
+                    <a asp-action="MyResources" class="edit-btn secondary">Avbryt</a>
+                    <button type="submit" class="edit-btn primary">Lagre kontaktinformasjon</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            @* Sara: Vanlig redigering lagres direkte uten ny forhåndsvisning. *@
+            <form asp-controller="ResourceProvider" asp-action="Edit" asp-route-id="@resourceId" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="edit-validation"></div>
+                <div class="edit-note">Endringer du lagrer her, oppdaterer ressursen i Kriseportalen. Ressurser som er tilgjengelige, kan vises til offentlige aktører.</div>
+
+                <section class="edit-card">
+                    <h2>Ressursinformasjon</h2>
+                    <div class="edit-grid">
+                        <div class="edit-field"><label asp-for="Name">Navn på ressurs</label><input asp-for="Name" /><span asp-validation-for="Name" class="edit-error"></span></div>
+                        <div class="edit-field"><label asp-for="CategoryId">Ressurskategori</label><select asp-for="CategoryId"><option value="">Velg kategori</option>@foreach (var category in categories) { <option value="@category.CategoryId">@category.Name</option> }</select><span asp-validation-for="CategoryId" class="edit-error"></span></div>
+                        <div class="edit-field"><label asp-for="Quantity">Antall</label><input asp-for="Quantity" type="number" min="1" /><span asp-validation-for="Quantity" class="edit-error"></span></div>
+                        <div class="edit-field"><label asp-for="Unit">Enhet</label><input asp-for="Unit" /><span asp-validation-for="Unit" class="edit-error"></span></div>
+                        <div class="edit-field full"><label asp-for="Description">Beskrivelse</label><textarea asp-for="Description" rows="3"></textarea><span asp-validation-for="Description" class="edit-error"></span></div>
+                    </div>
+                </section>
+
+                <section class="edit-card">
+                    <h2>Tilgjengelighet</h2>
+                    <div class="edit-grid">
+                        <div class="edit-field full">
+                            <label asp-for="Availability">Status</label>
+                            <select asp-for="Availability">
+                                <option value="@ResourceAvailability.Available">Tilgjengelig – vises for offentlige aktører</option>
+                                <option value="@ResourceAvailability.Unavailable">Ikke tilgjengelig – skjules fra offentlig oversikt</option>
+                            </select>
+                            <span asp-validation-for="Availability" class="edit-error"></span>
+                        </div>
+                        <div class="edit-field"><label asp-for="AvailableFrom">Tilgjengelig fra</label><input asp-for="AvailableFrom" type="date" asp-format="{0:yyyy-MM-dd}" /><span asp-validation-for="AvailableFrom" class="edit-error"></span></div>
+                        <div class="edit-field"><label asp-for="AvailableTo">Tilgjengelig til</label><input asp-for="AvailableTo" type="date" asp-format="{0:yyyy-MM-dd}" /><span asp-validation-for="AvailableTo" class="edit-error"></span></div>
+                    </div>
+                </section>
+
+                <section class="edit-card">
+                    <h2>Plassering</h2>
+                    <div class="edit-grid">
+                        <div class="edit-field full"><label asp-for="Municipality">Kommune</label><input asp-for="Municipality" /><span asp-validation-for="Municipality" class="edit-error"></span></div>
+                    </div>
+                    <p class="edit-hint" style="margin-top:12px">Klikk på kartet eller dra markøren for å endre ressursens plassering.</p>
+                    <div id="editResourceMap" class="edit-map" aria-label="Kart for ressursplassering"></div>
+                    <input asp-for="Latitude" type="hidden" id="Latitude" />
+                    <input asp-for="Longitude" type="hidden" id="Longitude" />
+                    <p class="edit-hint" id="editCoordinates" style="margin-top:9px">Posisjon: @latitude, @longitude</p>
+                    <span asp-validation-for="Latitude" class="edit-error"></span>
+                    <span asp-validation-for="Longitude" class="edit-error"></span>
+                </section>
+
+                <section class="edit-card">
+                    <h2>Kontaktinformasjon</h2>
+                    <div class="edit-grid">
+                        <div class="edit-field"><label asp-for="ContactName">Kontaktperson</label><input asp-for="ContactName" /><span asp-validation-for="ContactName" class="edit-error"></span></div>
+                        <div class="edit-field"><label asp-for="ContactPhone">Telefonnummer</label><input asp-for="ContactPhone" type="tel" /><span asp-validation-for="ContactPhone" class="edit-error"></span></div>
+                    </div>
+                </section>
+
+                <section class="edit-card">
+                    <h2>Registreringsinformasjon</h2>
+                    <p class="edit-hint" style="margin-bottom:14px">Disse opplysningene kan ikke endres.</p>
+                    <div class="edit-grid">
+                        <div class="edit-field"><label>Ressurs-ID 🔒</label><input value="@resourceId" readonly /></div>
+                        <div class="edit-field"><label>Registrert 🔒</label><input value="@createdAt.ToString("dd.MM.yyyy")" readonly /></div>
+                    </div>
+                </section>
+
+                <div class="edit-actions">
+                    <a asp-action="MyResources" class="edit-btn secondary">Avbryt</a>
+                    <button type="submit" class="edit-btn primary">Lagre endringer</button>
+                </div>
+            </form>
+
+            @* Sara: Sletting er en separat POST-handling med tydelig bekreftelse. *@
+            <section class="edit-danger">
+                <h2>Slett ressurs</h2>
+                <p>Hvis du sletter ressursen, fjernes den permanent fra Kriseportalen.</p>
+                <button type="button" class="edit-btn danger" id="showDeleteConfirmation" aria-expanded="false" aria-controls="deleteConfirmation">Slett ressurs</button>
+                <div class="edit-delete-confirm" id="deleteConfirmation">
+                    <p>Er du sikker på at du vil slette <strong>@Model.Name</strong>? Dette kan ikke angres.</p>
+                    <div class="edit-delete-buttons">
+                        <form asp-controller="ResourceProvider" asp-action="Delete" asp-route-id="@resourceId" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="edit-btn danger">Ja, slett permanent</button>
+                        </form>
+                        <button type="button" class="edit-btn secondary" id="cancelDelete">Avbryt</button>
+                    </div>
+                </div>
+            </section>
+        }
+    </div>
+</main>
+
+@if (!isReserved)
+{
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Sara: Viser eksisterende plassering og lar brukeren oppdatere den på kartet.
+        (() => {
+            const latInput = document.getElementById('Latitude');
+            const lngInput = document.getElementById('Longitude');
+            const coords = document.getElementById('editCoordinates');
+            const lat = Number(latInput.value.replace(',', '.'));
+            const lng = Number(lngInput.value.replace(',', '.'));
+            if (window.L && Number.isFinite(lat) && Number.isFinite(lng)) {
+                const map = L.map('editResourceMap').setView([lat, lng], 13);
+                L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+                    maxZoom: 18,
+                    attribution: '&copy; Kartverket'
+                }).addTo(map);
+                const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                function updatePosition(position) {
+                    const newLat = Number(position.lat.toFixed(6));
+                    const newLng = Number(position.lng.toFixed(6));
+                    latInput.value = String(newLat);
+                    lngInput.value = String(newLng);
+                    coords.textContent = `Posisjon: ${newLat.toFixed(6)}, ${newLng.toFixed(6)}`;
+                    marker.setLatLng(position);
+                }
+                map.on('click', e => updatePosition(e.latlng));
+                marker.on('dragend', () => updatePosition(marker.getLatLng()));
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+            const showDelete = document.getElementById('showDeleteConfirmation');
+            const cancelDelete = document.getElementById('cancelDelete');
+            const panel = document.getElementById('deleteConfirmation');
+            if (showDelete && cancelDelete && panel) {
+                showDelete.addEventListener('click', () => {
+                    panel.classList.add('open');
+                    showDelete.setAttribute('aria-expanded', 'true');
+                });
+                cancelDelete.addEventListener('click', () => {
+                    panel.classList.remove('open');
+                    showDelete.setAttribute('aria-expanded', 'false');
+                });
+            }
+        })();
+    </script>
+}

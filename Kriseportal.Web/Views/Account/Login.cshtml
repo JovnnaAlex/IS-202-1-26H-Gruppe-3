@@ -1,18 +1,290 @@
-﻿@model Kriseportal.Web.Models.LoginViewModel
+﻿
+@model Kriseportal.Web.Models.LoginViewModel
 
-<h1>Login</h1>
+@{
+    // Sara: Bruker den offentlige layouten på innloggingssiden.
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Logg inn";
+}
 
- <form method="post">
- <div asp-validation-summary="ModelOnly"></div>
- 
- <label asp-for="Email">E-postadresse:</label>
- <input asp-for="Email" />
- <span asp-validation-for="Email"></span>
- 
- <label asp-for="Password">Passord:</label>
- <input asp-for="Password" type="password" />
- <span asp-validation-for="Password"></span>
+<style>
+    /* Sara: Bakgrunn og plassering av innloggingsskjemaet. */
+    .login-section {
+        min-height: 75vh;
+        background: #F0F3EA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 20px;
+    }
 
- <button type="submit">Logg inn</button>
- 
- </form>
+    .login-card {
+        width: 100%;
+        max-width: 470px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8DE;
+        border-radius: 20px;
+        padding: 45px;
+        box-shadow: 0 12px 35px rgba(36, 77, 59, 0.07);
+    }
+
+    .login-heading {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .login-title {
+        color: #244D3B;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .login-description {
+        color: #53645A;
+        font-size: 15px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* Sara: Skjemafelter. */
+    .login-field {
+        margin-bottom: 22px;
+    }
+
+    .login-label {
+        display: block;
+        color: #244D3B;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 9px;
+    }
+
+    .login-input {
+        display: block;
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #D8E2D7;
+        border-radius: 9px;
+        background: #FFFFFF;
+        color: #244D3B;
+        font-size: 15px;
+        transition: border-color 0.2s;
+    }
+
+    .login-input:focus {
+        outline: none;
+        border-color: #244D3B;
+        box-shadow: 0 0 0 3px rgba(36, 77, 59, 0.10);
+    }
+
+    .login-input::placeholder {
+        color: #98A69B;
+    }
+
+    /* Sara: Knapp for innlogging. */
+    .login-button {
+        width: 100%;
+        background: #244D3B;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 9px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background 0.2s;
+    }
+
+    .login-button:hover {
+        background: #193B2D;
+    }
+
+    /* Sara: Registreringslenke. */
+    .login-register {
+        text-align: center;
+        margin-top: 28px;
+        color: #53645A;
+        font-size: 14px;
+    }
+
+    .login-register a {
+        color: #244D3B;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .login-register a:hover {
+        text-decoration: underline;
+    }
+
+    .login-divider {
+        border: none;
+        border-top: 1px solid #E2E8DE;
+        margin: 28px 0;
+        opacity: 1;
+    }
+
+    /* Sara: Lenke til egen innlogging for offentlige aktører. */
+    .login-public-info {
+        text-align: center;
+        color: #53645A;
+        font-size: 13px;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    .login-public-link {
+        display: inline-block;
+        margin-top: 7px;
+        color: #244D3B;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .login-public-link:hover {
+        color: #193B2D;
+    }
+
+    .login-public-link:focus-visible {
+        outline: 2px solid #244D3B;
+        outline-offset: 4px;
+    }
+
+    /* Sara: Feilmeldinger fra eksisterende innloggingslogikk. */
+    .login-validation {
+        color: #B42318;
+        font-size: 13px;
+        margin-top: 7px;
+        display: block;
+    }
+
+    .login-validation-summary {
+        color: #B42318;
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .login-validation-summary:empty {
+        display: none;
+    }
+
+    /* Sara: Mobiltilpasning. */
+    @@media (max-width: 600px) {
+        .login-section {
+            padding: 50px 18px;
+        }
+
+        .login-card {
+            padding: 32px 24px;
+        }
+
+        .login-title {
+            font-size: 28px;
+        }
+    }
+</style>
+
+<!-- Sara: Innloggingsside for ressursleverandører. -->
+<section class="login-section">
+
+    <div class="login-card">
+
+        <div class="login-heading">
+
+            <h1 class="login-title">
+                Velkommen tilbake
+            </h1>
+
+            <p class="login-description">
+                Logg inn for å få tilgang til
+                Kriseportalen og dine ressurser.
+            </p>
+
+        </div>
+
+        <!-- Sara: Beholder eksisterende ASP.NET-innlogging og validering. -->
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="login-validation-summary">
+            </div>
+
+            <!-- Sara: E-postadresse. -->
+            <div class="login-field">
+
+                <label asp-for="Email" class="login-label">
+                    E-postadresse
+                </label>
+
+                <input asp-for="Email"
+                       type="email"
+                       class="login-input"
+                       placeholder="Skriv inn e-postadressen din"
+                       autocomplete="username" />
+
+                <span asp-validation-for="Email"
+                      class="login-validation"></span>
+
+            </div>
+
+            <!-- Sara: Passord. -->
+            <div class="login-field">
+
+                <label asp-for="Password" class="login-label">
+                    Passord
+                </label>
+
+                <input asp-for="Password"
+                       type="password"
+                       class="login-input"
+                       placeholder="Skriv inn passordet ditt"
+                       autocomplete="current-password" />
+
+                <span asp-validation-for="Password"
+                      class="login-validation"></span>
+
+            </div>
+
+            <!-- Sara: Sender skjemaet til eksisterende AccountController. -->
+            <button type="submit" class="login-button">
+                Logg inn
+            </button>
+
+        </form>
+
+        <!-- Sara: Lenke til registrering for nye ressursleverandører. -->
+        <p class="login-register">
+            Har du ikke en bruker?
+            <a asp-controller="Account" asp-action="Register">
+                Opprett bruker
+            </a>
+        </p>
+
+        <hr class="login-divider" />
+
+        <!-- Sara: Egen lenke for offentlige aktører. -->
+        <div class="login-public-info">
+
+            <span>
+                Representerer du en offentlig aktør?
+            </span>
+
+            <br />
+
+            <a asp-controller="Account"
+               asp-action="PublicLogin"
+               class="login-public-link">
+                Logg inn som offentlig aktør
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
