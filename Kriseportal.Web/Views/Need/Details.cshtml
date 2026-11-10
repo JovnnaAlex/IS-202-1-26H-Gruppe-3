@@ -1,5 +1,6 @@
 @model Kriseportal.Web.Models.NeedViewModel
 @using System.Globalization
+@using Kriseportal.Web.Models.Entities
 
 @{
     // Setter sidetittelen.
@@ -57,6 +58,9 @@
         "Planned" => "Planlagt",
         _ => Model.Priority
     };
+
+    // B13: neste status i flyten (null når behovet er løst)
+    var nextStatus = ViewData["NextStatus"] as NeedStatus?;
 }
 
 <div class="nd-page">
@@ -66,6 +70,21 @@
     {
         <div class="nd-confirmation" role="status">
             Behovet er registrert
+        </div>
+    }
+
+    @* B13: melding etter statusendring *@
+    @if (TempData["StatusMessage"] is string statusMessage)
+    {
+        <div class="nd-confirmation" role="status">
+            @statusMessage
+        </div>
+    }
+
+    @if (TempData["StatusError"] is string statusError)
+    {
+        <div class="nd-error" role="alert">
+            @statusError
         </div>
     }
 
@@ -193,6 +212,22 @@
 
     <!-- Lenke til tilgjengelige ressurser -->
     <div class="nd-actions">
+
+        @* B13: flytter behovet ett steg fram i statusflyten *@
+        @if (isExisting && nextStatus is not null)
+        {
+            <form asp-controller="Need"
+                  asp-action="ChangeStatus"
+                  method="post"
+                  class="nd-status-form">
+                <input type="hidden" name="id" value="@ViewData["NeedId"]" />
+                <input type="hidden" name="newStatus" value="@nextStatus" />
+
+                <button type="submit" class="nd-button nd-button-secondary">
+                    Endre status til @NeedStatusFlow.DisplayName(nextStatus.Value)
+                </button>
+            </form>
+        }
 
         <a asp-controller="Resource"
            asp-action="Index"
