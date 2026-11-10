@@ -15,6 +15,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Need> Needs => Set<Need>();
     public DbSet<Resource> Resources => Set<Resource>();
+    public DbSet<Match> Matches => Set<Match>();
+    public DbSet<Request> Requests => Set<Request>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,6 +82,45 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 t.HasCheckConstraint("CK_Resource_Period", "`AvailableFrom` IS NULL OR `AvailableTo` IS NULL OR `AvailableTo` >= `AvailableFrom`");
                 t.HasCheckConstraint("CK_Resource_Latitude", "`Latitude` BETWEEN -90 AND 90");
                 t.HasCheckConstraint("CK_Resource_Longitude", "`Longitude` BETWEEN -180 AND 180");
+            });
+        });
+
+        modelBuilder.Entity<Match>(match =>
+        {
+            // Samme ressurs kan bare kobles til samme behov én gang
+            match.HasIndex(m => new { m.NeedId, m.ResourceId }).IsUnique();
+
+            // Slettes et behov eller en ressurs, slettes koblingene også.
+            // Da kan Sara sin «Slett ressurs» fortsatt slette ressurser som er foreslått.
+            match.HasOne(m => m.Need)
+                .WithMany()
+                .HasForeignKey(m => m.NeedId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            match.HasOne(m => m.Resource)
+                .WithMany()
+                .HasForeignKey(m => m.ResourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Request>(request =>
+        {
+            // Lagres som tekst («Proposed»), så databasen er lesbar
+            request.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
+
+            // Slettes koblingen, slettes forespørslene til den også
+            request.HasOne(r => r.Match)
+                .WithMany(m => m.Requests)
+                .HasForeignKey(r => r.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Leverandøren henter ofte «alle som venter på svar»
+            request.HasIndex(r => r.Status);
+
+            request.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Request_Quantity", "`Quantity` >= 1");
+                t.HasCheckConstraint("CK_Request_RespondedAt", "`RespondedAt` IS NULL OR `RespondedAt` >= `CreatedAt`");
             });
         });
     }
