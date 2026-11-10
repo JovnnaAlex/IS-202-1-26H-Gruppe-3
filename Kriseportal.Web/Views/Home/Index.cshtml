@@ -9,6 +9,11 @@
     <link rel="stylesheet"
           href="~/css/dashboard.css"
           asp-append-version="true" />
+
+    <!-- Emma: levende dashbordkart -->
+    <link rel="stylesheet"
+          href="~/css/dashboard-map.css"
+          asp-append-version="true" />
 }
 
 <div class="dashboard-page">
@@ -23,7 +28,7 @@
 
         <!-- Knapp for å registrere behov -->
         <a asp-controller="Need"
-           asp-action="Index"
+           asp-action="Create"
            class="dashboard-create-button">
             + Registrer behov
         </a>
@@ -64,10 +69,11 @@
                     </span>
                 </div>
 
-                <p class="dashboard-summary-number">—</p>
+                <p class="dashboard-summary-number" id="dash-needs">—</p>
 
                 <p class="dashboard-summary-description">
-                    Registrerte behov i systemet
+                    <span class="dm-acute-count">Akutte: <span id="dash-acute">0</span></span>
+                    · behov som ikke er løst
                 </p>
 
             </a>
@@ -85,7 +91,7 @@
                     </span>
                 </div>
 
-                <p class="dashboard-summary-number">—</p>
+                <p class="dashboard-summary-number" id="dash-resources">—</p>
 
                 <p class="dashboard-summary-description">
                     Ressurser tilgjengelig for bruk
@@ -120,8 +126,8 @@
 
     <!-- Forklaring for testversjonen -->
     <p class="dashboard-note">
-        Oversiktstall og kartmarkører vises når løsningen
-        er koblet til databasen.
+        Kartet og tallene oppdateres automatisk hvert 15. sekund.
+        Trykk på kartet for å åpne situasjonskartet.
     </p>
 
 </div>
@@ -131,25 +137,6 @@
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-        // Dashboard-kart sentrert på Kristiansand
-        const dashboardMap = L.map("dashboardMap").setView(
-            [58.1467, 7.9956],
-            11
-        );
-
-        // Kartgrunnlag fra Kartverket
-        L.tileLayer(
-            "https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png",
-            {
-                maxZoom: 18,
-                attribution: "&copy; Kartverket"
-            }
-        ).addTo(dashboardMap);
-
-        // Oppdaterer kartstørrelse etter innlasting
-        window.addEventListener("load", function () {
-            dashboardMap.invalidateSize();
-        });
-    </script>
+    <!-- Emma: levende dashbordkart med data fra /Map/Data -->
+    <script src="~/js/dashboard-map.js" asp-append-version="true"></script>
 }
