@@ -118,6 +118,33 @@ namespace Kriseportal.Web.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Match", b =>
+                {
+                    b.Property<int>("MatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("MatchId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("NeedId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResourceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MatchId");
+
+                    b.HasIndex("ResourceId");
+
+                    b.HasIndex("NeedId", "ResourceId")
+                        .IsUnique();
+
+                    b.ToTable("Matches");
+                });
+
             modelBuilder.Entity("Kriseportal.Web.Models.Entities.Need", b =>
                 {
                     b.Property<int>("NeedId")
@@ -210,6 +237,45 @@ namespace Kriseportal.Web.Migrations
                             t.HasCheckConstraint("CK_Need_Period", "`NeededTo` IS NULL OR `NeededTo` >= `NeededFrom`");
 
                             t.HasCheckConstraint("CK_Need_Quantity", "`Quantity` >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Request", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Requests", t =>
+                        {
+                            t.HasCheckConstraint("CK_Request_Quantity", "`Quantity` >= 1");
+
+                            t.HasCheckConstraint("CK_Request_RespondedAt", "`RespondedAt` IS NULL OR `RespondedAt` >= `CreatedAt`");
                         });
                 });
 
@@ -435,6 +501,25 @@ namespace Kriseportal.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Match", b =>
+                {
+                    b.HasOne("Kriseportal.Web.Models.Entities.Need", "Need")
+                        .WithMany()
+                        .HasForeignKey("NeedId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Kriseportal.Web.Models.Entities.Resource", "Resource")
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Need");
+
+                    b.Navigation("Resource");
+                });
+
             modelBuilder.Entity("Kriseportal.Web.Models.Entities.Need", b =>
                 {
                     b.HasOne("Kriseportal.Web.Models.Entities.Category", "Category")
@@ -452,6 +537,17 @@ namespace Kriseportal.Web.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("PublicAuthority");
+                });
+
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Request", b =>
+                {
+                    b.HasOne("Kriseportal.Web.Models.Entities.Match", "Match")
+                        .WithMany("Requests")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
                 });
 
             modelBuilder.Entity("Kriseportal.Web.Models.Entities.Resource", b =>
@@ -529,6 +625,11 @@ namespace Kriseportal.Web.Migrations
                     b.Navigation("Needs");
 
                     b.Navigation("Resources");
+                });
+
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Match", b =>
+                {
+                    b.Navigation("Requests");
                 });
 #pragma warning restore 612, 618
         }
