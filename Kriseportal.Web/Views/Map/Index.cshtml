@@ -244,7 +244,33 @@
         border-radius: 4px;
     }
 
-    /* Detaljpanel: på PC et panel til høyre */
+    /* B30: prikkede ruter i NVEs farger for farelagene */
+    .lg-fare {
+        border-radius: 3px;
+        border-width: 2px;
+        border-style: solid;
+        background-color: white;
+        background-size: 4px 4px;
+        box-shadow: none;
+        vertical-align: middle;
+    }
+
+    .lg-flom {
+        border-color: #6A4FC9;
+        background-image: radial-gradient(#6A4FC9 1px, transparent 1.3px);
+    }
+
+    .lg-kvikkleire {
+        border-color: #1F6FD1;
+        background-image: radial-gradient(#1F6FD1 1px, transparent 1.3px);
+    }
+
+    .lg-skred {
+        border-color: #8A4B3B;
+        background-image: radial-gradient(#8A4B3B 1px, transparent 1.3px);
+    }
+
+/* Detaljpanel: på PC et panel til høyre */
     /* Starter under topplinja, så knappene øverst ikke blir dekket på PC */
     .map-panel {
         position: absolute;
@@ -673,6 +699,13 @@
             <li><span class="lg lg-need km-p-planned"></span> Planlagt behov</li>
             <li><span class="lg lg-res km-a-available"></span> Tilgjengelig ressurs</li>
             <li><span class="lg lg-res km-a-reserved"></span> Reservert ressurs</li>
+        </ul>
+        <!-- B30: vises bare når laget er slått på i lagvelgeren nede til høyre -->
+        <p>Farelag fra NVE (aktsomhet):</p>
+        <ul>
+            <li><span class="lg lg-fare lg-flom"></span> Flomfare</li>
+            <li><span class="lg lg-fare lg-skred"></span> Jord- og flomskred</li>
+            <li><span class="lg lg-fare lg-kvikkleire"></span> Kvikkleireskred</li>
         </ul>
         <p>Rund = behov · Firkantet = ressurs</p>
     </details>
