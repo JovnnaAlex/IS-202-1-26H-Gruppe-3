@@ -123,6 +123,7 @@
         map: null,
         pointLayer: null,
         points: [],
+        lastFetchedAt: null,
         markers: new Map(),   // punktnøkkel → markør, så lista kan finne riktig markør
         firstLoad: true,
         selectedMarker: null,
@@ -166,14 +167,24 @@
 
             const data = await response.json();
             state.points = data.points;
+            state.lastFetchedAt = new Date();
             fillFilterOptions();
             applyFilters();
 
-            const time = new Date(data.updatedAt).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
+            const time = state.lastFetchedAt.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
             updated.textContent = 'Oppdatert kl. ' + time;
         } catch (error) {
-            console.error('Kunne ikke hente kartdata', error);
-            updated.textContent = 'Klarte ikke å hente data';
+            console.error('Kunne ikke hente kartdata:', error);
+            
+            if (state.lastFetchedAt) {
+                const time = state.lastFetchedAt.toLocaleTimeString('nb-NO', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                updated.textContent = 'Viser siste kartdata · Hentet kl. ' + time;
+            } else {
+                updated.textContent = 'Klarte ikke å hente data';
+            }
         }
     }
 
