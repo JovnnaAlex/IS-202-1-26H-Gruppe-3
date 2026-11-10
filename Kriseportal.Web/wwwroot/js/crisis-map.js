@@ -12,6 +12,59 @@
         topo: 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png'
     };
 
+        // ---------- B30: faredata fra NVE ----------
+
+    // NVEs aktsomhetskart hentes som bilder fra NVEs kartserver.
+    // lag = id-ene til lagene i tjenesten. minZoom = når NVE begynner å tegne dem.
+    const NVE_URL = 'https://kart.nve.no/enterprise/rest/services/';
+    const FARELAG = [
+        { navn: 'Flomfare (zoom inn)', css: 'lg-flom', tjeneste: 'Flomaktsomhet', lag: '1', minZoom: 12 },
+        { navn: 'Jord- og flomskred', css: 'lg-skred', tjeneste: 'JordFlomskredAktsomhet', lag: '0,1', minZoom: 5 },
+        { navn: 'Kvikkleireskred (zoom inn)', css: 'lg-kvikkleire', tjeneste: 'KvikkleireskredAktsomhet', lag: '0', minZoom: 13 }
+    ];
+
+    // Regner ut hvilket område (i meter) én kartflis dekker.
+    // Kartet deles i 2^zoom × 2^zoom fliser, og verden er 2 × 20 037 508 meter bred.
+    function flisTilBbox(x, y, z) {
+        const halvVerden = 20037508.342789244;
+        const flisBredde = (2 * halvVerden) / Math.pow(2, z);
+        const xmin = -halvVerden + x * flisBredde;
+        const ymax = halvVerden - y * flisBredde;
+        return [xmin, ymax - flisBredde, xmin + flisBredde, ymax];
+    }
+
+    // Et Leaflet-kartlag som ber NVE om ett bilde for hver kartflis
+    const NveLag = L.TileLayer.extend({
+        getTileUrl: function (coords) {
+            return NVE_URL + this.options.tjeneste + '/MapServer/export' +
+                '?bbox=' + flisTilBbox(coords.x, coords.y, coords.z).join(',') +
+                '&bboxSR=3857&imageSR=3857&size=256,256' +
+                '&format=png32&transparent=true&f=image' +
+                '&layers=show:' + this.options.lag;
+        }
+    });
+
+    // Legger NVE-lagene i en lagvelger nede til høyre, der man slår dem av og på
+    function addHazardLayers() {
+        const overlays = {};
+
+        FARELAG.forEach(function (fare) {
+            // Fargeprikken i lagvelgeren er den samme som i tegnforklaringen
+            const label = '<span class="lg lg-fare ' + fare.css + '"></span> ' + fare.navn;
+
+            overlays[label] = new NveLag(NVE_URL, {
+                tjeneste: fare.tjeneste,
+                lag: fare.lag,
+                minZoom: fare.minZoom,
+                maxZoom: 18,
+                opacity: 0.6,
+                attribution: 'Faredata &copy; NVE'
+            });
+        });
+
+        L.control.layers(null, overlays, { position: 'bottomright', collapsed: true }).addTo(state.map);
+    }
+    
     // Prioritet på behov: CSS-klasse, farge, norsk tekst, størrelse og hvem som legges øverst.
     // Høy og normal har samme farge (haster), men høy er større.
     const PRIORITET = {
@@ -94,6 +147,7 @@
             maxZoom: 18
         }).addTo(state.map);
 
+        addHazardLayers();
         // Eget lag for punktene. Fargede kommuner får et eget lag senere.
         state.pointLayer = L.layerGroup().addTo(state.map);
 
