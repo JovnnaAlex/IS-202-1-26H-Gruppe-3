@@ -368,6 +368,8 @@ Forslag fra KI ble vurdert, tilpasset prosjektets struktur og testet lokalt før
 - «Jeg vil lage et situasjonskart med Leaflet der behovene vises etter prioritet. Kan du dele det opp i steg jeg kan gjøre selv?»
 - «Webappen finner ikke databasen når jeg kjører Docker Compose. Hva kan være feilen?»
 
+- **B15 Match og Request:** Brukte Claude til å forklare entitetene Match og Request etter modell 1.2, med UNIQUE(NeedId, ResourceId), cascade-sletting og CHECK på antall. Jeg kjørte migrasjonen og testet i MariaDB at dobbel kobling og antall 0 blir avvist, og at forespørsler slettes sammen med koblingen.
+
 ---
 
 ## Almir
