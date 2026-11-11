@@ -75,6 +75,10 @@ public class AuthorizationTests
     [InlineData(typeof(AccountController), "PublicLogin")]
     [InlineData(typeof(AccountController), "Register")]
     [InlineData(typeof(AccountController), "AccessDenied")]
+    [InlineData(typeof(AccountController), "ForgotPassword")]
+    [InlineData(typeof(AccountController), "ForgotPasswordConfirmation")]
+    [InlineData(typeof(AccountController), "ResetPassword")]
+    [InlineData(typeof(AccountController), "ResetPasswordConfirmation")]
     public void Forside_OgInnlogging_ErApneForAlle(Type controller, string action)
     {
         Assert.False(RequiresLogin(controller, action));

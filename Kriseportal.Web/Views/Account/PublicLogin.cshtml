@@ -130,6 +130,22 @@
         color: #193B2D;
     }
 
+    /* Glemt passord: lenke under passordfeltet. */
+    .public-login-forgot {
+        display: block;
+        text-align: right;
+        margin-top: 8px;
+        color: #244D3B;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .public-login-forgot:hover {
+        color: #193B2D;
+    }
+
     /* Sara: Viser valideringsfeil fra ASP.NET. */
     .public-login-validation {
         color: #B42318;
@@ -219,6 +235,14 @@
 
                 <span asp-validation-for="Password"
                       class="public-login-validation"></span>
+
+                <!-- Glemt passord: husker at brukeren er offentlig aktør. -->
+                <a asp-controller="Account"
+                   asp-action="ForgotPassword"
+                   asp-route-publicAuthority="true"
+                   class="public-login-forgot">
+                    Glemt passord?
+                </a>
 
             </div>
 
