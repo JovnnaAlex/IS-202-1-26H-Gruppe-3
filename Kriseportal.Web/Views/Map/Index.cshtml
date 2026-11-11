@@ -372,7 +372,86 @@
         color: #333;
     }
 
-    .panel-actions {
+    /* B20: ressurser i nærheten av et behov */
+    .nearby {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #E1E8E1;
+    }
+
+    .nearby-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+        .nearby-head h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+    .nearby-range {
+        display: flex;
+        gap: 6px;
+    }
+
+    .range-chip {
+        min-height: 36px;
+        padding: 0 10px;
+        border: 2px solid #D5DDD5;
+        border-radius: 999px;
+        background: white;
+        color: #555;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+        .range-chip[aria-pressed="true"] {
+            border-color: #1F6FD1;
+            background: #EAF1FB;
+            color: #1A1A1A;
+        }
+
+    .nearby-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nearby-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #EEF1EE;
+    }
+
+        .nearby-item .need-row-text {
+            flex: 1;
+        }
+
+    .nearby-call {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        text-decoration: none;
+    }
+
+    .nearby-empty {
+        padding: 8px 0;
+        color: #666;
+    }
+
+.panel-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -798,8 +877,22 @@
             <button type="button" class="panel-close" id="panel-close" aria-label="Lukk">&times;</button>
         </div>
         <div class="panel-body">
-            <span class="panel-chip" id="panel-chip"></span>
-            <dl class="panel-facts" id="panel-facts"></dl>
+             <span class="panel-chip" id="panel-chip"></span>
+             <dl class="panel-facts" id="panel-facts"></dl>
+
+            <!-- B20: ressurser i nærheten. Vises bare når et behov er åpent. -->
+            <section class="nearby" id="nearby" hidden>
+                <div class="nearby-head">
+                    <h3>Ressurser i nærheten</h3>
+                    <div class="nearby-range" role="group" aria-label="Avstand fra behovet">
+                        <button type="button" class="range-chip" data-km="5" aria-pressed="false">5 km</button>
+                        <button type="button" class="range-chip" data-km="10" aria-pressed="true">10 km</button>
+                        <button type="button" class="range-chip" data-km="25" aria-pressed="false">25 km</button>
+                    </div>
+                </div>
+                <ul class="nearby-list" id="nearby-list"></ul>
+            </section>
+
         </div>
         <div class="panel-actions">
             <a class="panel-action panel-call" id="panel-call" href="#">

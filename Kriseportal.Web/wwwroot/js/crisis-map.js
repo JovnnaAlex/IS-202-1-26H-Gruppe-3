@@ -127,6 +127,10 @@
         markers: new Map(),   // punktnøkkel → markør, så lista kan finne riktig markør
         firstLoad: true,
         selectedMarker: null,
+        // B20: ressurser i nærheten av valgt behov
+        nearbyLayer: null,    // sirkel og linjer på kartet
+        selectedNeed: null,   // behovet som er åpent i panelet
+        nearbyKm: 10,         // valgt avstand i km
         // Filtrene som er valgt nå. Alt vises når siden åpnes.
         filters: {
             showNeeds: true,
@@ -151,6 +155,7 @@
         addHazardLayers();
         // Eget lag for punktene. Fargede kommuner får et eget lag senere.
         state.pointLayer = L.layerGroup().addTo(state.map);
+        state.nearbyLayer = L.layerGroup().addTo(state.map);
 
         // Trykk på selve kartet lukker detaljpanelet
         state.map.on('click', closePanel);
@@ -305,6 +310,13 @@
         document.getElementById('panel-route').href =
             'https://www.google.com/maps/dir/?api=1&destination=' + point.lat + ',' + point.lng;
 
+        // B20: behov viser ressurser i nærheten, ressurser gjør det ikke
+        if (isNeed) {
+            showNearby(point);
+        } else {
+            clearNearby();
+        }
+
         const panel = document.getElementById('map-panel');
         panel.classList.add('is-open');
         panel.setAttribute('aria-hidden', 'false');
@@ -328,6 +340,7 @@
         panel.classList.remove('is-open');
         panel.setAttribute('aria-hidden', 'true');
         highlightMarker(null);
+        clearNearby();
     }
 
     // Gjør valgt markør større, og fjerner markeringen fra forrige
@@ -342,7 +355,142 @@
         }
     }
 
-        // ---------- B29: filter og «Akutt nå»-liste ----------
+    // ---------- B20: ressurser i nærheten av et behov ----------
+
+    // Avstand i km mellom to punkter på jordkloden (haversine-formelen).
+    // Tar hensyn til at jorda er rund, så avstanden blir riktig også over lengre strekninger.
+    function avstandKm(a, b) {
+        const R = 6371;   // jordas radius i km
+        const rad = Math.PI / 180;
+        const dLat = (b.lat - a.lat) * rad;
+        const dLng = (b.lng - a.lng) * rad;
+        const h = Math.sin(dLat / 2) ** 2 +
+            Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+
+    // Finner alle ressurser innen valgt avstand.
+    // Samme kategori som behovet kommer først, deretter den nærmeste.
+    function findNearby(need, km) {
+        return state.points
+            .filter(p => p.kind === 'resource')
+            .map(p => ({ point: p, km: avstandKm(need, p) }))
+            .filter(r => r.km <= km)
+            .sort(function (a, b) {
+                const aSame = a.point.category === need.category ? 0 : 1;
+                const bSame = b.point.category === need.category ? 0 : 1;
+                return aSame - bSame || a.km - b.km;
+            });
+    }
+
+    // Tegner søkeområdet og linjer til ressursene, og fyller lista i panelet
+    function showNearby(need) {
+        state.selectedNeed = need;
+        state.nearbyLayer.clearLayers();
+
+        const km = state.nearbyKm;
+        const nearby = findNearby(need, km);
+
+        // Stiplet sirkel som viser hvor langt vi leter
+        L.circle([need.lat, need.lng], {
+            radius: km * 1000,
+            color: '#1F6FD1',
+            weight: 2,
+            dashArray: '6 6',
+            fillOpacity: 0.06,
+            interactive: false
+        }).addTo(state.nearbyLayer);
+
+        // Stiplet linje fra behovet til hver ressurs i nærheten
+        nearby.forEach(function (r) {
+            L.polyline([[need.lat, need.lng], [r.point.lat, r.point.lng]], {
+                color: '#1F6FD1',
+                weight: 2,
+                opacity: 0.7,
+                dashArray: '4 6',
+                interactive: false
+            }).addTo(state.nearbyLayer);
+        });
+
+        renderNearbyList(need, nearby, km);
+        document.getElementById('nearby').hidden = false;
+    }
+
+    function clearNearby() {
+        state.selectedNeed = null;
+        if (state.nearbyLayer) {
+            state.nearbyLayer.clearLayers();
+        }
+        document.getElementById('nearby').hidden = true;
+    }
+
+    // Lista i panelet: ikon, navn, avstand, tilgjengelighet og en Ring-knapp
+    function renderNearbyList(need, nearby, km) {
+        const list = document.getElementById('nearby-list');
+        list.innerHTML = '';
+
+        if (nearby.length === 0) {
+            const empty = document.createElement('li');
+            empty.className = 'nearby-empty';
+            empty.textContent = 'Ingen ressurser innen ' + km + ' km. Prøv en større avstand.';
+            list.appendChild(empty);
+            return;
+        }
+
+        nearby.forEach(function (r) {
+            const p = r.point;
+
+            const icon = document.createElement('span');
+            icon.className = 'need-row-icon';
+            icon.innerHTML = markerHtml(p);
+
+            const title = document.createElement('span');
+            title.className = 'need-row-title';
+            title.textContent = p.title;
+
+            // F.eks. «3,2 km · Tilgjengelig · Samme kategori»
+            const meta = document.createElement('span');
+            meta.className = 'need-row-meta';
+            meta.textContent = r.km.toFixed(1).replace('.', ',') + ' km · ' + styleFor(p).tekst +
+                (p.category === need.category ? ' · Samme kategori' : '');
+
+            const text = document.createElement('span');
+            text.className = 'need-row-text';
+            text.append(title, meta);
+
+            const call = document.createElement('a');
+            call.className = 'nearby-call';
+            call.href = 'tel:' + (p.contactPhone || '').replace(/\s/g, '');
+            call.setAttribute('aria-label', 'Ring ' + p.contactName + ' om ' + p.title);
+            call.innerHTML = '<i class="bi bi-telephone-fill" aria-hidden="true"></i>';
+
+            const item = document.createElement('li');
+            item.className = 'nearby-item';
+            item.append(icon, text, call);
+            list.appendChild(item);
+        });
+    }
+
+    // Kobler avstandsknappene (5, 10, 25 km)
+    function initNearby() {
+        const chips = document.querySelectorAll('#nearby .range-chip');
+
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                state.nearbyKm = Number(chip.dataset.km);
+                chips.forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
+
+                if (state.selectedNeed) {
+                    showNearby(state.selectedNeed);
+                    // Zoomer slik at hele sirkelen synes
+                    const center = L.latLng(state.selectedNeed.lat, state.selectedNeed.lng);
+                    state.map.fitBounds(center.toBounds(state.nearbyKm * 2000), { padding: [20, 20] });
+                }
+            });
+        });
+    }
+
+    // ---------- B29: filter og «Akutt nå»-liste ----------
 
     // Rekkefølgen behovene sorteres i: det mest akutte først
     const PRIORITET_REKKEFOLGE = ['Acute', 'High', 'Normal', 'Planned'];
@@ -600,6 +748,7 @@
         document.getElementById('map-refresh').addEventListener('click', loadData);
         document.getElementById('panel-close').addEventListener('click', closePanel);
         initFilters();
+        initNearby();
 
         // Esc lukker panelet
         document.addEventListener('keydown', function (event) {
