@@ -238,6 +238,44 @@ public class NeedController : Controller
         //Detaljsiden vise riktig status uten at du må endre NeedViewModel
         ViewData["NeedStatus"] = need.Status.ToString();
 
+        // B13: id og neste status brukes av knappen som endrer status
+        ViewData["NeedId"] = need.NeedId;
+        ViewData["NextStatus"] = NeedStatusFlow.NextStatus(need.Status);
+
         return View(model);
+    }
+
+    // B13: Flytter et behov ett steg fram i statusflyten (ny → vurderes → tildelt → løst).
+    // Bare offentlige aktører kan endre status, og serveren sjekker at overgangen er lov,
+    // så ingen kan hoppe over steg eller gå bakover ved å sende en egen forespørsel.
+    [Authorize(Roles = AppRoles.PublicAuthority)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeStatus(int id, NeedStatus newStatus)
+    {
+        var need = await _context.Needs.FirstOrDefaultAsync(n => n.NeedId == id);
+
+        if (need == null)
+        {
+            return NotFound();
+        }
+
+        if (!ModelState.IsValid ||
+            !Enum.IsDefined(newStatus) ||
+            !NeedStatusFlow.CanChange(need.Status, newStatus))
+        {
+            TempData["StatusError"] =
+                $"Statusen kan ikke endres fra «{NeedStatusFlow.DisplayName(need.Status)}» hit.";
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        need.Status = newStatus;
+        await _context.SaveChangesAsync();
+
+        TempData["StatusMessage"] =
+            $"Statusen er endret til «{NeedStatusFlow.DisplayName(newStatus)}».";
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 }

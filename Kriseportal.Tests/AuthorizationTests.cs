@@ -39,6 +39,7 @@ public class AuthorizationTests
     [InlineData(typeof(NeedController), "Index")]
     [InlineData(typeof(NeedController), "Create")]
     [InlineData(typeof(NeedController), "Details")]
+    [InlineData(typeof(NeedController), "ChangeStatus")]
     [InlineData(typeof(MapController), "Index")]
     [InlineData(typeof(MapController), "Data")]
     [InlineData(typeof(ResourceController), "Index")]
