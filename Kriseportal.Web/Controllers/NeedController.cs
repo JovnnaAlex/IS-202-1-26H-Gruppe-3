@@ -255,9 +255,16 @@ public class NeedController : Controller
     {
         var need = await _context.Needs.FirstOrDefaultAsync(n => n.NeedId == id);
 
-        if (need == null)
+        var userId = _userManager.GetUserId(User);
+
+        if (string.IsNullOrEmpty(userId))
         {
-            return NotFound();
+            return Challenge();
+        }
+
+        if (need.PublicAuthorityId != userId)
+        {
+            return Forbid();
         }
 
         if (!ModelState.IsValid ||
@@ -269,7 +276,25 @@ public class NeedController : Controller
 
             return RedirectToAction(nameof(Details), new { id });
         }
+        
+        if (newStatus == NeedStatus.Assigned)
+        {
+            var confirmedQuantity = await _context.Requests
+                .Where(r => r.Status == RequestStatus.Confirmed
+                            && r.Match != null
+                            && r.Match.NeedId == id)
+                .SumAsync(r => (int?)r.Quantity) ?? 0;
 
+            if (confirmedQuantity < need.Quantity)
+            {
+                TempData["StatusError"] =
+                    $"Behovet kan ikke settes til tildelt ennå. " +
+                    $"{confirmedQuantity} av {need.Quantity} {need.Unit} er bekreftet.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+        
         need.Status = newStatus;
         await _context.SaveChangesAsync();
 

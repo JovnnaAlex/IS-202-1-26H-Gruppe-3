@@ -1,0 +1,205 @@
+@model List<Kriseportal.Web.Models.Entities.Request>
+@using Kriseportal.Web.Models.Entities
+
+@{
+    ViewData["Title"] = "Forespørsler";
+    var isProvider = ViewData["IsProvider"] is true;
+
+    if (isProvider)
+    {
+        Layout = "_ResourceProviderLayout";
+    }
+}
+
+<style>
+    .requests-page {
+        padding: 32px;
+        color: #293B33;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .requests-intro {
+        color: #6C604F;
+        margin-bottom: 24px;
+    }
+
+    .requests-message,
+    .requests-empty {
+        padding: 20px;
+        border: 1px solid #D7DED7;
+        border-radius: 10px;
+        background: #F0F3EF;
+        margin-bottom: 20px;
+    }
+
+    .requests-list {
+        display: grid;
+        gap: 18px;
+    }
+
+    .request-item {
+        background: white;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .request-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .request-item h2 {
+        font-size: 20px;
+        margin: 0 0 6px;
+    }
+
+    .request-item p {
+        margin: 8px 0;
+        overflow-wrap: anywhere;
+    }
+
+    .request-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        background: #F3ECE3;
+        color: #70553D;
+    }
+
+    .request-badge-confirmed {
+        background: #E5F2E8;
+        color: #285C37;
+    }
+
+    .request-badge-rejected {
+        background: #FBE9E7;
+        color: #943A32;
+    }
+
+    .request-date {
+        color: #6C604F;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 768px) {
+        .requests-page {
+            padding: 20px;
+        }
+
+        .request-item {
+            padding: 18px;
+        }
+    }
+</style>
+
+<div class="requests-page">
+    <h1>Forespørsler</h1>
+
+    <p class="requests-intro">
+        @(isProvider
+            ? "Forespørsler fra offentlige aktører om dine ressurser."
+            : "Følg forespørslene dine og svarene fra ressursleverandørene.")
+    </p>
+
+    @if (TempData["RequestSuccess"] is string success)
+    {
+        <div class="requests-message" role="status">
+            @success
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="requests-empty">
+            Ingen forespørsler ennå.
+        </div>
+    }
+    else
+    {
+        <div class="requests-list">
+            @foreach (var request in Model)
+            {
+                var need = request.Match?.Need;
+                var resource = request.Match?.Resource;
+
+                var statusText = request.Status switch
+                {
+                    RequestStatus.Confirmed => "Bekreftet",
+                    RequestStatus.Rejected => "Avslått",
+                    _ => "Venter på svar"
+                };
+
+                var statusClass = request.Status switch
+                {
+                    RequestStatus.Confirmed => "request-badge-confirmed",
+                    RequestStatus.Rejected => "request-badge-rejected",
+                    _ => ""
+                };
+
+                <article class="request-item">
+                    <div class="request-item-header">
+                        <div>
+                            <h2>@resource?.Name</h2>
+                            <p>Behov: @need?.Title</p>
+                        </div>
+
+                        <span class="request-badge @statusClass">
+                            @statusText
+                        </span>
+                    </div>
+
+                    <p>
+                        <strong>Antall:</strong>
+                        @request.Quantity @resource?.Unit
+                    </p>
+
+                    <p>
+                        <strong>Behovets kommune:</strong>
+                        @need?.Municipality
+                    </p>
+
+                    <p>
+                        <strong>Ressursens kommune:</strong>
+                        @resource?.Municipality
+                    </p>
+
+                    @if (isProvider)
+                    {
+                        <p>
+                            <strong>Kontakt for behovet:</strong>
+                            @need?.ContactName · @need?.ContactPhone
+                        </p>
+                    }
+                    else
+                    {
+                        <p>
+                            <strong>Kontakt for ressursen:</strong>
+                            @resource?.ContactName · @resource?.ContactPhone
+                        </p>
+                    }
+
+                    <p class="request-date">
+                        Sendt:
+                        @request.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                    </p>
+
+                    @if (request.RespondedAt.HasValue)
+                    {
+                        <p class="request-date">
+                            Besvart:
+                            @request.RespondedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                        </p>
+                    }
+                </article>
+            }
+        </div>
+    }
+</div>
