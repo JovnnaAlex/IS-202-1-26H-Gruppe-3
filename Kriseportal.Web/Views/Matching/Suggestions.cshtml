@@ -1,0 +1,39 @@
+﻿@model Kriseportal.Web.Models.MatchingSuggestionsViewModel
+
+<p>@Model.Resources.Count</p>
+@if (Model.Resources.Count == 0)
+{
+    <p>Ingen Ressurs tilgjengelig i denne kategorien.</p>
+}
+
+@foreach (var resource in Model.Resources)
+{
+
+<p>@resource.Name</p>
+<p>@resource.Municipality</p>
+
+<a asp-controller="Resource"
+   asp-action="ResourceDetails"
+   asp-route-id="@resource.ResourceId">Details</a>
+
+    <form asp-controller="Matching"
+          asp-action="SendRequest"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="NeedId" value="@Model.NeedId" />
+        <input type="hidden" name="ResourceId" value="@resource.ResourceId" />
+
+        <label for="quantity-@resource.ResourceId">Antall</label>
+        <input id="quantity-@resource.ResourceId"
+               type="number"
+               name="Quantity"
+               value="1"
+               min="1"
+               max="@resource.Quantity"
+               required />
+
+        <button type="submit">Send forespørsel</button>
+    </form>
+}
