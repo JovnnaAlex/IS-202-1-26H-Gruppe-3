@@ -227,6 +227,16 @@
             : (TILGJENGELIGHET[point.status] || TILGJENGELIGHET.Available);
     }
 
+    // Totalforsvar: ressurser eid av kommune, HV eller andre etater er offentlige
+    function erOffentlig(point) {
+        return point.kind === 'resource' && !!point.owner && point.owner !== 'Privat';
+    }
+
+    // Tekst om hvem som eier en ressurs, f.eks. «Offentlig (Kommune)»
+    function eierTekst(point) {
+        return erOffentlig(point) ? 'Offentlig (' + point.owner + ')' : 'Privat / frivillig';
+    }
+
     // Lager HTML for markøren, brukes både på kartet og i panelet
     function markerHtml(point) {
         const isNeed = point.kind === 'need';
@@ -234,7 +244,8 @@
             'km',
             isNeed ? 'km-need' : 'km-res',
             styleFor(point).css,
-            point.isSimulated ? 'km-simulated' : ''
+            point.isSimulated ? 'km-simulated' : '',
+            erOffentlig(point) ? 'km-public' : ''
         ].join(' ');
 
         return '<div class="' + classes + '">' + lagIkonHtml(point.category) + '</div>';
@@ -304,6 +315,9 @@
         addFact(facts, 'Kategori', point.category);
         addFact(facts, isNeed ? 'Trenger' : 'Kan bidra med', point.quantity + ' ' + point.unit);
         addFact(facts, 'Kommune', point.municipality);
+        if (!isNeed) {
+            addFact(facts, 'Eier', eierTekst(point));
+        }
         addFact(facts, 'Kontakt', point.contactName);
         addFact(facts, 'Telefon', point.contactPhone);
 
@@ -428,8 +442,11 @@
             const mal = Math.max(1, Math.ceil((k.innbyggere || 0) / INNBYGGERE_PER_RESSURS));
 
             const funksjoner = BEREDSKAP.map(function (f) {
-                const antall = k.ressurser.filter(r => f.kategorier.includes(r.category)).length;
-                return { navn: f.navn, antall: antall, mal: mal, dekning: Math.min(1, antall / mal) };
+                const treff = k.ressurser.filter(r => f.kategorier.includes(r.category));
+                const antall = treff.length;
+                // Totalforsvar: hvor mange av dem som er offentlige (kommune, HV osv.)
+                const offentlig = treff.filter(erOffentlig).length;
+                return { navn: f.navn, antall: antall, offentlig: offentlig, mal: mal, dekning: Math.min(1, antall / mal) };
             });
 
             // Kommunens beredskap = gjennomsnittlig dekning av de 10 funksjonene, i prosent
@@ -502,11 +519,19 @@
                 tegn = '◐ ';
                 item.className = 'cap-row-partial';
             }
-            item.textContent = tegn + f.navn + ': ' + f.antall + ' av ' + f.mal;
+            item.textContent = tegn + f.navn + ': ' + f.antall + ' av ' + f.mal +
+                (f.antall > 0 ? ' (' + f.offentlig + ' off. / ' + (f.antall - f.offentlig) + ' priv.)' : '');
             list.appendChild(item);
         });
 
-        box.append(title, summary, list);
+        // Totalforsvar: fordelingen mellom offentlige og private ressurser i kommunen
+        const offentligeTotalt = k.ressurser.filter(erOffentlig).length;
+        const mix = document.createElement('p');
+        mix.className = 'cap-mix';
+        mix.textContent = 'Ressurser: ' + offentligeTotalt + ' offentlige · ' +
+            (k.ressurser.length - offentligeTotalt) + ' private';
+
+        box.append(title, summary, mix, list);
 
         // De tre funksjonene med lavest dekning er det HV bør se på først
         const svakest = k.funksjoner
@@ -634,7 +659,8 @@
             const meta = document.createElement('span');
             meta.className = 'need-row-meta';
             meta.textContent = r.km.toFixed(1).replace('.', ',') + ' km · ' + styleFor(p).tekst +
-                (p.category === need.category ? ' · Samme kategori' : '');
+(p.category === need.category ? ' · Samme kategori' : '') +
+                (erOffentlig(p) ? ' · Offentlig' : '');
 
             const text = document.createElement('span');
             text.className = 'need-row-text';
