@@ -378,31 +378,54 @@
         color: #333;
     }
 
-    /* B31: kommunemerker for beredskap */
+    /* B31: kommuneetiketter for beredskap.
+       Hvit lapp med én rolig farge, så laget leses som planlegging og ikke som varsel.
+       Rødt er forbeholdt akutte behov på kartet. */
     .cap-badge {
         display: inline-block;
+        min-width: 110px;
         transform: translate(-50%, -50%);   /* midt på kommunesenteret */
-        padding: 4px 10px;
-        border: 2px solid white;
-        border-radius: 999px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        color: white;
-        font-size: 0.8rem;
+        padding: 5px 8px 6px;
+        border: 1px solid #C9D3CE;
+        border-radius: 6px;
+        background: white;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+        color: #1A1A1A;
+        font-size: 0.75rem;
+        line-height: 1.2;
         white-space: nowrap;
         cursor: pointer;
     }
 
-    .cap-ok {
-        background: #2E7D32;
+    /* Navn til venstre, prosent til høyre */
+    .cap-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
     }
 
-    .cap-medium {
-        background: #F9A825;
-        color: #1A1A1A;
+        .cap-top strong {
+            font-weight: 600;
+        }
+
+    .cap-pct {
+        color: #444;
     }
 
-    .cap-missing {
-        background: #C62828;
+    /* Søylen: lys bakgrunn, mørk fylt del */
+    .cap-bar {
+        display: block;
+        height: 4px;
+        margin-top: 4px;
+        border-radius: 2px;
+        background: #E1F5EE;
+        overflow: hidden;
+    }
+
+    .cap-fill {
+        display: block;
+        height: 100%;
+        background: #0F6E56;
     }
 
     .cap-popup h3 {
@@ -418,27 +441,26 @@
         font-weight: 600;
     }
 
+    .cap-popup .cap-bar {
+        height: 6px;
+        margin-top: 6px;
+    }
+
     .cap-popup ul {
         list-style: none;
         margin: 6px 0 0;
         padding: 0;
     }
 
-    .cap-row-ok {
-        color: #2E7D32;
-    }
-
-    .cap-row-partial {
-        color: #B26A00;
-    }
-
-    .cap-row-missing {
-        color: #C62828;
+    .cap-row-none {
+        color: #6B6B6B;
     }
 
     .cap-weak {
         font-weight: 600;
-        color: #C62828;
+    .cap-weak {
+        font-weight: 600;
+    }
     }
 
     .cap-now {
@@ -459,10 +481,13 @@
         font-size: 0.8rem;
     }
 
-    /* Rute i tegnforklaring og lagvelger: rød, gul og grønn */
+    /* Rute i tegnforklaring og lagvelger: en liten søyle */
     .lg-cap {
-        border-radius: 999px;
-        background: linear-gradient(90deg, #C62828 33%, #F9A825 33% 66%, #2E7D32 66%);
+        height: 8px;
+        border: 1px solid #C9D3CE;
+        border-radius: 2px;
+        background: linear-gradient(90deg, #0F6E56 60%, #E1F5EE 60%);
+        box-shadow: none;
         vertical-align: middle;
     }
 
@@ -883,7 +908,7 @@
         </ul>
         <!-- B31: vises når «Beredskap per kommune» er slått på i lagvelgeren -->
         <ul>
-            <li><span class="lg lg-cap"></span> Beredskap per innbygger: grønn = godt rustet, gul = middels, rød = trenger innsats</li>
+            <li><span class="lg lg-cap"></span> Beredskap per kommune: søylen viser andel av beredskapsmålet</li>
         </ul>
         <p>Rund = behov · Firkantet = ressurs</p>
     </details>
