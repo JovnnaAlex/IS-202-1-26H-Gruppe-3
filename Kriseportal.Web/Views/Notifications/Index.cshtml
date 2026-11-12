@@ -1,0 +1,157 @@
+@model List<Kriseportal.Web.Models.Entities.Notification>
+@using Kriseportal.Web.Models.Entities
+
+@{
+    ViewData["Title"] = "Varsler";
+
+    var isProvider = User.IsInRole(AppRoles.ResourceProvider);
+
+    if (isProvider)
+    {
+        Layout = "_ResourceProviderLayout";
+    }
+}
+
+<style>
+    .notifications-page {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 32px;
+        color: #293B33;
+    }
+
+    .notification-card {
+        background: #fff;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 22px;
+        margin: 16px 0;
+    }
+
+    .notification-unread {
+        border-left: 5px solid #527667;
+    }
+
+    .notification-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .notification-actions form {
+        margin: 0;
+    }
+
+    .notification-actions a {
+        color: #3E5E50;
+        font-weight: 600;
+    }
+
+    .notification-actions button {
+        background: #527667;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .notification-meta {
+        color: #6C604F;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 768px) {
+        .notifications-page {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="notifications-page">
+    <h1>Varsler</h1>
+
+    @if (Model.Count == 0)
+    {
+        <p>Du har ingen varsler ennå.</p>
+    }
+
+    @foreach (var notification in Model)
+    {
+        <article class="notification-card @(!notification.IsRead ? "notification-unread" : "")">
+            @if (notification.IsUrgent)
+            {
+                <strong>Akutt forespørsel</strong>
+            }
+
+            <p>@notification.Message</p>
+
+            <p class="notification-meta">
+                @notification.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                · @(notification.IsRead ? "Lest" : "Ulest")
+            </p>
+
+            <div class="notification-actions">
+                <a asp-controller="Requests" asp-action="Index">
+                    Se forespørsler
+                </a>
+
+                @if (!isProvider && notification.NeedId.HasValue)
+                {
+                    <a asp-controller="Need"
+                       asp-action="Details"
+                       asp-route-id="@notification.NeedId">
+                        Se behov
+                    </a>
+                }
+
+                @if (!notification.IsRead)
+                {
+                    <form class="notification-read-form"
+                          asp-controller="Notifications"
+                          asp-action="MarkRead"
+                          method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@notification.NotificationId" />
+
+                        <button type="submit">Marker som lest</button>
+                    </form>
+                }
+            </div>
+        </article>
+    }
+</div>
+
+<script>
+    document.querySelectorAll(".notification-read-form").forEach(form => {
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const button = form.querySelector("button");
+            button.disabled = true;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    credentials: "same-origin"
+                });
+
+                if (!response.ok || response.redirected) {
+                    throw new Error("Kunne ikke oppdatere varselet.");
+                }
+
+                window.location.reload();
+            } catch {
+                button.disabled = false;
+                window.alert("Kunne ikke markere varselet som lest. Prøv igjen.");
+            }
+        });
+    });
+</script>

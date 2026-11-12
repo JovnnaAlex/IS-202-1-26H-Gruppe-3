@@ -1,39 +1,239 @@
 ﻿@model Kriseportal.Web.Models.MatchingSuggestionsViewModel
 
-<p>@Model.Resources.Count</p>
-@if (Model.Resources.Count == 0)
-{
-    <p>Ingen Ressurs tilgjengelig i denne kategorien.</p>
+@{
+    ViewData["Title"] = "Ressursforslag";
 }
 
-@foreach (var resource in Model.Resources)
-{
+<style>
+    .suggestions-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px;
+        color: #293B33;
+    }
 
-<p>@resource.Name</p>
-<p>@resource.Municipality</p>
+    .suggestions-summary,
+    .suggestion-card {
+        background: white;
+        border: 1px solid #E8E0D7;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+    }
 
-<a asp-controller="Resource"
-   asp-action="ResourceDetails"
-   asp-route-id="@resource.ResourceId">Details</a>
+    .suggestions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        gap: 20px;
+    }
 
-    <form asp-controller="Matching"
-          asp-action="SendRequest"
-          method="post">
+    .suggestion-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
 
-        @Html.AntiForgeryToken()
+    .suggestion-card h2 {
+        font-size: 22px;
+        margin: 0;
+    }
 
-        <input type="hidden" name="NeedId" value="@Model.NeedId" />
-        <input type="hidden" name="ResourceId" value="@resource.ResourceId" />
+    .suggestion-card p {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
 
-        <label for="quantity-@resource.ResourceId">Antall</label>
-        <input id="quantity-@resource.ResourceId"
-               type="number"
-               name="Quantity"
-               value="1"
-               min="1"
-               max="@resource.Quantity"
-               required />
+    .suggestion-card form {
+        margin-top: auto;
+    }
 
-        <button type="submit">Send forespørsel</button>
-    </form>
-}
+    .suggestion-card label {
+        display: block;
+        font-weight: 600;
+        margin: 16px 0 8px;
+    }
+
+    .suggestion-card input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #BCCABD;
+        border-radius: 8px;
+        font: inherit;
+        margin-bottom: 12px;
+    }
+
+    .suggestions-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 24px 0;
+    }
+
+    .suggestions-button {
+        display: inline-block;
+        padding: 12px 18px;
+        background: #527667;
+        color: white;
+        border: 1px solid #527667;
+        border-radius: 8px;
+        text-decoration: none;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .suggestions-secondary {
+        background: white;
+        color: #3E5E50;
+    }
+
+    .suggestion-details {
+        color: #3E5E50;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 768px) {
+        .suggestions-page {
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="suggestions-page">
+    <h1>Ressursforslag til behovet ditt</h1>
+    
+    @if (TempData["RequestSuccess"] is string success)
+    {
+        <p role="status">@success</p>
+    }
+
+    @if (TempData["RequestError"] is string error)
+    {
+        <p role="alert">@error</p>
+    }
+    
+    @if (TempData["NeedCreated"] is string message)
+    {
+        <p role="status">@message</p>
+    }
+
+    <section class="suggestions-summary">
+        <h2>@Model.Need.Title</h2>
+        <p>@Model.Need.Category?.Name · @Model.Need.Municipality</p>
+        <p>
+            <strong>
+                @Model.ConfirmedQuantity av
+                @Model.Need.Quantity @Model.Need.Unit bekreftet
+            </strong>
+        </p>
+        <p>Mangler: @Model.RemainingQuantity @Model.Need.Unit</p>
+    </section>
+
+    <p>
+        Her vises opptil tre forslag i samme kategori og med samme enhet.
+        Ressursene rangeres etter hvor mye de kan dekke, deretter avstand.
+        Avstanden er målt i luftlinje.
+    </p>
+
+    @if (Model.RemainingQuantity == 0)
+    {
+        <p>Behovet er fullt dekket av bekreftede ressurser.</p>
+    }
+    else if (Model.Resources.Count == 0)
+    {
+        <p>
+            Ingen nye forslag er tilgjengelige akkurat nå.
+            Se sendte forespørsler eller utforsk ressursoversikten.
+        </p>
+    }
+    else
+    {
+        <div class="suggestions-grid">
+            @foreach (var resource in Model.Resources)
+            {
+                var available = Model.AvailableQuantities[resource.ResourceId];
+                var maxQuantity = Math.Min(available, Model.RemainingQuantity);
+
+                <article class="suggestion-card">
+                    <h2>@resource.Name</h2>
+                    <p>@resource.Municipality</p>
+
+                    <p>
+                        <strong>@available @resource.Unit ledig</strong>
+                    </p>
+
+                    <p>
+                        @Model.DistancesKm[resource.ResourceId].ToString("0.0")
+                        km fra behovet
+                    </p>
+
+                    <a asp-controller="Resource"
+                       asp-action="ResourceDetails"
+                       asp-route-id="@resource.ResourceId"
+                       class="suggestion-details">
+                        Se ressursdetaljer
+                    </a>
+
+                    <form asp-controller="Matching"
+                          asp-action="SendRequest"
+                          method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="fromSuggestions" value="true" />
+                        
+
+                        <input type="hidden"
+                               name="NeedId"
+                               value="@Model.NeedId" />
+                        <input type="hidden"
+                               name="ResourceId"
+                               value="@resource.ResourceId" />
+
+                        <label for="quantity-@resource.ResourceId">
+                            Antall (@resource.Unit)
+                        </label>
+
+                        <input id="quantity-@resource.ResourceId"
+                               type="number"
+                               name="Quantity"
+                               min="1"
+                               max="@maxQuantity"
+                               value="@maxQuantity"
+                               required />
+
+                        <button type="submit" class="suggestions-button">
+                            Send forespørsel
+                        </button>
+                    </form>
+                </article>
+            }
+        </div>
+    }
+
+    <p>
+        Du kan sende forespørsler til flere leverandører.
+        Bare bekreftede antall teller mot behovet.
+    </p>
+
+    <div class="suggestions-actions">
+        <a asp-controller="Resource"
+           asp-action="Index"
+           class="suggestions-button">
+            Se alle ressurser
+        </a>
+
+        <a asp-controller="Requests"
+           asp-action="Index"
+           class="suggestions-button suggestions-secondary">
+            Se sendte forespørsler
+        </a>
+
+        <a asp-controller="Need"
+           asp-action="Details"
+           asp-route-id="@Model.NeedId"
+           class="suggestions-button suggestions-secondary">
+            Se behovet
+        </a>
+    </div>
+</div>

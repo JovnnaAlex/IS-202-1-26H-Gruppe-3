@@ -1,0 +1,340 @@
+@using System.Security.Claims
+@using Kriseportal.Web.Models.Entities
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div id="portal-notifications"
+         data-user="@User.FindFirstValue(ClaimTypes.NameIdentifier)"
+         data-provider="@User.IsInRole(AppRoles.ResourceProvider).ToString().ToLowerInvariant()"
+         data-unread-url="@Url.Action("Unread", "Notifications")"
+         data-read-url="@Url.Action("MarkRead", "Notifications")">
+
+        <form id="notification-token" hidden>
+            @Html.AntiForgeryToken()
+        </form>
+
+        <a asp-controller="Notifications"
+           asp-action="Index"
+           class="portal-notification-link">
+            Varsler <span id="notification-count">0</span>
+        </a>
+
+        <aside id="notification-popup"
+       class="portal-notification-popup"
+       aria-label="Nytt varsel"
+       hidden>
+    <div role="status" aria-live="polite">
+        <strong id="notification-heading">Nytt varsel</strong>
+        <p id="notification-message"></p>
+    </div>
+
+    <form id="popup-confirm-form"
+          asp-controller="Requests"
+          asp-action="Confirm"
+          method="post"
+          hidden>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" />
+
+        <label for="popup-confirm-quantity"
+               style="display:block; font-weight:600; margin-bottom:8px;">
+            Antall du kan levere
+        </label>
+
+        <input id="popup-confirm-quantity"
+               type="number"
+               name="quantity"
+               value="1"
+               min="1"
+               required
+               style="box-sizing:border-box; width:110px;
+                      padding:10px; border:1px solid #527667;
+                      border-radius:8px; font:inherit;" />
+
+        <div class="portal-notification-actions">
+            <button type="submit"
+                    style="background:#527667; color:white;">
+                Godkjenn
+            </button>
+
+            <button type="submit" form="popup-reject-form">
+                Avslå
+            </button>
+        </div>
+    </form>
+
+    <form id="popup-reject-form"
+          asp-controller="Requests"
+          asp-action="Reject"
+          method="post"
+          hidden>
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" />
+    </form>
+
+    <div class="portal-notification-actions">
+        <a id="popup-details"
+           asp-controller="Requests"
+           asp-action="Index"
+           style="display:inline-block; padding:10px 14px;
+                  border:1px solid #527667; border-radius:8px;
+                  text-decoration:none;">
+            Se mer
+        </a>
+
+        @if (!User.IsInRole(AppRoles.ResourceProvider))
+        {
+            <button id="notification-read" type="button">
+                Marker som lest
+            </button>
+        }
+
+        <button id="notification-close" type="button">
+            Lukk
+        </button>
+        </div>
+
+             <p id="notification-error" role="alert"></p>
+        </aside>
+    </div>
+
+    <style>
+        .portal-notification-link {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1100;
+            padding: 12px 18px;
+            border-radius: 24px;
+            background: #293B33;
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 3px 12px #0002;
+        }
+
+        .portal-notification-popup {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: min(560px, calc(100vw - 32px));
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding: 28px;
+            background: white;
+            color: #293B33;
+            border: 2px solid #527667;
+            border-radius: 16px;
+            box-shadow: 0 12px 48px #0004;
+            overflow-wrap: anywhere;
+        }
+
+        #notification-heading {
+            display: block;
+            font-size: 23px;
+            margin-bottom: 12px;
+        }
+
+        #notification-message {
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .portal-notification-popup.portal-notification-urgent {
+            border: 3px solid #A7352C;
+            background: #FFF8F7;
+        }
+
+        .portal-notification-urgent #notification-heading {
+            color: #A7352C;
+        }
+
+        .portal-notification-popup[hidden] {
+            display: none;
+        }
+
+        .portal-notification-popup a {
+            color: #3E5E50;
+            font-weight: 600;
+        }
+
+        .portal-notification-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .portal-notification-actions button {
+            padding: 10px 14px;
+            background: #F0F3EF;
+            color: #293B33;
+            border: 1px solid #527667;
+            border-radius: 8px;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .portal-notification-urgent {
+            border-color: #A7352C;
+            animation: notification-pulse 2s ease-in-out infinite;
+        }
+
+        @@keyframes notification-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 #A7352C20; }
+            50% { box-shadow: 0 0 0 7px #A7352C40; }
+        }
+
+        @@media (prefers-reduced-motion: reduce) {
+            .portal-notification-urgent {
+                animation: none;
+            }
+        }
+    </style>
+
+    <script>
+    (() => {
+        const root = document.getElementById("portal-notifications");
+        const popup = document.getElementById("notification-popup");
+        const count = document.getElementById("notification-count");
+        const error = document.getElementById("notification-error");
+        const readButton = document.getElementById("notification-read");
+        const approveForm = document.getElementById("popup-confirm-form");
+        const rejectForm = document.getElementById("popup-reject-form");
+        const details = document.getElementById("popup-details");
+        const detailsBase = details.href;
+        const isProvider = root.dataset.provider === "true";
+        const shown = new Set();
+
+        let current = null;
+        let busy = false;
+
+        function closePopup() {
+            popup.hidden = true;
+            current = null;
+        }
+
+        async function checkNotifications() {
+            if (busy) return;
+            busy = true;
+
+            try {
+                const response = await fetch(root.dataset.unreadUrl, {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                });
+
+                if (!response.ok || response.redirected) return;
+
+                const data = await response.json();
+                count.textContent = data.count;
+
+                const responseBadge = document.getElementById("request-response-count");
+
+                if (responseBadge) {
+                    responseBadge.textContent = data.responseCount;
+                    responseBadge.hidden = !data.responseCount;
+                }
+
+                const badge = document.getElementById("pending-request-count");
+                if (badge && typeof data.pendingCount === "number") {
+                    badge.textContent = data.pendingCount;
+                    badge.hidden = data.pendingCount === 0;
+                }
+
+                if (current &&
+                    !data.notifications.some(n => n.id === current.id)) {
+                    closePopup();
+                }
+
+                if (!popup.hidden) return;
+
+                const next = data.notifications.find(n => !shown.has(n.id));
+                if (!next) return;
+
+                current = next;
+                shown.add(next.id);
+
+                const canRespond = isProvider && next.canRespond === true;
+                approveForm.hidden = !canRespond;
+                rejectForm.hidden = !canRespond;
+
+                approveForm.elements.namedItem("id").value = next.requestId ?? "";
+                rejectForm.elements.namedItem("id").value = next.requestId ?? "";
+
+                if (!isProvider && next.needId) {
+                    details.href =
+                        '@Url.Action("Details", "Need")'
+                        + "?id=" + encodeURIComponent(next.needId);
+                } else {
+                    details.href = next.requestId
+                        ? detailsBase + "#request-" + next.requestId
+                        : detailsBase;
+                }
+
+                const urgent = next.isUrgent && isProvider;
+                popup.classList.toggle("portal-notification-urgent", urgent);
+
+                document.getElementById("notification-heading").textContent =
+                    urgent ? "Akutt forespørsel" : "Nytt varsel";
+                document.getElementById("notification-message").textContent =
+                    next.message;
+
+                error.textContent = "";
+                popup.hidden = false;
+            } catch {
+                // Prøver igjen ved neste sjekk.
+            } finally {
+                busy = false;
+            }
+        }
+
+        approveForm.addEventListener("submit", event => {
+            if (!window.confirm("Vil du bekrefte at du kan levere dette antallet?")) {
+                event.preventDefault();
+            }
+        });
+
+        rejectForm.addEventListener("submit", event => {
+            if (!window.confirm("Vil du avslå denne forespørselen?")) {
+                event.preventDefault();
+            }
+        });
+
+        readButton?.addEventListener("click", async () => {
+            if (!current) return;
+            readButton.disabled = true;
+
+            const body = new FormData(
+                document.getElementById("notification-token"));
+            body.append("id", current.id);
+
+            try {
+                const response = await fetch(root.dataset.readUrl, {
+                    method: "POST",
+                    body,
+                    credentials: "same-origin"
+                });
+
+                if (!response.ok || response.redirected) throw new Error();
+
+                closePopup();
+                await checkNotifications();
+            } catch {
+                error.textContent = "Kunne ikke oppdatere varselet. Prøv igjen.";
+            } finally {
+                readButton.disabled = false;
+            }
+        });
+
+        document.getElementById("notification-close")
+            .addEventListener("click", closePopup);
+        
+        checkNotifications();
+        setInterval(checkNotifications, 10000);
+        })();
+    </script>
+}

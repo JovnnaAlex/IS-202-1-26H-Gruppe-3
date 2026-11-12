@@ -119,8 +119,22 @@
                         <div class="edit-field"><label asp-for="Name">Navn på ressurs</label><input asp-for="Name" /><span asp-validation-for="Name" class="edit-error"></span></div>
                         <div class="edit-field"><label asp-for="CategoryId">Ressurskategori</label><select asp-for="CategoryId"><option value="">Velg kategori</option>@foreach (var category in categories) { <option value="@category.CategoryId">@category.Name</option> }</select><span asp-validation-for="CategoryId" class="edit-error"></span></div>
                         <div class="edit-field"><label asp-for="Quantity">Antall</label><input asp-for="Quantity" type="number" min="1" /><span asp-validation-for="Quantity" class="edit-error"></span></div>
-                        <div class="edit-field"><label asp-for="Unit">Enhet</label><input asp-for="Unit" /><span asp-validation-for="Unit" class="edit-error"></span></div>
-                        <div class="edit-field full"><label asp-for="Description">Beskrivelse</label><textarea asp-for="Description" rows="3"></textarea><span asp-validation-for="Description" class="edit-error"></span></div>
+                        <div class="edit-field">
+                            <label asp-for="Unit">Enhet</label>
+                            <select asp-for="Unit">
+                                <option value="">Velg måleenhet</option>
+                                <option value="stk">Stykk (stk)</option>
+                                <option value="liter">Liter (L)</option>
+                                <option value="kg">Kilogram (kg)</option>
+                                <option value="tonn">Tonn</option>
+                                <option value="meter">Meter (m)</option>
+                                <option value="m²">Kvadratmeter (m²)</option>
+                                <option value="timer">Timer</option>
+                                <option value="personer">Personer</option>
+                                <option value="plasser">Plasser</option>
+                            </select>
+                            <span asp-validation-for="Unit" class="edit-error"></span>
+                        </div>                        <div class="edit-field full"><label asp-for="Description">Beskrivelse</label><textarea asp-for="Description" rows="3"></textarea><span asp-validation-for="Description" class="edit-error"></span></div>
                     </div>
                 </section>
 

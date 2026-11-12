@@ -193,9 +193,12 @@ public class NeedController : Controller
         await _context.SaveChangesAsync();
 
         // Sender kategorinavnet videre til detaljsiden.
-        model.CategoryName = category.Name;
+        TempData["NeedCreated"] = "Behovet er registrert.";
 
-        return View("Details", model);
+        return RedirectToAction(
+            "Suggestions",
+            "Matching",
+            new { needID = need.NeedId });
     }
 
     // Viser detaljer for et eksisterende behov fra databasen.
@@ -237,6 +240,17 @@ public class NeedController : Controller
         ViewData["ExistingNeed"] = true;
         //Detaljsiden vise riktig status uten at du må endre NeedViewModel
         ViewData["NeedStatus"] = need.Status.ToString();
+        
+        var confirmedQuantity = await _context.Requests
+            .AsNoTracking()
+            .Where(r => r.Status == RequestStatus.Confirmed
+                        && r.Match != null
+                        && r.Match.NeedId == id)
+            .SumAsync(r => (int?)r.Quantity) ?? 0;
+
+        ViewData["ConfirmedQuantity"] = confirmedQuantity;
+        ViewData["RemainingQuantity"] =
+            Math.Max(0, need.Quantity - confirmedQuantity);
 
         // B13: id og neste status brukes av knappen som endrer status
         ViewData["NeedId"] = need.NeedId;
@@ -253,29 +267,76 @@ public class NeedController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangeStatus(int id, NeedStatus newStatus)
     {
-        var need = await _context.Needs.FirstOrDefaultAsync(n => n.NeedId == id);
+        var userId = _userManager.GetUserId(User);
 
-        if (need == null)
+        if (string.IsNullOrEmpty(userId))
         {
-            return NotFound();
+            return Challenge();
         }
 
-        if (!ModelState.IsValid ||
-            !Enum.IsDefined(newStatus) ||
-            !NeedStatusFlow.CanChange(need.Status, newStatus))
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            TempData["StatusError"] =
-                $"Statusen kan ikke endres fra «{NeedStatusFlow.DisplayName(need.Status)}» hit.";
+            _context.ChangeTracker.Clear();
+
+            await using var transaction = await _context.Database
+                .BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+            var needs = await _context.Needs
+                .FromSqlInterpolated(
+                    $"SELECT * FROM `Needs` WHERE `NeedId` = {id} FOR UPDATE")
+                .ToListAsync();
+
+            var need = needs.SingleOrDefault();
+
+            if (need == null)
+            {
+                return NotFound();
+            }
+
+            if (need.PublicAuthorityId != userId)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid
+                || !Enum.IsDefined(newStatus)
+                || !NeedStatusFlow.CanChange(need.Status, newStatus))
+            {
+                TempData["StatusError"] =
+                    $"Statusen kan ikke endres fra «{NeedStatusFlow.DisplayName(need.Status)}» hit.";
+
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            if (newStatus == NeedStatus.Assigned)
+            {
+                var confirmedQuantity = await _context.Requests
+                    .Where(r => r.Status == RequestStatus.Confirmed
+                        && r.Match != null
+                        && r.Match.NeedId == id)
+                    .SumAsync(r => (int?)r.Quantity) ?? 0;
+
+                if (confirmedQuantity < need.Quantity)
+                {
+                    TempData["StatusError"] =
+                        $"Behovet kan ikke settes til tildelt ennå. " +
+                        $"{confirmedQuantity} av {need.Quantity} {need.Unit} er bekreftet.";
+
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+            }
+
+            need.Status = newStatus;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["StatusMessage"] =
+                $"Statusen er endret til «{NeedStatusFlow.DisplayName(newStatus)}».";
 
             return RedirectToAction(nameof(Details), new { id });
-        }
-
-        need.Status = newStatus;
-        await _context.SaveChangesAsync();
-
-        TempData["StatusMessage"] =
-            $"Statusen er endret til «{NeedStatusFlow.DisplayName(newStatus)}».";
-
-        return RedirectToAction(nameof(Details), new { id });
+        });
     }
 }
