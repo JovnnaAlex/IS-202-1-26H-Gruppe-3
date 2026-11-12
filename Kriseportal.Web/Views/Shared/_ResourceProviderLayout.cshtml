@@ -574,7 +574,8 @@
                 <form asp-controller="Account"
                       asp-action="Logout"
                       method="post"
-                      class="provider-logout-form">
+                      class="provider-logout-form"                  
+                      onsubmit="return confirm('Er du sikker på at du vil logge ut?');"> <!-- Bekreftelse på utlogging -->
 
                     <button type="submit"
                             class="provider-sidebar-link provider-logout">
