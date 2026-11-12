@@ -235,7 +235,22 @@ public async Task<IActionResult> Confirm(int id, int? quantity = null)
             "Forespørselen kan ikke bekreftes. Behovet må være åpent, og ressursen må være tilgjengelig med samme kategori og måleenhet.";
         return RedirectToAction(nameof(Index));
     }
+    
+    var coversPeriod =
+        (!resource.AvailableFrom.HasValue
+         || resource.AvailableFrom.Value <= need.NeededFrom)
+        && (!resource.AvailableTo.HasValue
+            || (need.NeededTo.HasValue
+                && resource.AvailableTo.Value >= need.NeededTo.Value));
 
+    if (!coversPeriod)
+    {
+        TempData["RequestError"] =
+            "Ressursen er ikke tilgjengelig gjennom hele behovsperioden.";
+
+        return RedirectToAction(nameof(Index));
+    }
+    
     var confirmedForNeed = await _context.Requests
         .Where(r => r.Status == RequestStatus.Confirmed
             && r.Match != null

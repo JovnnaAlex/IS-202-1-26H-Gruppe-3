@@ -169,6 +169,12 @@ public class ResourceController : Controller
                 n.Unit.Trim(),
                 resource.Unit.Trim(),
                 StringComparison.OrdinalIgnoreCase))
+            .Where(n =>
+                (!resource.AvailableFrom.HasValue
+                 || resource.AvailableFrom.Value <= n.NeededFrom)
+                && (!resource.AvailableTo.HasValue
+                    || (n.NeededTo.HasValue
+                        && resource.AvailableTo.Value >= n.NeededTo.Value)))
             .ToList();
         
         var model = new ResourceRequestViewModel

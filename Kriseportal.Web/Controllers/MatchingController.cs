@@ -61,7 +61,12 @@ namespace Kriseportal.Web.Controllers
             var resources = await _context.Resources
                 .AsNoTracking()
                 .Where(r => r.Availability == ResourceAvailability.Available
-                    && r.CategoryId == behov.CategoryId)
+                            && r.CategoryId == behov.CategoryId
+                            && (r.AvailableFrom == null
+                                || r.AvailableFrom <= behov.NeededFrom)
+                            && (r.AvailableTo == null
+                                || (behov.NeededTo != null
+                                    && r.AvailableTo >= behov.NeededTo)))
                 .ToListAsync();
 
             // Sammenligner enheter uten forskjell på store/små bokstaver.
@@ -234,6 +239,21 @@ namespace Kriseportal.Web.Controllers
                     return RedirectToAction("Index", "Requests");
                 }
 
+                var coversPeriod =
+                    (!ressurs.AvailableFrom.HasValue
+                     || ressurs.AvailableFrom.Value <= behov.NeededFrom)
+                    && (!ressurs.AvailableTo.HasValue
+                        || (behov.NeededTo.HasValue
+                            && ressurs.AvailableTo.Value >= behov.NeededTo.Value));
+
+                if (!coversPeriod)
+                {
+                    TempData["RequestError"] =
+                        "Ressursen er ikke tilgjengelig gjennom hele behovsperioden.";
+
+                    return RedirectToAction("Index", "Requests");
+                }
+                
                 var confirmedForNeed = await _context.Requests
                     .Where(r => r.Status == RequestStatus.Confirmed
                         && r.Match != null
