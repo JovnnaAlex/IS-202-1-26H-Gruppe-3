@@ -129,8 +129,10 @@
                 {
                     <form asp-controller="Account"
                           asp-action="Logout"
-                          method="post">
+                          method="post"                       
+                          onsubmit="return confirm('Er du sikker på at du vil logge ut?');"> <!-- Bekreftelse på utlogging -->
 
+                     
                         <button type="submit"
                                 class="sidebar-link sidebar-logout-button">
 
