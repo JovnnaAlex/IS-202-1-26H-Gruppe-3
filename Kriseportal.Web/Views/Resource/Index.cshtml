@@ -193,6 +193,29 @@
         padding: 35px 15px;
         color: #7B847D;
     }
+    
+    /* B21: Utskriftsknapp */
+    .resources-print-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 24px;
+    }
+
+    .resources-print-button {
+        background: #527667;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .resources-print-button:hover {
+            background: #3E5E50;
+        }
+
 </style>
 
 <div class="resources-page">
@@ -266,6 +289,17 @@
             </div>
 
         </div>
+
+        
+        <!-- B21: Utskrift av ressursliste per kommune -->
+        <div class="resources-print-actions">
+            <button type="button"
+                    id="printResourcesButton"
+                    class="resources-print-button">
+                Skriv ut ressursliste
+            </button>
+        </div>
+
 
         <!-- Sara: Ressurstabell med data fra databasen. -->
         <div class="table-responsive">
@@ -368,6 +402,9 @@
             const municipalityFilter = document.getElementById("municipalityFilter");
             const categoryFilter = document.getElementById("categoryFilter");
 
+            // B21: Henter utskriftsknappen
+            const printButton = document.getElementById("printResourcesButton");
+
             const rows = document.querySelectorAll(".resource-row");
             const resourceCount = document.getElementById("resourceCount");
             const emptyMessage = document.getElementById("emptyMessage");
@@ -438,6 +475,27 @@
             categoryFilter.addEventListener("change", filterResources);
 
             filterResources();
+
+            
+            // B21: Åpner utskriftssiden for valgt kommune
+            printButton.addEventListener("click", function() {
+
+                const municipality = municipalityFilter.value;
+
+                // Brukeren må velge en kommune først
+                if (!municipality) {
+                    alert("Velg en kommune før du skriver ut ressurslisten.");
+                    municipalityFilter.focus();
+                    return;
+                }
+
+                // Sender valgt kommune til ResourceController.Print()
+                const printUrl = '@Url.Action("Print", "Resource")';
+
+                window.location.href =
+                    printUrl + "?municipality=" + encodeURIComponent(municipality);
+            });
+
         });
     </script>
 }
