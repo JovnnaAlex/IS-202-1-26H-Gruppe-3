@@ -194,27 +194,42 @@
         color: #7B847D;
     }
     
-    /* B21: Utskriftsknapp */
-    .resources-print-actions {
+ 
+    /* B21: Overskrift og knapp på samme nivå */
+    .resources-card-header {
         display: flex;
-        justify-content: flex-end;
-        margin-bottom: 24px;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
     }
+
+        .resources-card-header .resources-card-title {
+            margin: 0;
+        }
 
     .resources-print-button {
         background: #527667;
         color: white;
         border: none;
-        border-radius: 8px;
-        padding: 12px 20px;
-        font: inherit;
-        font-weight: 600;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
+        white-space: nowrap;
     }
 
         .resources-print-button:hover {
             background: #3E5E50;
         }
+
+    @@media (max-width: 600px) {
+        .resources-card-header {
+            flex-wrap: wrap;
+        }
+    }
+
 
 </style>
 
@@ -228,9 +243,19 @@
 
     <div class="resources-card">
 
-        <h2 class="resources-card-title">
-            Alle ressurser
-        </h2>
+        <div class="resources-card-header">
+
+            <h2 class="resources-card-title">
+                Alle ressurser
+            </h2>
+
+            <button type="button"
+                    id="printResourcesButton"
+                    class="resources-print-button">
+                Skriv ut ressursliste
+            </button>
+
+        </div>
 
         <!-- Sara: Søk og filtrering av ressurser. -->
         <div class="resources-filters">
@@ -288,18 +313,7 @@
                 </select>
             </div>
 
-        </div>
-
-        
-        <!-- B21: Utskrift av ressursliste per kommune -->
-        <div class="resources-print-actions">
-            <button type="button"
-                    id="printResourcesButton"
-                    class="resources-print-button">
-                Skriv ut ressursliste
-            </button>
-        </div>
-
+        </div
 
         <!-- Sara: Ressurstabell med data fra databasen. -->
         <div class="table-responsive">
