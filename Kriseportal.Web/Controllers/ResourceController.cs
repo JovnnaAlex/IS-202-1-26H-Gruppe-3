@@ -142,16 +142,76 @@ public class ResourceController : Controller
         return View(resource);
     }
 
-    // Sara: Åpner den nye siden for å sende forespørsel.
-    // Foreløpig er dette bare frontend, uten lagring i databasen.
-    // B12: Bare offentlige aktører kan sende forespørsel om en ressurs.
+    // Viser valgt ressurs og den offentlige aktørens aktuelle behov.
     [Authorize(Roles = AppRoles.PublicAuthority)]
     [HttpGet]
-    public IActionResult SendRequest()
+    public async Task<IActionResult> SendRequest(int id)
     {
-        return View();
-    }
+        var userId = _userManager.GetUserId(User);
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Challenge();
+        }
+
+        var resource = await _context.Resources
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r =>
+                r.ResourceId == id &&
+                r.Availability == ResourceAvailability.Available);
+
+        if (resource == null)
+        {
+            return NotFound();
+        }
+
+        var confirmedQuantity = await _context.Requests
+            .Where(r => r.Status == RequestStatus.Confirmed
+                        && r.Match != null
+                        && r.Match.ResourceId == id)
+            .SumAsync(r => (int?)r.Quantity) ?? 0;
+
+        var needs = await _context.Needs
+            .AsNoTracking()
+            .Where(n => n.PublicAuthorityId == userId
+                        && n.CategoryId == resource.CategoryId
+                        && n.Status != NeedStatus.Resolved)
+            .Where(n => (_context.Requests
+                .Where(r => r.Status == RequestStatus.Confirmed
+                            && r.Match != null
+                            && r.Match.NeedId == n.NeedId)
+                .Sum(r => (int?)r.Quantity) ?? 0) < n.Quantity)
+            .Where(n => !_context.Requests.Any(r =>
+                r.Match != null
+                && r.Match.NeedId == n.NeedId
+                && r.Match.ResourceId == id
+                && r.Status != RequestStatus.Rejected))
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        needs = needs
+            .Where(n => string.Equals(
+                n.Unit.Trim(),
+                resource.Unit.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            .Where(n =>
+                (!resource.AvailableFrom.HasValue
+                 || resource.AvailableFrom.Value <= n.NeededFrom)
+                && (!resource.AvailableTo.HasValue
+                    || (n.NeededTo.HasValue
+                        && resource.AvailableTo.Value >= n.NeededTo.Value)))
+            .ToList();
+        
+        var model = new ResourceRequestViewModel
+        {
+            Resource = resource,
+            AvailableQuantity = Math.Max(
+                0, resource.Quantity - confirmedQuantity),
+            Needs = needs
+        };
+
+        return View(model);
+    }
     // Henter kategorier fra databasen når registreringsskjemaet åpnes.
     [Authorize(Roles = AppRoles.ResourceProvider)]
     [HttpGet]

@@ -240,6 +240,45 @@ namespace Kriseportal.Web.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsUrgent")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int?>("NeedId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Kriseportal.Web.Models.Entities.Request", b =>
                 {
                     b.Property<int>("RequestId")
@@ -537,6 +576,17 @@ namespace Kriseportal.Web.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("PublicAuthority");
+                });
+
+            modelBuilder.Entity("Kriseportal.Web.Models.Entities.Notification", b =>
+                {
+                    b.HasOne("Kriseportal.Web.Models.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Kriseportal.Web.Models.Entities.Request", b =>

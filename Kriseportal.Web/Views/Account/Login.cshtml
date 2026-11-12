@@ -172,6 +172,22 @@
         display: none;
     }
 
+    /* Glemt passord: lenke under passordfeltet. */
+    .login-forgot {
+        display: block;
+        text-align: right;
+        margin-top: 8px;
+        color: #244D3B;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .login-forgot:hover {
+        color: #193B2D;
+    }
+
     /* Sara: Mobiltilpasning. */
     @@media (max-width: 600px) {
         .login-section {
@@ -248,6 +264,13 @@
 
                 <span asp-validation-for="Password"
                       class="login-validation"></span>
+
+                <!-- Glemt passord: lenke til skjemaet for nytt passord. -->
+                <a asp-controller="Account"
+                   asp-action="ForgotPassword"
+                   class="login-forgot">
+                    Glemt passord?
+                </a>
 
             </div>
 

@@ -17,10 +17,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Resource> Resources => Set<Resource>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<Request> Requests => Set<Request>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<Notification>(notification =>
+        {
+            notification.HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            notification.HasIndex(n => new { n.UserId, n.IsRead });
+        });
 
         // To kategorier kan ikke ha samme navn
         modelBuilder.Entity<Category>()

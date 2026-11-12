@@ -1,4 +1,5 @@
 using Kriseportal.Web.DataAccess;
+using Kriseportal.Web.Services;
 using Kriseportal.Web.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,23 @@ builder.Services
     {
         options.User.RequireUniqueEmail = true;
     })
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    // Glemt passord: lager engangskodene i lenken for nytt passord
+    .AddDefaultTokenProviders();
+
+// Glemt passord: lenken for nytt passord varer i én time
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(1);
+});
+
+// Glemt passord: skriver lenken til loggen under utvikling (ingen e-posttjeneste ennå)
+builder.Services.AddScoped<IPasswordResetSender, LogPasswordResetSender>();
+
+// Utviklingsversjon: logger hendelsen, sender ikke e-post eller mobilpush.
+builder.Services.AddScoped<
+    IRequestNotificationSender,
+    LogRequestNotificationSender>();
 
 // B12: Hvor brukeren sendes når innlogging mangler eller rollen er feil
 builder.Services.ConfigureApplicationCookie(options =>

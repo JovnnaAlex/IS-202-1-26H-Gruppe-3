@@ -1,12 +1,8 @@
 
+@model Kriseportal.Web.Models.ResourceRequestViewModel
+
 @{
     ViewData["Title"] = "Send forespørsel";
-
-    // Sara: Midlertidige eksempeldata for frontend-prototypen.
-    // Disse skal senere erstattes med data fra databasen.
-    var resourceName = "Strømaggregat";
-    var resourceMunicipality = "Kristiansand";
-    var resourceQuantity = "2 stk";
 }
 
 <style>
@@ -186,8 +182,6 @@
 </style>
 
 <div class="request-page">
-
-    <!-- Sara: Tilbake til ressursoversikten. -->
     <a asp-controller="Resource"
        asp-action="Index"
        class="request-back">
@@ -200,114 +194,118 @@
         Velg hvilket behov du ønsker å dekke med ressursen.
     </p>
 
-    <!-- Sara: Viser ressursen forespørselen gjelder. -->
     <section class="request-card">
-
         <h2>Valgt ressurs</h2>
 
         <div class="request-resource">
             <p class="request-resource-name">
-                @resourceName
+                @Model.Resource.Name
             </p>
 
             <p class="request-resource-info">
-                @resourceMunicipality · @resourceQuantity
+                @Model.Resource.Municipality ·
+                @Model.AvailableQuantity @Model.Resource.Unit ledig
+                av totalt @Model.Resource.Quantity
             </p>
         </div>
-
     </section>
 
-    <!-- Sara: Skjema for å velge behov. -->
     <section class="request-card">
-
         <h2>Forespørselsinformasjon</h2>
 
-        <div class="request-field">
+        @if (Model.AvailableQuantity == 0)
+        {
+            <div class="request-notice" role="status">
+                Ressursen har ingen ledige enheter.
+            </div>
+        }
+        else if (Model.Needs.Count == 0)
+        {
+            <div class="request-notice" role="status">
+                Du har ingen aktuelle behov i samme kategori.
+                Behov som allerede er dekket, eller har en ventende
+                eller bekreftet forespørsel til denne ressursen,
+                vises ikke her.
+            </div>
 
-            <label for="needSelect"
-                   class="request-label">
-                Velg behov
-            </label>
-
-            <select id="needSelect"
-                    class="request-input"
-                    disabled>
-
-                <option value="">
-                    Velg et registrert behov
-                </option>
-
-            </select>
-
-            <p class="request-hint">
-                Her skal offentlige aktører kunne velge
-                blant sine registrerte behov.
-            </p>
-
-        </div>
-
-        <div class="request-field">
-
-            <label for="requestMessage"
-                   class="request-label">
-                Melding til ressursleverandør
-            </label>
-
-            <textarea id="requestMessage"
-                      class="request-input"
-                      rows="5"
-                      maxlength="1000"
-                      placeholder="Beskriv kort hvorfor ressursen er nødvendig..."
-                      disabled></textarea>
-
-            <p class="request-hint">
-                Meldingsfeltet er foreløpig en del av prototypen.
-                Backend-teamet må avklare hvordan meldinger skal lagres.
-            </p>
-
-        </div>
-
-        <div class="request-field">
-
-            <span class="request-label">
-                Status
-            </span>
-
-            <span class="request-status">
-                Venter på svar
-            </span>
-
-            <p class="request-hint">
-                Nye forespørsler skal få statusen Proposed
-                når lagring er implementert.
-            </p>
-
-        </div>
-
-        <!-- Sara: Tydelig informasjon om at funksjonen ikke er aktiv ennå. -->
-        <div class="request-notice" role="status">
-            Dette er en frontend-prototype.
-            Innsending av forespørsler er ikke aktivert ennå.
-            Ingen informasjon blir sendt eller lagret.
-        </div>
-
-        <div class="request-actions">
-
-            <!-- Sara: Deaktivert til backend støtter forespørsler. -->
-            <button type="button"
-                    class="request-button"
-                    disabled>
-                Send forespørsel
-            </button>
-
-            <a asp-controller="Resource"
-               asp-action="Index"
-               class="request-cancel">
-                Avbryt
+            <a asp-controller="Need"
+               asp-action="Create"
+               class="request-button">
+                Registrer et behov
             </a>
+        }
+        else
+        {
+            <form asp-controller="Matching"
+                  asp-action="SendRequest"
+                  method="post">
 
-        </div>
+                @Html.AntiForgeryToken()
 
+                <input type="hidden"
+                       name="ResourceId"
+                       value="@Model.Resource.ResourceId" />
+
+                <div class="request-field">
+                    <label for="needSelect" class="request-label">
+                        Velg behov
+                    </label>
+
+                    <select id="needSelect"
+                            name="NeedId"
+                            class="request-input"
+                            required>
+                        <option value="">Velg et registrert behov</option>
+
+                        @foreach (var need in Model.Needs)
+                        {
+                            <option value="@need.NeedId">
+                                @need.Title — @need.Municipality
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="request-field">
+                    <label for="requestQuantity" class="request-label">
+                        Antall (@Model.Resource.Unit)
+                    </label>
+
+                    <input id="requestQuantity"
+                           name="Quantity"
+                           type="number"
+                           class="request-input"
+                           value="1"
+                           min="1"
+                           max="@Model.AvailableQuantity"
+                           required />
+
+                    <p class="request-hint">
+                        Du kan spørre om opptil
+                        @Model.AvailableQuantity @Model.Resource.Unit.
+                        Antallet kontrolleres også mot det valgte
+                        behovets gjenstående antall når du sender.
+                    </p>
+                </div>
+
+                <div class="request-notice">
+                    Forespørselen sendes til ressursleverandøren.
+                    Antallet teller først mot behovet når
+                    leverandøren har bekreftet.
+                </div>
+
+                <div class="request-actions">
+                    <button type="submit" class="request-button">
+                        Send forespørsel
+                    </button>
+
+                    <a asp-controller="Resource"
+                       asp-action="Index"
+                       class="request-cancel">
+                        Avbryt
+                    </a>
+                </div>
+            </form>
+        }
     </section>
-
 </div>
