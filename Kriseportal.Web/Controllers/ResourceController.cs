@@ -164,6 +164,13 @@ public class ResourceController : Controller
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
 
+        needs = needs
+            .Where(n => string.Equals(
+                n.Unit.Trim(),
+                resource.Unit.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        
         var model = new ResourceRequestViewModel
         {
             Resource = resource,

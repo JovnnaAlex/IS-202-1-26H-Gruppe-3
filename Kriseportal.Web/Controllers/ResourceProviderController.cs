@@ -59,38 +59,62 @@ public class ResourceProviderController : Controller
     public async Task<IActionResult> ToggleAvailability(int id)
     {
         var userId = _userManager.GetUserId(User);
+
         if (string.IsNullOrEmpty(userId))
         {
             return Challenge();
         }
 
-        // Sara: ProviderId kontrolleres i databasespørringen, ikke bare i visningen.
-        var resource = await _context.Resources
-            .FirstOrDefaultAsync(r => r.ResourceId == id && r.ProviderId == userId);
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        if (resource == null)
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            return NotFound();
-        }
+            _context.ChangeTracker.Clear();
 
-        // Sara: En reservert ressurs kan være knyttet til et oppdrag.
-        if (resource.Availability == ResourceAvailability.Reserved)
-        {
-            TempData["ResourceMessage"] = "Reserverte ressurser kan ikke aktiveres eller deaktiveres her.";
+            await using var transaction = await _context.Database
+                .BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+            var resources = await _context.Resources
+                .FromSqlInterpolated(
+                    $"SELECT * FROM `Resources` WHERE `ResourceId` = {id} FOR UPDATE")
+                .ToListAsync();
+
+            var resource = resources.SingleOrDefault();
+
+            if (resource == null || resource.ProviderId != userId)
+            {
+                return NotFound();
+            }
+
+            var hasConfirmedRequests = await _context.Requests.AnyAsync(r =>
+                r.Status == RequestStatus.Confirmed
+                && r.Match != null
+                && r.Match.ResourceId == id);
+
+            if (resource.Availability == ResourceAvailability.Reserved
+                || hasConfirmedRequests)
+            {
+                TempData["ResourceMessage"] =
+                    "Ressursen er reservert eller har bekreftede forespørsler og kan ikke aktiveres eller deaktiveres her.";
+
+                return RedirectToAction(nameof(MyResources));
+            }
+
+            resource.Availability =
+                resource.Availability == ResourceAvailability.Available
+                    ? ResourceAvailability.Unavailable
+                    : ResourceAvailability.Available;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["ResourceMessage"] =
+                resource.Availability == ResourceAvailability.Available
+                    ? "Ressursen er aktivert."
+                    : "Ressursen er deaktivert.";
+
             return RedirectToAction(nameof(MyResources));
-        }
-
-        resource.Availability = resource.Availability == ResourceAvailability.Available
-            ? ResourceAvailability.Unavailable
-            : ResourceAvailability.Available;
-
-        await _context.SaveChangesAsync();
-
-        TempData["ResourceMessage"] = resource.Availability == ResourceAvailability.Available
-            ? "Ressursen er aktivert og kan vises i den offentlige ressursoversikten."
-            : "Ressursen er deaktivert og skjult fra den offentlige ressursoversikten.";
-
-        return RedirectToAction(nameof(MyResources));
+        });
     }
 
     // Sara: Åpner redigeringssiden med eksisterende ressursinformasjon.
@@ -134,11 +158,41 @@ public class ResourceProviderController : Controller
     {
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrEmpty(userId)) return Challenge();
+        
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        var resource = await _context.Resources
-            .FirstOrDefaultAsync(r => r.ResourceId == id && r.ProviderId == userId);
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
+            {
+                _context.ChangeTracker.Clear();
 
-        if (resource == null) return NotFound();
+                await using var transaction = await _context.Database
+                    .BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+                var resources = await _context.Resources
+                    .FromSqlInterpolated(
+                        $"SELECT * FROM `Resources` WHERE `ResourceId` = {id} FOR UPDATE")
+                    .ToListAsync();
+
+                var resource = resources.SingleOrDefault();
+
+                if (resource == null || resource.ProviderId != userId)
+                {
+                    return NotFound();
+                }
+
+                var hasConfirmedRequests = await _context.Requests.AnyAsync(r =>
+                    r.Status == RequestStatus.Confirmed
+                    && r.Match != null
+                    && r.Match.ResourceId == id);
+
+                if (hasConfirmedRequests)
+                {
+                    TempData["ResourceMessage"] =
+                        "Ressursen har bekreftede forespørsler og kan ikke redigeres her.";
+
+                    return RedirectToAction(nameof(MyResources));
+                }
+                
 
         // Sara: Reserverte ressurser kan bare få endret kontaktinformasjon
         // gjennom den separate handlingen EditReservedContact.
@@ -183,9 +237,13 @@ public class ResourceProviderController : Controller
         resource.ContactPhone = model.ContactPhone;
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+
         TempData["ResourceMessage"] = "Endringene i ressursen er lagret.";
         return RedirectToAction(nameof(MyResources));
+            });
     }
+    
 
     // Sara: Tillater kun endring av kontaktinformasjon for reserverte ressurser.
     [HttpPost]
@@ -225,27 +283,59 @@ public class ResourceProviderController : Controller
     // Sara: Sletter kun egne ressurser og aldri ressurser med status Reservert.
     [HttpPost]
     [ValidateAntiForgeryToken]
+    
     public async Task<IActionResult> Delete(int id)
     {
         var userId = _userManager.GetUserId(User);
-        if (string.IsNullOrEmpty(userId)) return Challenge();
 
-        var resource = await _context.Resources
-            .FirstOrDefaultAsync(r => r.ResourceId == id && r.ProviderId == userId);
-
-        if (resource == null) return NotFound();
-
-        if (resource.Availability == ResourceAvailability.Reserved)
+        if (string.IsNullOrEmpty(userId))
         {
-            TempData["ResourceMessage"] = "Reserverte ressurser kan ikke slettes.";
-            return RedirectToAction(nameof(Edit), new { id });
+            return Challenge();
         }
 
-        _context.Resources.Remove(resource);
-        await _context.SaveChangesAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        TempData["ResourceMessage"] = "Ressursen er slettet.";
-        return RedirectToAction(nameof(MyResources));
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
+        {
+            _context.ChangeTracker.Clear();
+
+            await using var transaction = await _context.Database
+                .BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
+
+            // Samme ressurslås som ved bekreftelse.
+            var resources = await _context.Resources
+                .FromSqlInterpolated(
+                    $"SELECT * FROM `Resources` WHERE `ResourceId` = {id} FOR UPDATE")
+                .ToListAsync();
+
+            var resource = resources.SingleOrDefault();
+
+            if (resource == null || resource.ProviderId != userId)
+            {
+                return NotFound();
+            }
+
+            var hasConfirmedRequests = await _context.Requests.AnyAsync(r =>
+                r.Status == RequestStatus.Confirmed
+                && r.Match != null
+                && r.Match.ResourceId == id);
+
+            if (resource.Availability == ResourceAvailability.Reserved
+                || hasConfirmedRequests)
+            {
+                TempData["ResourceMessage"] =
+                    "Ressursen kan ikke slettes fordi den er reservert eller har bekreftede forespørsler.";
+
+                return RedirectToAction(nameof(MyResources));
+            }
+
+            _context.Resources.Remove(resource);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["ResourceMessage"] = "Ressursen er slettet.";
+            return RedirectToAction(nameof(MyResources));
+        });
     }
 
     // Sara: Sender nødvendige kategorier og låste ressursopplysninger til visningen.

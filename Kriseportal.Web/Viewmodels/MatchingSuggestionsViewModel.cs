@@ -15,7 +15,9 @@ public class MatchingSuggestionsViewModel
 
     // Ledig antall per ressurs etter bekreftede forespørsler.
     public Dictionary<int, int> AvailableQuantities { get; set; } = new();
-
+    
+    public Dictionary<int, double> DistancesKm { get; set; } = new();
+    
     public int ConfirmedQuantity { get; set; }
 
     public int RemainingQuantity =>
