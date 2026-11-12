@@ -62,6 +62,10 @@
             });
         });
 
+        // B31: beredskap per kommune ligger i samme lagvelger som farelagene
+        state.capacityLayer = L.layerGroup();
+        overlays['<span class="lg lg-cap"></span> Beredskap per kommune'] = state.capacityLayer;
+
         L.control.layers(null, overlays, { position: 'bottomright', collapsed: true }).addTo(state.map);
     }
     
@@ -131,6 +135,8 @@
         nearbyLayer: null,    // sirkel og linjer på kartet
         selectedNeed: null,   // behovet som er åpent i panelet
         nearbyKm: 10,         // valgt avstand i km
+        // B31: lag med beredskap per kommune, slås av og på i lagvelgeren
+        capacityLayer: null,
         // Filtrene som er valgt nå. Alt vises når siden åpnes.
         filters: {
             showNeeds: true,
@@ -174,6 +180,7 @@
             state.points = data.points;
             state.lastFetchedAt = new Date();
             fillFilterOptions();
+            renderCapacity();
             applyFilters();
 
             const time = state.lastFetchedAt.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
@@ -353,6 +360,181 @@
         if (marker) {
             marker.getElement()?.querySelector('.km')?.classList.add('km-selected');
         }
+    }
+
+    // ---------- B31: beredskap per kommune ----------
+
+    // Kritiske beredskapsfunksjoner, og hvilke kategorier som teller for hver.
+    // Brukes forebyggende: hvor godt rustet er kommunen FØR noe skjer?
+    const BEREDSKAP = [
+        { navn: 'Strøm', kategorier: ['Strøm'] },
+        { navn: 'Vann', kategorier: ['Vann'] },
+        { navn: 'Mat', kategorier: ['Mat'] },
+        { navn: 'Varme', kategorier: ['Varme'] },
+        { navn: 'Transport og evakuering', kategorier: ['Transport', 'Evakuering', 'Båt'] },
+        { navn: 'Vei og maskiner', kategorier: ['Maskiner', 'Snørydding', 'Sand og grus'] },
+        { navn: 'Samband', kategorier: ['Samband'] },
+        { navn: 'Mannskap', kategorier: ['Mannskap'] },
+        { navn: 'Lokaler', kategorier: ['Lokaler'] },
+        { navn: 'Overvåking', kategorier: ['Drone'] }
+    ];
+
+    // Målet for god beredskap: minst én ressurs per 10 000 innbyggere for hver funksjon
+    // (og alltid minst én). Forenklet antakelse som kan justeres her.
+    const INNBYGGERE_PER_RESSURS = 10000;
+
+    // Kommunene i Agder: navn, omtrentlig kommunesenter og innbyggertall (SSB).
+    // Kommuner UTEN registrerte ressurser vises også, og det er dem som trenger mest innsats.
+    const AGDER_KOMMUNER = [
+        ['Arendal', 58.461, 8.772, 46355], ['Birkenes', 58.335, 8.233, 5480],
+        ['Bygland', 58.833, 7.800, 1180], ['Bykle', 59.354, 7.355, 1011],
+        ['Evje og Hornnes', 58.586, 7.794, 3967], ['Farsund', 58.095, 6.805, 9876],
+        ['Flekkefjord', 58.297, 6.663, 9279], ['Froland', 58.523, 8.640, 6236],
+        ['Gjerstad', 58.873, 9.017, 2444], ['Grimstad', 58.341, 8.593, 24969],
+        ['Hægebostad', 58.588, 7.198, 1776], ['Iveland', 58.470, 7.940, 1380],
+        ['Kristiansand', 58.146, 7.996, 116986], ['Kvinesdal', 58.318, 6.958, 6192],
+        ['Lillesand', 58.250, 8.378, 11523], ['Lindesnes', 58.083, 7.300, 23690],
+        ['Lyngdal', 58.137, 7.071, 10835], ['Risør', 58.721, 9.234, 6825],
+        ['Sirdal', 58.664, 6.718, 1873], ['Tvedestrand', 58.622, 8.932, 6323],
+        ['Valle', 59.210, 7.535, 1205], ['Vegårshei', 58.763, 8.800, 2268],
+        ['Vennesla', 58.270, 7.973, 15452], ['Åmli', 58.776, 8.497, 1802],
+        ['Åseral', 58.617, 7.410, 923]
+    ];
+
+    // Regner ut beredskapen for hver kommune, tilpasset hvor mange som bor der
+    function beregnBeredskap(points) {
+        const kommuner = new Map();
+
+        AGDER_KOMMUNER.forEach(function ([navn, lat, lng, innbyggere]) {
+            kommuner.set(navn, { navn: navn, lat: lat, lng: lng, innbyggere: innbyggere, ressurser: [], akutteBehov: 0 });
+        });
+
+        points.forEach(function (p) {
+            if (!kommuner.has(p.municipality)) {
+                // Kommune utenfor Agder: ukjent innbyggertall, plasseres der det første punktet er
+                kommuner.set(p.municipality, { navn: p.municipality, lat: p.lat, lng: p.lng, innbyggere: null, ressurser: [], akutteBehov: 0 });
+            }
+            const k = kommuner.get(p.municipality);
+
+            if (p.kind === 'resource' && p.status !== 'Unavailable') {
+                k.ressurser.push(p);   // både ledige og reserverte finnes i kommunen
+            } else if (p.kind === 'need' && p.priority === 'Acute') {
+                k.akutteBehov += 1;
+            }
+        });
+
+        return [...kommuner.values()].map(function (k) {
+            // Hvor mange ressurser kommunen bør ha per funksjon, f.eks. 12 for Kristiansand
+            const mal = Math.max(1, Math.ceil((k.innbyggere || 0) / INNBYGGERE_PER_RESSURS));
+
+            const funksjoner = BEREDSKAP.map(function (f) {
+                const antall = k.ressurser.filter(r => f.kategorier.includes(r.category)).length;
+                return { navn: f.navn, antall: antall, mal: mal, dekning: Math.min(1, antall / mal) };
+            });
+
+            // Kommunens beredskap = gjennomsnittlig dekning av de 10 funksjonene, i prosent
+            const prosent = Math.round(100 * funksjoner.reduce((sum, f) => sum + f.dekning, 0) / funksjoner.length);
+
+            return Object.assign(k, { funksjoner: funksjoner, mal: mal, prosent: prosent, nivaa: beredskapsnivaa(prosent) });
+        });
+    }
+
+    // Grønn: 70 % eller mer, gul: 40–69 %, rød: under 40 %
+    function beredskapsnivaa(prosent) {
+        if (prosent >= 70) {
+            return 'cap-ok';
+        }
+        if (prosent >= 40) {
+            return 'cap-medium';
+        }
+        return 'cap-missing';
+    }
+
+    // Tegner ett merke per kommune, f.eks. «Vennesla · 30 %»
+    function renderCapacity() {
+        if (!state.capacityLayer) {
+            return;
+        }
+        state.capacityLayer.clearLayers();
+
+        beregnBeredskap(state.points).forEach(function (k) {
+            const badge = document.createElement('span');
+            badge.className = 'cap-badge ' + k.nivaa;
+            const navn = document.createElement('strong');
+            navn.textContent = k.navn;
+            badge.append(navn, document.createTextNode(' · ' + k.prosent + ' %'));
+
+            const marker = L.marker([k.lat, k.lng], {
+                icon: L.divIcon({ className: '', html: badge.outerHTML, iconSize: null, iconAnchor: [0, 0] }),
+                zIndexOffset: 2000,   // over punktene, så merket kan trykkes på
+                keyboard: true,
+                title: k.navn + ': beredskap ' + k.prosent + ' prosent'
+            });
+
+            marker.bindPopup(lagBeredskapPopup(k));
+            marker.addTo(state.capacityLayer);
+        });
+    }
+
+    // Innholdet når man trykker på et kommunemerke: én linje per funksjon og hva som trenger innsats
+    function lagBeredskapPopup(k) {
+        const box = document.createElement('div');
+        box.className = 'cap-popup';
+
+        const title = document.createElement('h3');
+        title.textContent = k.navn;
+
+        const summary = document.createElement('p');
+        summary.className = 'cap-summary';
+        summary.textContent = 'Beredskap: ' + k.prosent + ' %' +
+            (k.innbyggere ? ' · ' + k.innbyggere.toLocaleString('nb-NO') + ' innbyggere' : '');
+
+        // ✓ = målet er nådd, ◐ = delvis, ✗ = ingen ressurser
+        const list = document.createElement('ul');
+        k.funksjoner.forEach(function (f) {
+            const item = document.createElement('li');
+            let tegn = '✗ ';
+            item.className = 'cap-row-missing';
+            if (f.dekning >= 1) {
+                tegn = '✓ ';
+                item.className = 'cap-row-ok';
+            } else if (f.antall > 0) {
+                tegn = '◐ ';
+                item.className = 'cap-row-partial';
+            }
+            item.textContent = tegn + f.navn + ': ' + f.antall + ' av ' + f.mal;
+            list.appendChild(item);
+        });
+
+        box.append(title, summary, list);
+
+        // De tre funksjonene med lavest dekning er det HV bør se på først
+        const svakest = k.funksjoner
+            .filter(f => f.dekning < 1)
+            .sort((a, b) => a.dekning - b.dekning)
+            .map(f => f.navn);
+        if (svakest.length > 0) {
+            const weak = document.createElement('p');
+            weak.className = 'cap-weak';
+            weak.textContent = 'Trenger innsats: ' + svakest.slice(0, 3).join(', ') + (svakest.length > 3 ? ' …' : '');
+            box.appendChild(weak);
+        }
+
+        // Situasjonen nå, i tillegg til den forebyggende oversikten
+        if (k.akutteBehov > 0) {
+            const now = document.createElement('p');
+            now.className = 'cap-now';
+            now.textContent = 'Akutte behov nå: ' + k.akutteBehov;
+            box.appendChild(now);
+        }
+
+        const note = document.createElement('p');
+        note.className = 'cap-note';
+        note.textContent = 'Mål: minst én ressurs per 10 000 innbyggere for hver funksjon. ' +
+            'Teller registrerte ressurser i kommunen (ledige og reserverte).';
+        box.appendChild(note);
+
+        return box;
     }
 
     // ---------- B20: ressurser i nærheten av et behov ----------

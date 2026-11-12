@@ -17,7 +17,8 @@ public static class DataSeeder
     private static readonly string[] Kategorier =
     {
         "Transport", "Drone", "Strøm", "Snørydding", "Sand og grus", "Maskiner",
-        "Evakuering", "Samband", "Mannskap", "Lokaler", "Båt", "Annet"
+        "Evakuering", "Samband", "Mannskap", "Lokaler", "Båt", "Annet",
+        "Vann", "Mat", "Varme"
     };
 
     public static async Task SeedAsync(IServiceProvider services)
