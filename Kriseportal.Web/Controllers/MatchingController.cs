@@ -5,6 +5,7 @@ using Kriseportal.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Kriseportal.Web.Services;
 
 
 namespace Kriseportal.Web.Controllers
@@ -13,9 +14,14 @@ namespace Kriseportal.Web.Controllers
     public class MatchingController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public MatchingController(ApplicationDbContext context)
+        private readonly IRequestNotificationSender _notificationSender;
+
+        public MatchingController(
+            ApplicationDbContext context,
+            IRequestNotificationSender notificationSender)
         {
             _context = context;
+            _notificationSender = notificationSender;
         }
 
         [HttpGet]
@@ -323,6 +329,12 @@ namespace Kriseportal.Web.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                // Utviklingsversjonen logger bare.
+                // Fremtidig e-post/mobilpush kobles til IRequestNotificationSender.
+                await _notificationSender.SendAsync(
+                    ressurs.ProviderId,
+                    notificationMessage);
+                
                 TempData["RequestSuccess"] =
                     "Forespørselen er sendt til ressursleverandøren og venter på svar.";
 

@@ -47,6 +47,11 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 // Glemt passord: skriver lenken til loggen under utvikling (ingen e-posttjeneste ennå)
 builder.Services.AddScoped<IPasswordResetSender, LogPasswordResetSender>();
 
+// Utviklingsversjon: logger hendelsen, sender ikke e-post eller mobilpush.
+builder.Services.AddScoped<
+    IRequestNotificationSender,
+    LogRequestNotificationSender>();
+
 // B12: Hvor brukeren sendes når innlogging mangler eller rollen er feil
 builder.Services.ConfigureApplicationCookie(options =>
 {

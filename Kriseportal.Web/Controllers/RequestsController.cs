@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Kriseportal.Web.Services;
 
 namespace Kriseportal.Web.Controllers;
 
@@ -12,10 +13,14 @@ namespace Kriseportal.Web.Controllers;
 public class RequestsController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IRequestNotificationSender _notificationSender;
 
-    public RequestsController(ApplicationDbContext context)
+    public RequestsController(
+        ApplicationDbContext context,
+        IRequestNotificationSender notificationSender)
     {
         _context = context;
+        _notificationSender = notificationSender;
     }
 
     [HttpGet]
@@ -123,6 +128,12 @@ public async Task<IActionResult> Reject(int id)
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
+        
+        // Utviklingsversjonen logger bare.
+        // Fremtidig e-post/mobilpush kobles til IRequestNotificationSender.
+        await _notificationSender.SendAsync(
+            match.Need.PublicAuthorityId,
+            message);
 
         TempData["RequestSuccess"] = "Forespørselen er avslått.";
 
@@ -311,6 +322,19 @@ public async Task<IActionResult> Confirm(int id, int? quantity = null)
     
     await _context.SaveChangesAsync();
     await transaction.CommitAsync();
+    
+    // Utviklingsversjonen logger bare.
+    // Fremtidig e-post/mobilpush kobles til IRequestNotificationSender.
+    await _notificationSender.SendAsync(
+        need.PublicAuthorityId,
+        responseMessage);
+
+    if (fullyCovered)
+    {
+        await _notificationSender.SendAsync(
+            need.PublicAuthorityId,
+            "Behovet er nå fullt dekket av bekreftede ressurser.");
+    }
 
     TempData["RequestSuccess"] = fullyCovered
         ? "Forespørselen er bekreftet. Behovet er nå fullt dekket."
