@@ -64,7 +64,9 @@ public class MapController : Controller
                 r.Longitude,
                 r.Municipality,
                 r.ContactName,
-                r.ContactPhone
+                r.ContactPhone,
+                // Totalforsvar: er eieren en offentlig aktør, har brukeren en etat (Agency)
+                OwnerAgency = r.Provider!.Agency
             })
             .ToListAsync();
 
@@ -77,7 +79,8 @@ public class MapController : Controller
             .Concat(resources.Select(r => new MapPoint(
                 r.ResourceId, "resource", r.Name, r.Category, null, r.Availability.ToString(),
                 r.Quantity, r.Unit, (double)r.Latitude, (double)r.Longitude,
-                r.Municipality, r.ContactName, r.ContactPhone)))
+                r.Municipality, r.ContactName, r.ContactPhone,
+                Owner: r.OwnerAgency.HasValue ? r.OwnerAgency.Value.ToString() : "Privat")))
             .ToList();
 
         return Json(new { updatedAt = DateTime.UtcNow, points });

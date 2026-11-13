@@ -144,6 +144,12 @@
         background: #6A1B9A;
     }
 
+        /* Totalforsvar: offentlige ressurser (kommune, HV) får en marineblå ring */
+    .km-public {
+        outline: 3px solid #1F3A93;
+        outline-offset: 1px;
+    }
+    
     .km-a-unavailable {
         background: #455A64;
         opacity: 0.7;
@@ -443,7 +449,12 @@
         font-weight: 700;
     }
 
-    .cap-note {
+    .cap-mix {
+        color: #1F3A93;
+        font-size: 0.85rem;
+    }
+
+.cap-note {
         color: #666;
         font-size: 0.8rem;
     }
@@ -861,6 +872,7 @@
             <li><span class="lg lg-need km-p-planned"></span> Planlagt behov</li>
             <li><span class="lg lg-res km-a-available"></span> Tilgjengelig ressurs</li>
             <li><span class="lg lg-res km-a-reserved"></span> Reservert ressurs</li>
+            <li><span class="lg lg-res km-a-available km-public"></span> Offentlig ressurs (kommune, HV)</li>
         </ul>
         <!-- B30: vises bare når laget er slått på i lagvelgeren nede til høyre -->
         <p>Farelag fra NVE (aktsomhet):</p>
