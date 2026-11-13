@@ -1,3 +1,4 @@
+
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
@@ -17,4 +18,18 @@ public class ApplicationUser : IdentityUser
 
     // Settes bare for ressursleverandører (rollen ResourceProvider).
     public ProviderType? ProviderType { get; set; }
+
+    // Sara: Viser om ressursleverandøren har deaktivert kontoen midlertidig.
+    public bool IsDeactivated { get; set; } = false;
+
+    // Sara: Valgfri beskrivelse av ressursleverandøren eller virksomheten.
+    [MaxLength(2000)]
+    public string? Description { get; set; }
+
+    // Sara: Adresse til ressursleverandøren.
+    [MaxLength(200)]
+    public string? Address { get; set; }
+
+    // Sara: Tidspunktet kontoen ble deaktivert.
+    public DateTime? DeactivatedAt { get; set; }
 }

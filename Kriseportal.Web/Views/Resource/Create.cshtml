@@ -7,10 +7,14 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model Kriseportal.Web.Models.ResourceViewModel
 
+
 @{
     ViewData["Title"] = "Registrer ressurs";
+
+    // Sara: Bruker ressursleverandørportalens layout uten å endre skjemaets funksjonalitet.
     Layout = "_ResourceProviderLayout";
 }
+
 
 <!-- Laster inn Leaflet sitt stilark. -->
 <link rel="stylesheet"
@@ -21,6 +25,8 @@
     .resource-page {
         max-width: 1300px;
         margin: 0 auto;
+        /* Sara: Gir skjemaet luft innenfor portalens hovedområde. */
+        padding: 36px 32px 48px;
         color: #24332B;
     }
 
@@ -133,6 +139,14 @@
         cursor: pointer;
     }
 
+    /* Sara: Diskré hjelpetekst under ressurskategori. */
+    .resource-category-help {
+        color: #66756B;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: 8px 0 0;
+    }
+
     /* Forklarende tekst ved kartet. */
     .resource-help-text {
         color: #66756B;
@@ -196,6 +210,10 @@
 
     /* Tilpasser skjemaet til mindre skjermer. */
     @@media (max-width: 900px) {
+        .resource-page {
+            padding: 24px 16px 36px;
+        }
+
         .resource-grid {
             grid-template-columns: 1fr;
         }
@@ -271,6 +289,11 @@
                         </select>
 
                         <span asp-validation-for="CategoryId"></span>
+
+                        <!-- Sara: Viser eksempler for valgt kategori uten å endre kategoriene i databasen. -->
+                        <p id="categoryHelp" class="resource-category-help" aria-live="polite">
+                            Velg en kategori for å se eksempler på ressurser.
+                        </p>
 
                     </div>
 
@@ -533,3 +556,38 @@
 <!-- Laster inn Leaflet og eksisterende kartfunksjonalitet. -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="~/js/map.js" asp-append-version="true"></script>
+
+<script>
+    // Sara: Hjelpetekst oppdateres når brukeren velger en ressurskategori.
+    (() => {
+        const categoryExamples = {
+            "Annet": "Ressurser som ikke passer i de andre kategoriene.",
+            "Båt": "Redningsbåt, arbeidsbåt eller transportbåt.",
+            "Drone": "Søksdrone eller kartleggingsdrone.",
+            "Evakuering": "Evakueringsutstyr eller annet utstyr til evakuering.",
+            "Lokaler": "Gymsal, lager eller forsamlingslokale.",
+            "Mannskap": "Frivillige, sjåfører eller helsepersonell.",
+            "Maskiner": "Traktor, gravemaskin eller hjullaster.",
+            "Samband": "Walkie-talkie, radio eller satellittelefon.",
+            "Sand og grus": "Sandsekker, grus eller fyllmasser.",
+            "Snørydding": "Snøfreser, brøytebil eller brøyteutstyr.",
+            "Strøm": "Strømaggregat, batteribank eller nødstrømsutstyr.",
+            "Transport": "Varebil, lastebil eller minibuss."
+        };
+
+        const categorySelect = document.getElementById("CategoryId");
+        const categoryHelp = document.getElementById("categoryHelp");
+        if (!categorySelect || !categoryHelp) return;
+
+        function updateCategoryHelp() {
+            const selectedName = categorySelect.selectedOptions[0]?.textContent.trim();
+            const example = categoryExamples[selectedName];
+            categoryHelp.textContent = example
+                ? "Eksempler: " + example
+                : "Velg en kategori for å se eksempler på ressurser.";
+        }
+
+        categorySelect.addEventListener("change", updateCategoryHelp);
+        updateCategoryHelp();
+    })();
+</script>

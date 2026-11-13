@@ -1,0 +1,108 @@
+@using Kriseportal.Web.Models.Entities
+@model Request
+@{
+    Layout = "_ResourceProviderLayout";
+    ViewData["Title"] = "Svar på forespørsel";
+    var need = Model.Match?.Need;
+    var resource = Model.Match?.Resource;
+    var sender = need?.PublicAuthority;
+    var isPending = Model.Status == RequestStatus.Proposed;
+}
+
+<style>
+    /* Sara: Detaljside for forespørsler i ressursleverandørportalen. */
+    .request-detail { max-width: 1000px; margin: 0 auto; padding: 24px 8px 48px; color: #244D3B; }
+    .request-detail a.back-link { display: inline-block; margin-bottom: 18px; color: #244D3B; text-decoration: none; font-weight: 600; }
+    .request-detail h1 { font-size: 30px; margin: 0 0 8px; }
+    .request-detail .intro { color: #65776b; margin-bottom: 24px; }
+    .request-detail .card { background: white; border: 1px solid #dce5db; border-radius: 14px; padding: 24px; margin-bottom: 18px; }
+    .request-detail .card h2 { margin: 0 0 18px; font-size: 20px; }
+    .request-detail .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 24px; }
+    .request-detail .field-label { display: block; font-size: 13px; color: #66756b; margin-bottom: 4px; }
+    .request-detail .field-value { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+    .request-detail .description { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 16px; color: #3d5144; }
+    .request-detail .status { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #e8f0e8; font-weight: 600; font-size: 13px; }
+    .request-detail .status.rejected { background: #f7e8e6; color: #a63e3e; }
+    .request-detail .note { font-size: 14px; color: #66756b; line-height: 1.5; }
+    .request-detail textarea { display: block; width: 100%; min-height: 110px; padding: 12px; border: 1px solid #ccd8cd; border-radius: 9px; font: inherit; resize: vertical; margin: 12px 0 8px; box-sizing: border-box; }
+    .request-detail .actions { display: flex; gap: 12px; margin-top: 20px; }
+    .request-detail .action-placeholder { flex: 1; text-align: center; border-radius: 9px; padding: 13px; font-weight: 700; border: 0; cursor: pointer; font: inherit; }
+    .request-detail .action-placeholder:focus-visible { outline: 3px solid #719d80; outline-offset: 2px; }
+    .request-detail .feedback { padding: 12px 16px; border-radius: 9px; background: #e8f0e8; margin-bottom: 18px; }
+    .request-detail .decline { background: #f7e8e6; color: #a63e3e; }
+    .request-detail .approve { background: #244D3B; color: white; }
+    @@media (max-width: 650px) { .request-detail .fields { grid-template-columns: 1fr; } .request-detail .actions { flex-direction: column; } }
+</style>
+
+<div class="request-detail">
+    <a class="back-link" asp-controller="ResourceProvider" asp-action="Requests">← Tilbake til forespørsler</a>
+    <h1>Svar på forespørsel</h1>
+    <p class="intro">Forespørsel #@Model.RequestId · Mottatt @Model.CreatedAt.ToString("dd.MM.yyyy")</p>
+    @if (TempData["RequestMessage"] is string requestMessage)
+    {
+        <!-- Sara: Viser tilbakemelding etter godkjenning eller avslag. -->
+        <div class="feedback" role="status">@requestMessage</div>
+    }
+
+    <section class="card">
+        <h2>Informasjon om behovet</h2>
+        <div class="fields">
+            <div><span class="field-label">Behov</span><span class="field-value">@(need?.Title ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Prioritet</span><span class="field-value">@(need?.Priority.ToString() ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Ønsket antall</span><span class="field-value">@Model.Quantity @(need?.Unit ?? "stk")</span></div>
+            <div><span class="field-label">Kommune</span><span class="field-value">@(need?.Municipality ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Behov fra</span><span class="field-value">@(need?.NeededFrom.ToString("dd.MM.yyyy HH:mm") ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Behov til</span><span class="field-value">@(need?.NeededTo?.ToString("dd.MM.yyyy HH:mm") ?? "Ikke oppgitt")</span></div>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(need?.Description))
+        {
+            <div class="description"><span class="field-label">Beskrivelse</span>@need.Description</div>
+        }
+    </section>
+
+    <section class="card">
+        <h2>Avsender og kontakt</h2>
+        <div class="fields">
+            <div><span class="field-label">Offentlig aktør</span><span class="field-value">@(sender?.Name ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Kontaktperson</span><span class="field-value">@(need?.ContactName ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Telefon</span><span class="field-value">@(need?.ContactPhone ?? "Ikke oppgitt")</span></div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Din ressurs</h2>
+        <div class="fields">
+            <div><span class="field-label">Ressurs</span><span class="field-value">@(resource?.Name ?? "Ikke oppgitt")</span></div>
+            <div><span class="field-label">Registrert antall</span><span class="field-value">@(resource?.Quantity.ToString() ?? "–") @(resource?.Unit ?? "stk")</span></div>
+            <div><span class="field-label">Tilgjengelighet</span><span class="field-value">@(resource?.Availability.ToString() ?? "Ikke oppgitt")</span></div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Behandle forespørselen</h2>
+        @if (isPending)
+        {
+            <!-- Sara: Sender valgt svar og valgfri melding til leverandørens svarhandling. -->
+            <form asp-controller="ResourceProvider" asp-action="RespondToRequest" asp-route-id="@Model.RequestId" method="post">
+                @Html.AntiForgeryToken()
+                <label for="recipientMessage" class="field-value">Melding til mottaker (valgfritt)</label>
+                <textarea id="recipientMessage" name="responseMessage" maxlength="2000" placeholder="Skriv en melding til mottakeren ..."></textarea>
+                <p class="note">Her kan du skrive tilleggsinformasjon om ressursen din, enten du godkjenner eller avslår forespørselen. Mottakeren vil kunne se meldingen din.</p>
+                <div class="actions">
+                    <button type="submit" name="decision" value="reject" class="action-placeholder decline">Avslå</button>
+                    <button type="submit" name="decision" value="confirm" class="action-placeholder approve">Godkjenn</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <span class="status @(Model.Status == RequestStatus.Rejected ? "rejected" : "")">@(Model.Status == RequestStatus.Confirmed ? "Godkjent" : "Avslått")</span>
+            <p class="note">@(Model.RespondedAt.HasValue ? $"Besvart {Model.RespondedAt.Value:dd.MM.yyyy HH:mm}" : "Forespørselen er behandlet.")</p>
+            @if (!string.IsNullOrWhiteSpace(Model.ResponseMessage))
+            {
+                <!-- Sara: Viser meldingen som ble sendt til mottakeren. -->
+                <div class="description"><span class="field-label">Melding til mottaker</span>@Model.ResponseMessage</div>
+            }
+        }
+    </section>
+</div>

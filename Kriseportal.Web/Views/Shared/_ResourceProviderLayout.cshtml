@@ -3,6 +3,17 @@
     // Sara: Egen layout for innloggede ressursleverandører.
     // Den offentlige forsiden og offentlige aktørers sider påvirkes ikke.
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    // Sara: Aktiv meny følger både controller og side, også på detaljsider.
+    var isOverviewActive = currentController == "ResourceProvider" && currentAction == "Index";
+    var isMyResourcesActive = (currentController == "ResourceProvider" && currentAction == "MyResources")
+        || (currentController == "Resource" && (currentAction == "Edit" || currentAction == "Details"));
+    var isAddResourceActive = currentController == "Resource" && currentAction == "Create";
+    var isRequestsActive = currentController == "ResourceProvider"
+        && (currentAction == "Requests" || currentAction == "RequestDetails");
+    // Sara: Marker Min profil når brukeren er på profilsiden.
+    var isProfileActive = currentController == "ResourceProvider" && currentAction == "Profile";
 }
 
 <!DOCTYPE html>
@@ -392,6 +403,24 @@
                 padding: 18px 20px;
             }
         }
+
+        /* Sara: Bekreftelsesvindu før utlogging, i samme stil som profilens dialoger. */
+        .provider-logout-dialog {
+            border: none;
+            border-radius: 18px;
+            padding: 28px;
+            width: min(94vw, 510px);
+            max-width: 510px;
+            box-shadow: 0 24px 75px rgba(20, 45, 30, .2);
+        }
+        .provider-logout-dialog::backdrop { background: rgba(18, 38, 28, .5); }
+        .provider-logout-dialog h2 { color: #244D3B; font-size: 21px; margin: 0 0 14px; }
+        .provider-logout-dialog p { color: #526659; font-size: 14px; line-height: 1.7; margin: 0; }
+        .provider-logout-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+        .provider-logout-dialog-button { border: 0; border-radius: 10px; padding: 12px 17px; font-weight: 650; font-size: 13px; cursor: pointer; }
+        .provider-logout-dialog-button.cancel { background: #244D3B; color: white; }
+        .provider-logout-dialog-button.confirm { background: #E8EFE7; color: #244D3B; }
+        .provider-logout-dialog form { margin: 0; }
     </style>
 </head>
 
@@ -469,7 +498,7 @@
 
                 <a asp-controller="ResourceProvider"
                    asp-action="Index"
-                   class="provider-sidebar-link @(currentAction == "Index" ? "active" : "")">
+                   class="provider-sidebar-link @(isOverviewActive ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -487,10 +516,10 @@
                     Din oversikt
                 </a>
 
-                <!-- Sara: Disse sidene kobles til når vi bygger funksjonene. -->
+                <!-- Sara: Navigasjon til ressursleverandørens egne sider. -->
                 <a asp-controller="ResourceProvider"
                    asp-action="MyResources"
-                   class="provider-sidebar-link @(currentAction == "MyResources" ? "active" : "")">
+                   class="provider-sidebar-link @(isMyResourcesActive ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -509,7 +538,7 @@
 
                 <a asp-controller="Resource"
                    asp-action="Create"
-                   class="provider-sidebar-link">
+                   class="provider-sidebar-link @(isAddResourceActive ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -524,9 +553,9 @@
 
                     Legg til ressurs
                 </a>
-                <a asp-controller="Requests"
-                   asp-action="Index"
-                   class="provider-sidebar-link">
+                <a asp-controller="ResourceProvider"
+                   asp-action="Requests"
+                   class="provider-sidebar-link @(isRequestsActive ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -553,8 +582,10 @@
 
                 <div class="provider-sidebar-divider"></div>
 
-                <span class="provider-sidebar-link"
-                      style="opacity: 0.65; cursor: default;">
+                <!-- Sara: Min profil åpner ressursleverandørens profilside. -->
+                <a asp-controller="ResourceProvider"
+                   asp-action="Profile"
+                   class="provider-sidebar-link @(isProfileActive ? "active" : "")">
 
                     <svg viewBox="0 0 24 24"
                          fill="none"
@@ -568,16 +599,12 @@
                     </svg>
 
                     Min profil
-                </span>
+                </a>
 
-                <!-- Sara: Utlogging bruker eksisterende POST-metode. -->
-                <form asp-controller="Account"
-                      asp-action="Logout"
-                      method="post"
-                      class="provider-logout-form">
-
-                    <button type="submit"
-                            class="provider-sidebar-link provider-logout">
+                <!-- Sara: Åpner bekreftelsesvindu før utlogging. -->
+                <button type="button"
+                        class="provider-sidebar-link provider-logout"
+                        onclick="document.getElementById('provider-logout-dialog').showModal()">
 
                         <svg viewBox="0 0 24 24"
                              fill="none"
@@ -593,7 +620,6 @@
 
                         Logg ut
                     </button>
-                </form>
 
             </div>
         </aside>
@@ -673,6 +699,20 @@
                 </div>
 
     </footer>
+
+
+    <!-- Sara: Utlogging skjer først etter bekreftelse. Eksisterende POST-endepunkt beholdes. -->
+    <dialog id="provider-logout-dialog" class="provider-logout-dialog" aria-labelledby="provider-logout-title">
+        <h2 id="provider-logout-title">Er du sikker på at du vil logge ut?</h2>
+        <p>Du blir logget ut av ressursleverandørportalen og sendt tilbake til hovedsiden.</p>
+        <div class="provider-logout-dialog-actions">
+            <button type="button" class="provider-logout-dialog-button cancel"
+                    onclick="document.getElementById('provider-logout-dialog').close()">Bli værende</button>
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="provider-logout-dialog-button confirm">Ja, logg ut</button>
+            </form>
+        </div>
+    </dialog>
 
     <!-- Sara: Leaflet JavaScript for fremtidige kartfunksjoner. -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

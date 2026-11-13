@@ -71,6 +71,24 @@
         box-shadow: 0 4px 16px rgba(36, 77, 59, 0.035);
     }
 
+    /* Sara: Statuskortene fungerer som lenker uten å endre designet. */
+    a.provider-stat {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    a.provider-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(36, 77, 59, 0.10);
+    }
+
+    a.provider-stat:focus-visible {
+        outline: 3px solid #287A4D;
+        outline-offset: 3px;
+    }
+
     .provider-stat-top {
         display: flex;
         justify-content: space-between;
@@ -220,6 +238,56 @@
         margin: 0;
     }
 
+
+    /* Sara: Viser de nyeste registreringene i de eksisterende dashboardboksene. */
+    .provider-recent-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .provider-recent-item {
+        display: block;
+        padding: 14px 16px;
+        background: #F7F9F5;
+        border: 1px solid #E0E8DF;
+        border-radius: 12px;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .provider-recent-item:hover {
+        border-color: #8CAB96;
+        background: #EFF5ED;
+    }
+
+    .provider-recent-item:focus-visible {
+        outline: 3px solid #287A4D;
+        outline-offset: 2px;
+    }
+
+    .provider-recent-name {
+        display: block;
+        color: #244D3B;
+        font-size: 14px;
+        font-weight: 650;
+        margin-bottom: 5px;
+    }
+
+    .provider-recent-meta {
+        color: #64746A;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .provider-recent-all {
+        display: inline-block;
+        margin-top: 16px;
+        color: #244D3B;
+        font-size: 13px;
+        font-weight: 650;
+    }
+
     /* Sara: Tilpasser dashboardet til mindre skjermer. */
     @@media (max-width: 1200px) {
         .provider-stats {
@@ -267,18 +335,22 @@
                 </p>
             </div>
 
-            <!-- Sara: Knappen kobles til registrering av ressurser senere. -->
-            <span class="provider-add-button">
-                <span>＋</span>
+            <!-- Sara: Åpner eksisterende registreringsskjema for ressurser. -->
+            <a asp-controller="Resource"
+               asp-action="Create"
+               class="provider-add-button">
+                <span aria-hidden="true">＋</span>
                 Legg til ressurs
-            </span>
+            </a>
         </div>
 
-        <!-- Sara: Statuskort. Tallene kobles til databasen senere. -->
+        <!-- Sara: Statuskort. De tre første tallene hentes fra databasen. -->
         <section class="provider-stats" aria-label="Din status">
 
             <!-- Sara: Pakkeikon for alle registrerte ressurser. -->
-            <div class="provider-stat resources">
+            <a asp-controller="ResourceProvider"
+               asp-action="MyResources"
+               class="provider-stat resources">
                 <div class="provider-stat-top">
                     <span class="provider-stat-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -287,15 +359,17 @@
                             <path d="M12 22V12"></path>
                         </svg>
                     </span>
-                    <span class="provider-stat-number">—</span>
+                    <span class="provider-stat-number">@ViewBag.TotalResources</span>
                 </div>
 
                 <h2>Mine ressurser</h2>
                 <p>Totalt antall registrerte ressurser</p>
-            </div>
+            </a>
 
             <!-- Sara: Grønn hake i sirkel for tilgjengelige ressurser. -->
-            <div class="provider-stat available">
+            <a asp-controller="ResourceProvider"
+               asp-action="MyResources"
+               class="provider-stat available">
                 <div class="provider-stat-top">
                     <span class="provider-stat-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -303,15 +377,17 @@
                             <path d="m8 12 3 3 5-6"></path>
                         </svg>
                     </span>
-                    <span class="provider-stat-number">—</span>
+                    <span class="provider-stat-number">@ViewBag.AvailableResources</span>
                 </div>
 
                 <h2>Tilgjengelige ressurser</h2>
                 <p>Ressurser som er klare til bruk</p>
-            </div>
+            </a>
 
             <!-- Sara: Konvoluttikon for nye forespørsler. -->
-            <div class="provider-stat requests">
+            <a asp-controller="ResourceProvider"
+               asp-action="Requests"
+               class="provider-stat requests">
                 <div class="provider-stat-top">
                     <span class="provider-stat-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -319,15 +395,17 @@
                             <path d="m22 7-10 6L2 7"></path>
                         </svg>
                     </span>
-                    <span class="provider-stat-number">—</span>
+                    <span class="provider-stat-number">@ViewBag.NewRequests</span>
                 </div>
 
                 <h2>Nye forespørsler</h2>
                 <p>Henvendelser som venter på svar</p>
-            </div>
+            </a>
 
             <!-- Sara: Rødt varseltrekantikon for hasteforespørsler. -->
-            <div class="provider-stat urgent">
+            <a asp-controller="ResourceProvider"
+               asp-action="Requests"
+               class="provider-stat urgent">
                 <div class="provider-stat-top">
                     <span class="provider-stat-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -341,11 +419,11 @@
 
                 <h2>Hasteforespørsler</h2>
                 <p>Henvendelser som krever rask respons</p>
-            </div>
+            </a>
 
         </section>
 
-        <!-- Sara: Ressurser og forespørsler vises her senere. -->
+        <!-- Sara: De nyeste ressursene og forespørslene hentes fra databasen. -->
         <section class="provider-content">
 
             <div class="provider-panel">
@@ -355,6 +433,32 @@
                     Her får du oversikt over ressursene du har registrert.
                 </p>
 
+                @if (ViewBag.RecentResources is List<Kriseportal.Web.Models.Entities.Resource> recentResources && recentResources.Count > 0)
+                {
+                    <div class="provider-recent-list">
+                        @foreach (var resource in recentResources)
+                        {
+                            <a asp-controller="ResourceProvider"
+                               asp-action="MyResources"
+                               class="provider-recent-item">
+                                <span class="provider-recent-name">@resource.Name</span>
+                                <span class="provider-recent-meta">
+                                    @(resource.Category?.Name ?? "Uten kategori") ·
+                                    @resource.Quantity @resource.Unit ·
+                                    @resource.Municipality ·
+                                    @(resource.Availability == Kriseportal.Web.Models.Entities.ResourceAvailability.Available
+                                        ? "Tilgjengelig"
+                                        : resource.Availability == Kriseportal.Web.Models.Entities.ResourceAvailability.Reserved
+                                            ? "Reservert"
+                                            : "Ikke tilgjengelig")
+                                </span>
+                            </a>
+                        }
+                    </div>
+                    <a asp-controller="ResourceProvider" asp-action="MyResources" class="provider-recent-all">Se alle ressurser</a>
+                }
+                else
+                {
                 <div class="provider-empty">
                     <div class="provider-empty-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -371,6 +475,7 @@
                         når vi kobler til databasen.
                     </p>
                 </div>
+                }
             </div>
 
             <div class="provider-panel">
@@ -380,6 +485,32 @@
                     Følg med på henvendelser fra offentlige aktører.
                 </p>
 
+                @if (ViewBag.RecentRequests is List<Kriseportal.Web.Models.Entities.Request> recentRequests && recentRequests.Count > 0)
+                {
+                    <div class="provider-recent-list">
+                        @foreach (var request in recentRequests)
+                        {
+                            <a asp-controller="ResourceProvider"
+                               asp-action="RequestDetails"
+                               asp-route-id="@request.RequestId"
+                               class="provider-recent-item">
+                                <span class="provider-recent-name">@(request.Match?.Resource?.Name ?? "Forespørsel")</span>
+                                <span class="provider-recent-meta">
+                                    @request.Quantity enhet(er) ·
+                                    @request.CreatedAt.ToString("dd.MM.yyyy") ·
+                                    @(request.Status == Kriseportal.Web.Models.Entities.RequestStatus.Proposed
+                                        ? "Venter på svar"
+                                        : request.Status == Kriseportal.Web.Models.Entities.RequestStatus.Confirmed
+                                            ? "Godkjent"
+                                            : "Avslått")
+                                </span>
+                            </a>
+                        }
+                    </div>
+                    <a asp-controller="ResourceProvider" asp-action="Requests" class="provider-recent-all">Se alle forespørsler</a>
+                }
+                else
+                {
                 <div class="provider-empty">
                     <div class="provider-empty-icon">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -395,6 +526,7 @@
                         når funksjonen er koblet til.
                     </p>
                 </div>
+                }
             </div>
 
         </section>

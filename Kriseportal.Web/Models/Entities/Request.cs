@@ -24,4 +24,8 @@ public class Request
 
     // Settes når leverandøren bekrefter eller avslår
     public DateTime? RespondedAt { get; set; }
+
+    // Sara: Valgfri melding til mottakeren ved godkjenning eller avslag.
+    [MaxLength(2000)]
+    public string? ResponseMessage { get; set; }
 }
