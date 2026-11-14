@@ -1,0 +1,178 @@
+@model Kriseportal.Web.Models.Entities.ApplicationUser
+@{
+    // Sara: Egen profilside med samme layout som ressursleverandørportalen.
+    ViewData["Title"] = "Min profil";
+    Layout = "_ResourceProviderLayout";
+}
+
+<style>
+    /* Sara: Profilside i samme farger og stil som dashboardet. */
+    .profile-page { background: #F0F3EA; min-height: 85vh; padding: 46px 24px 80px; }
+    .profile-container { max-width: 1050px; margin: 0 auto; }
+    .profile-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 28px; }
+    .profile-header h1 { color: #244D3B; font-size: 36px; font-weight: 750; margin: 0 0 8px; }
+    .profile-header p, .profile-muted { color: #64746A; font-size: 14px; line-height: 1.6; margin: 0; }
+    .profile-avatar { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 18px; background: #E0EBE0; color: #244D3B; flex-shrink: 0; }
+    .profile-avatar svg { width: 32px; height: 32px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .profile-card { background: #FFFFFF; border: 1px solid #E0E8DF; border-radius: 18px; padding: 28px; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(36,77,59,.035); }
+    .profile-card h2 { font-size: 20px; font-weight: 700; color: #244D3B; margin: 0 0 7px; }
+    .profile-card-intro { color: #718077; font-size: 13px; margin: 0 0 25px; line-height: 1.6; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 19px 22px; }
+    .profile-field { display: flex; flex-direction: column; gap: 8px; }
+    .profile-field.wide { grid-column: 1 / -1; }
+    .profile-field label { color: #365743; font-weight: 650; font-size: 13px; }
+    .profile-field input, .profile-field textarea { width: 100%; border: 1px solid #D8E3D8; background: #FAFCF9; border-radius: 10px; padding: 12px 14px; color: #273D30; font: inherit; font-size: 14px; }
+    .profile-field textarea { min-height: 116px; resize: vertical; }
+    .profile-field input:read-only, .profile-field textarea:read-only { cursor: default; }
+    .profile-actions { display: flex; justify-content: flex-end; margin-top: 22px; }
+    .profile-button { border: 0; border-radius: 10px; padding: 12px 17px; font-weight: 650; font-size: 13px; cursor: pointer; }
+    .profile-button.primary { background: #244D3B; color: white; }
+    .profile-button.secondary { background: #E8EFE7; color: #244D3B; }
+    .profile-button.outline { border: 1px solid #B9CEBD; background: white; color: #244D3B; }
+    .profile-button.danger { background: #B74242; color: white; }
+    .profile-button.danger-outline { border: 1px solid #E6C6C4; color: #B74242; background: white; }
+    .profile-button:disabled { opacity: .55; cursor: not-allowed; }
+    .profile-info-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .profile-account-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; flex-wrap: wrap; }
+    .profile-account-row + .profile-account-row { border-top: 1px solid #E8EEE7; }
+    .profile-account-row h3 { color: #244D3B; font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+    .profile-account-row p { color: #718077; font-size: 13px; line-height: 1.6; margin: 0; max-width: 620px; }
+    .profile-status { display: inline-flex; align-items: center; gap: 7px; border-radius: 20px; background: #E3F3E7; color: #287A4D; font-size: 12px; font-weight: 700; padding: 8px 12px; }
+    .profile-status.inactive { background: #FFF1D5; color: #946114; }
+    .profile-notice { background: #F7F9F5; border: 1px solid #DCE5DB; border-radius: 10px; color: #617466; font-size: 12px; line-height: 1.6; padding: 12px 14px; margin-top: 17px; }
+    .profile-dialog { border: none; border-radius: 18px; padding: 28px; width: min(94vw, 510px); box-shadow: 0 24px 75px rgba(20,45,30,.2); }
+    .profile-dialog::backdrop { background: rgba(18,38,28,.5); }
+    .profile-dialog h2 { color: #244D3B; font-size: 21px; margin: 0 0 14px; }
+    .profile-dialog p, .profile-dialog li { color: #526659; font-size: 14px; line-height: 1.7; }
+    .profile-dialog ul { padding-left: 22px; }
+    .profile-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    @@media (max-width: 700px) {
+        .profile-page { padding: 30px 16px 60px; }
+        .profile-header h1 { font-size: 29px; }
+        .profile-card { padding: 20px; }
+        .profile-grid { grid-template-columns: 1fr; }
+        .profile-field.wide { grid-column: auto; }
+    }
+</style>
+
+<!-- Sara: Profilinformasjon vises fra den innloggede brukeren. -->
+<div class="profile-page">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div>
+                <h1>Min profil</h1>
+                <p>Administrer informasjonen din og innstillingene for kontoen.</p>
+            </div>
+            <div class="profile-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            </div>
+        </div>
+
+        <section class="profile-card">
+            @if (TempData["ProfileMessage"] is string message)
+            {
+                <div class="profile-notice" role="status">@message</div>
+            }
+            <div class="profile-info-row">
+                <div>
+                    <h2>Personlig informasjon</h2>
+                    <p class="profile-card-intro">Opplysningene som er registrert på kontoen din.</p>
+                </div>
+                @if (Model.IsDeactivated)
+                {
+                    <span class="profile-status inactive">Konto deaktivert</span>
+                }
+                else
+                {
+                    <span class="profile-status">Konto aktiv</span>
+                }
+            </div>
+            <!-- Sara: Profilopplysninger kan oppdateres gjennom en sikker POST-metode. -->
+            <form asp-controller="ResourceProvider" asp-action="UpdateProfile" method="post">
+                @Html.AntiForgeryToken()
+            <div class="profile-grid">
+                <div class="profile-field">
+                    <label for="profile-name">Navn / virksomhet</label>
+                    <input id="profile-name" type="text" name="Name" value="@Model.Name" maxlength="100" required />
+                </div>
+                <div class="profile-field">
+                    <label for="profile-email">E-postadresse</label>
+                    <input id="profile-email" type="email" name="Email" value="@Model.Email" maxlength="256" required />
+                </div>
+                <div class="profile-field">
+                    <label for="profile-phone">Telefonnummer</label>
+                    <input id="profile-phone" type="tel" name="PhoneNumber" value="@Model.PhoneNumber" maxlength="30" placeholder="Ikke registrert" />
+                </div>
+                <div class="profile-field">
+                    <label for="profile-address">Adresse</label>
+                    <input id="profile-address" type="text" name="Address" value="@Model.Address" maxlength="200" placeholder="Ikke registrert" />
+                </div>
+                <div class="profile-field wide">
+                    <label for="profile-description">Om meg / virksomheten</label>
+                    <textarea id="profile-description" name="Description" maxlength="2000" placeholder="Fortell litt om deg selv eller virksomheten din.">@Model.Description</textarea>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button type="submit" class="profile-button primary">Lagre endringer</button>
+            </div>
+            </form>
+        </section>
+
+        <section class="profile-card">
+            <h2>Sikkerhet og passord</h2>
+            <p class="profile-card-intro">Et sikkert passord bidrar til å beskytte kontoen og ressursene dine.</p>
+            <div class="profile-info-row">
+                <div>
+                    <strong style="color:#244D3B;font-size:14px;">Passord</strong>
+                    <p class="profile-muted">Endre passordet ditt når du har behov for det.</p>
+                </div>
+                <button type="button" class="profile-button outline" disabled>Endre passord</button>
+            </div>
+        </section>
+
+        <section class="profile-card">
+            <h2>Kontoinnstillinger</h2>
+            <p class="profile-card-intro">Du bestemmer når du vil være synlig for offentlige aktører.</p>
+            <div class="profile-account-row">
+                <div>
+                    <h3>Deaktiver kontoen midlertidig</h3>
+                    <p>Skjul ressursene dine ved ferie, lengre fravær eller når du ikke kan stille dem til disposisjon. Ingen opplysninger slettes.</p>
+                </div>
+                <button type="button" class="profile-button outline" onclick="document.getElementById('deactivate-dialog').showModal()">Deaktiver konto</button>
+            </div>
+            <div class="profile-account-row">
+                <div>
+                    <h3>Slett kontoen permanent</h3>
+                    <p>Permanent sletting fjerner kontoen og tilhørende informasjon. Dette kan ikke angres.</p>
+                </div>
+                <button type="button" class="profile-button danger-outline" onclick="document.getElementById('delete-dialog').showModal()">Slett konto</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Sara: Forklaring før midlertidig deaktivering. -->
+<dialog id="deactivate-dialog" class="profile-dialog" aria-labelledby="deactivate-title">
+    <h2 id="deactivate-title">Vil du deaktivere kontoen din?</h2>
+    <p>Deaktivering passer når du er på ferie, er borte i en lengre periode eller ikke har mulighet til å følge opp ressursene dine.</p>
+    <ul>
+        <li>Offentlige aktører skal ikke kunne se eller finne ressursene dine mens kontoen er deaktivert.</li>
+        <li>Ingen ressurser, forespørsler eller personopplysninger blir slettet.</li>
+        <li>Du kan fortsatt logge inn. Før du bruker portalen igjen, må du bekrefte at kontoen skal reaktiveres.</li>
+        <li>Ved reaktivering får ressursene tilbake sin tidligere tilgjengelighetsstatus.</li>
+    </ul>
+    <div class="profile-dialog-actions">
+        <button type="button" class="profile-button secondary" onclick="document.getElementById('deactivate-dialog').close()">Behold kontoen aktiv</button>
+        <button type="button" class="profile-button primary" disabled>Bekreft deaktivering</button>
+    </div>
+</dialog>
+
+<!-- Sara: Tydelig bekreftelse før permanent sletting. -->
+<dialog id="delete-dialog" class="profile-dialog" aria-labelledby="delete-title">
+    <h2 id="delete-title">Er du sikker på at du vil slette kontoen din?</h2>
+    <p>Hvis du sletter kontoen permanent, mister du tilgang til den. Profilinformasjonen og ressursene dine skal slettes. Handlingen kan ikke angres.</p>
+    <div class="profile-dialog-actions">
+        <button type="button" class="profile-button primary" onclick="document.getElementById('delete-dialog').close()">Ikke slett konto</button>
+        <button type="button" class="profile-button danger" disabled>Slett konto</button>
+    </div>
+</dialog>

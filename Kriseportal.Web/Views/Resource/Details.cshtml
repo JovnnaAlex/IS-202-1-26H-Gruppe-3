@@ -1,186 +1,154 @@
 @model Kriseportal.Web.Models.ResourceViewModel
 @using System.Globalization
+@using Kriseportal.Web.Models.Entities
 
 @{
-    // Setter sidetittelen.
+    // Sara: Bruker ressursleverandørportalens layout også på forhåndsvisningen.
+    Layout = "_ResourceProviderLayout";
     ViewData["Title"] = "Forhåndsvisning av ressurs";
     Layout = "_ResourceProviderLayout";
 
-    // Henter koordinatene og sørger for riktig desimalformat.
     var lat = Model.Latitude?.ToString(CultureInfo.InvariantCulture);
     var lng = Model.Longitude?.ToString(CultureInfo.InvariantCulture);
-
-    @* Edgar la til ? for å håndtere mulige nullverdier i Latitude og Longitude. *@
 }
 
-@* Laster inn Leaflet og stilarket for detaljsiden. *@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="~/css/details.css" asp-append-version="true" />
 
-<main class="result" style="--accent:var(--c-resource)">
+<style>
+    /* Sara: Holder forhåndsvisningen innenfor portalens innholdsområde. */
+    .provider-preview { max-width: 1250px; margin: 0 auto; color: #24332b; }
+    .provider-preview * { box-sizing: border-box; }
+    .provider-preview__heading { margin-bottom: 26px; }
+    .provider-preview__heading h1 { color: #244d3b; font-size: 2rem; font-weight: 700; margin: 0 0 8px; }
+    .provider-preview__heading p { color: #66756b; margin: 0; }
+    .provider-preview__card { background: #fff; border: 1px solid #e1e8e1; border-radius: 16px; padding: 30px; box-shadow: 0 4px 16px rgba(0,0,0,.04); }
+    .provider-preview__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; }
+    .provider-preview__section-title { color: #244d3b; font-size: 1.2rem; font-weight: 700; margin: 0 0 20px; }
+    .provider-preview__facts { margin: 0; display: grid; grid-template-columns: minmax(125px, 40%) minmax(0, 1fr); }
+    .provider-preview__facts dt, .provider-preview__facts dd { padding: 12px 0; border-bottom: 1px solid #edf0ec; overflow-wrap: anywhere; }
+    .provider-preview__facts dt { font-weight: 600; color: #526157; }
+    .provider-preview__facts dd { margin: 0; }
+    .provider-preview__status { display: inline-block; border-radius: 999px; padding: 5px 11px; font-weight: 600; font-size: .9rem; background: #edf0ec; color: #45554b; }
+    .provider-preview__status--available { background: #e5f2e7; color: #225c37; }
+    .provider-preview__map { height: 380px; width: 100%; border: 1px solid #cbd5cc; border-radius: 10px; z-index: 0; }
+    .provider-preview__coords { color: #66756b; font-size: .9rem; margin: 12px 0 0; }
+    .provider-preview__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; border-top: 1px solid #e1e8e1; margin-top: 28px; padding-top: 24px; }
+    .provider-preview__actions form { margin: 0; }
+    .provider-preview__button { border: 1px solid #244d3b; border-radius: 8px; background: #244d3b; color: #fff; padding: 13px 22px; font: inherit; font-weight: 600; cursor: pointer; }
+    .provider-preview__button:hover { background: #193a2c; }
+    .provider-preview__button--secondary { color: #244d3b; background: #fff; }
+    .provider-preview__button--secondary:hover { background: #f0f3ea; }
+    .provider-preview__button:focus-visible { outline: 3px solid #86b69a; outline-offset: 3px; }
+    @@media (max-width: 900px) {
+        .provider-preview__grid { grid-template-columns: 1fr; }
+        .provider-preview__card { padding: 20px; }
+    }
+    @@media (max-width: 550px) {
+        .provider-preview__actions { flex-direction: column; }
+        .provider-preview__actions form, .provider-preview__button { width: 100%; }
+        .provider-preview__facts { grid-template-columns: minmax(100px, 40%) minmax(0, 1fr); }
+    }
+</style>
 
-    @* Viser en forhåndsvisning av ressursinformasjonen. *@
-    <div class="result__banner" role="status">
+<main class="provider-preview">
+    <header class="provider-preview__heading">
         <h1>Forhåndsvisning av ressurs</h1>
-        <p>
-            Opplysningene er kontrollert, men ressursen er ikke lagret ennå.
-        </p>
-    </div>
+        <p>Kontroller opplysningene før du bekrefter registreringen. Ressursen er ikke lagret ennå.</p>
+    </header>
 
-    <div class="result__grid">
+    <div class="provider-preview__card">
+        <div class="provider-preview__grid">
+            <section aria-label="Ressursinformasjon">
+                <h2 class="provider-preview__section-title">Informasjon om ressursen</h2>
+                <dl class="provider-preview__facts">
+                    <dt>Navn</dt><dd>@Model.Name</dd>
+                    <dt>Kommune</dt><dd>@Model.Municipality</dd>
+                    <dt>Kontaktperson</dt><dd>@Model.ContactName</dd>
+                    <dt>Telefonnummer</dt><dd>@Model.ContactPhone</dd>
+                    <dt>Antall</dt><dd>@Model.Quantity @Model.Unit</dd>
+                    <dt>Ressurskategori</dt><dd>@ViewBag.CategoryName</dd>
+                    <dt>Beskrivelse</dt><dd>@(string.IsNullOrWhiteSpace(Model.Description) ? "Ikke oppgitt" : Model.Description)</dd>
+                    <dt>Tilgjengelig fra</dt><dd>@(Model.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")</dd>
+                    <dt>Tilgjengelig til</dt><dd>@(Model.AvailableTo?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")</dd>
+                    <dt>Status</dt>
+                    <dd>
+                        <span class="provider-preview__status @(Model.Availability == ResourceAvailability.Available ? "provider-preview__status--available" : "")">
+                            @(Model.Availability switch
+                            {
+                                ResourceAvailability.Available => "Tilgjengelig",
+                                ResourceAvailability.Reserved => "Reservert",
+                                ResourceAvailability.Unavailable => "Ikke tilgjengelig",
+                                _ => "Ukjent"
+                            })
+                        </span>
+                    </dd>
+                </dl>
+            </section>
 
-        @* Viser informasjon om den registrerte ressursen. *@
-        <dl class="result__facts">
-            <dt>Navn</dt>
-            <dd>@Model.Name</dd>
-            @* Viser kommunen der ressursen befinner seg. *@
-            <dt>Kommune</dt>
-            <dd>@Model.Municipality</dd>
-            @* Viser kontaktinformasjon for ressursen. *@
-            <dt>Kontaktperson</dt>
-            <dd>@Model.ContactName</dd>
+            <section aria-label="Plassering på kart">
+                <h2 class="provider-preview__section-title">Geografisk plassering</h2>
+                <div id="map" class="provider-preview__map" aria-label="Kart med ressursens plassering"></div>
+                <p class="provider-preview__coords">Posisjon: @lat, @lng</p>
+            </section>
+        </div>
 
-            <dt>Telefonnummer</dt>
-            <dd>@Model.ContactPhone</dd>
-            @* Viser hvor mye av ressursen som tilbys. *@
-            <dt>Antall</dt>
-            <dd>@Model.Quantity @Model.Unit</dd>
-            @* Viser navnet på ressurskategorien fra databasen. *@
-            <dt>Ressurskategori</dt>
-            <dd>@ViewBag.CategoryName</dd>
-            <dt>Beskrivelse</dt>
-            <dd>@Model.Description</dd>
-            @* Viser perioden ressursen er tilgjengelig. *@
-            <dt>Tilgjengelig fra</dt>
-            <dd>
-                @(Model.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")
-            </dd>
+        <div class="provider-preview__actions">
+            <form asp-controller="Resource" asp-action="EditPreview" method="post">
+                @Html.AntiForgeryToken()
+                @* Sara: Beholder alle utfylte verdier ved retur til skjemaet. *@
+                <input type="hidden" asp-for="Name" />
+                <input type="hidden" asp-for="CategoryId" />
+                <input type="hidden" asp-for="Description" />
+                <input type="hidden" asp-for="Quantity" />
+                <input type="hidden" asp-for="Unit" />
+                <input type="hidden" asp-for="Availability" />
+                <input type="hidden" asp-for="AvailableFrom" />
+                <input type="hidden" asp-for="AvailableTo" />
+                <input type="hidden" asp-for="Municipality" />
+                <input type="hidden" asp-for="ContactName" />
+                <input type="hidden" asp-for="ContactPhone" />
+                <input type="hidden" asp-for="Latitude" />
+                <input type="hidden" asp-for="Longitude" />
+                <button type="submit" class="provider-preview__button provider-preview__button--secondary">Tilbake og rediger</button>
+            </form>
 
-            <dt>Tilgjengelig til</dt>
-            <dd>
-                @(Model.AvailableTo?.ToString("dd.MM.yyyy") ?? "Ikke oppgitt")
-            </dd>
-            @* Viser ressursens tilgjengelighetsstatus. *@
-            <dt>Status</dt>
-            <dd>
-                <span class="badge @(Model.Availability == Kriseportal.Web.Models.Entities.ResourceAvailability.Available
-                                       ? "badge--available"
-                                       : "badge--unavailable")">
-                    @(Model.Availability switch
-                    {
-                        Kriseportal.Web.Models.Entities.ResourceAvailability.Available => "Tilgjengelig",
-                        Kriseportal.Web.Models.Entities.ResourceAvailability.Reserved => "Reservert",
-                        Kriseportal.Web.Models.Entities.ResourceAvailability.Unavailable => "Ikke tilgjengelig",
-                        _ => "Ukjent"
-                    })
-                </span>
-            </dd>
-        </dl>
-
-        @* Viser kartet og koordinatene til ressursen. *@
-        <section aria-label="Plassering på kart">
-            <div id="map" class="result__map"></div>
-            <p class="result__coords">Posisjon: @lat, @lng</p>
-        </section>
-    </div>
-
-    @* Navigasjon fra forhåndsvisningen. *@
-    <div class="result__actions">
-
-        <form asp-controller="Resource"
-              asp-action="EditPreview"
-              method="post">
-
-            @Html.AntiForgeryToken()
-
-            @* Beholder informasjonen når brukeren går tilbake. *@
-            <input type="hidden" asp-for="Name" />
-            <input type="hidden" asp-for="CategoryId" />
-            <input type="hidden" asp-for="Description" />
-            <input type="hidden" asp-for="Quantity" />
-            <input type="hidden" asp-for="Unit" />
-            <input type="hidden" asp-for="Availability" />
-            <input type="hidden" asp-for="AvailableFrom" />
-            <input type="hidden" asp-for="AvailableTo" />
-            <input type="hidden" asp-for="Municipality" />
-            <input type="hidden" asp-for="ContactName" />
-            <input type="hidden" asp-for="ContactPhone" />
-            <input type="hidden" asp-for="Latitude" />
-            <input type="hidden" asp-for="Longitude" />
-
-            <button type="submit" class="primary">
-                Tilbake og rediger
-            </button>
-
-        </form>
-
-        @* Bekrefter opplysningene og sender ressursinformasjonen videre. *@
-        <form asp-controller="Resource"
-              asp-action="ConfirmPreview"
-              method="post">
-
-            @Html.AntiForgeryToken()
-
-            @* Informasjon om ressursen *@
-            <input type="hidden" asp-for="Name" />
-            <input type="hidden" asp-for="CategoryId" />
-            <input type="hidden" asp-for="Description" />
-            <input type="hidden" asp-for="Quantity" />
-            <input type="hidden" asp-for="Unit" />
-            <input type="hidden" asp-for="Availability" />
-
-            @* Tilgjengelighetsperiode *@
-            <input type="hidden" asp-for="AvailableFrom" />
-            <input type="hidden" asp-for="AvailableTo" />
-
-            @* Plassering *@
-            <input type="hidden" asp-for="Municipality" />
-            <input type="hidden" asp-for="Latitude" />
-            <input type="hidden" asp-for="Longitude" />
-
-            @* Kontaktinformasjon *@
-            <input type="hidden" asp-for="ContactName" />
-            <input type="hidden" asp-for="ContactPhone" />
-
-            <button type="submit" class="primary">
-                Bekreft registrering
-            </button>
-
-        </form>
-
+            <form asp-controller="Resource" asp-action="ConfirmPreview" method="post">
+                @Html.AntiForgeryToken()
+                @* Sara: Sender de samme ressursopplysningene videre til eksisterende lagringshandling. *@
+                <input type="hidden" asp-for="Name" />
+                <input type="hidden" asp-for="CategoryId" />
+                <input type="hidden" asp-for="Description" />
+                <input type="hidden" asp-for="Quantity" />
+                <input type="hidden" asp-for="Unit" />
+                <input type="hidden" asp-for="Availability" />
+                <input type="hidden" asp-for="AvailableFrom" />
+                <input type="hidden" asp-for="AvailableTo" />
+                <input type="hidden" asp-for="Municipality" />
+                <input type="hidden" asp-for="ContactName" />
+                <input type="hidden" asp-for="ContactPhone" />
+                <input type="hidden" asp-for="Latitude" />
+                <input type="hidden" asp-for="Longitude" />
+                <button type="submit" class="provider-preview__button">Bekreft registrering</button>
+            </form>
+        </div>
     </div>
 </main>
 
-
-@* Lagrer koordinatene i skjulte felt slik at JavaScript kan hente dem. *@
-<input type="hidden" id="Latitude" value="@lat" />
-<input type="hidden" id="Longitude" value="@lng" />
-
-@section Scripts {
-
-    @* Laster inn Leaflet-biblioteket. *@
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // Henter koordinatene fra de skjulte feltene.
-        const lat = parseFloat(document.getElementById("Latitude").value);
-        const lng = parseFloat(document.getElementById("Longitude").value);
-
-        // Oppretter kartet og sentrerer det på den registrerte ressursen.
+@* Sara: Beholder eksisterende kartvisning og Kartverkets kartgrunnlag. *@
+<input type="hidden" id="previewLatitude" value="@lat" />
+<input type="hidden" id="previewLongitude" value="@lng" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Sara: Viser markøren på koordinatene fra forhåndsvisningen.
+    (function () {
+        const lat = parseFloat(document.getElementById("previewLatitude").value);
+        const lng = parseFloat(document.getElementById("previewLongitude").value);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
         const map = L.map("map").setView([lat, lng], 13);
-
-        // Legger til Kartverkets topografiske kartgrunnlag.
         L.tileLayer("https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png", {
-
-            // Setter maksimalt zoomnivå til 18.
             maxZoom: 18,
-
-            // Viser Kartverket som kilde på kartet.
             attribution: "&copy; Kartverket"
-
         }).addTo(map);
-
-        // Plasserer en markør på ressursens registrerte posisjon.
         L.marker([lat, lng]).addTo(map);
-    </script>
-}
+    })();
+</script>

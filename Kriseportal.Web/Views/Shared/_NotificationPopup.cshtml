@@ -20,9 +20,13 @@
         </a>
 
         <aside id="notification-popup"
-       class="portal-notification-popup"
+       class="portal-notification-popup @(User.IsInRole(AppRoles.ResourceProvider) ? "provider-notification-popup" : "")"
        aria-label="Nytt varsel"
        hidden>
+    @if (User.IsInRole(AppRoles.ResourceProvider))
+    {
+        <div class="provider-notification-icon" aria-hidden="true">✉</div>
+    }
     <div role="status" aria-live="polite">
         <strong id="notification-heading">Nytt varsel</strong>
         <p id="notification-message"></p>
@@ -79,7 +83,7 @@
            style="display:inline-block; padding:10px 14px;
                   border:1px solid #527667; border-radius:8px;
                   text-decoration:none;">
-            Se mer
+            @(User.IsInRole(AppRoles.ResourceProvider) ? "Se forespørsel" : "Se mer")
         </a>
 
         @if (!User.IsInRole(AppRoles.ResourceProvider))
@@ -152,6 +156,72 @@
             color: #A7352C;
         }
 
+        /* Sara: Et rolig, profesjonelt varsel for ressursleverandører. */
+        .provider-notification-popup {
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(470px, calc(100vw - 32px));
+            padding: 32px;
+            border: 1px solid #DCE5DB;
+            border-radius: 20px;
+            box-shadow: 0 24px 80px rgba(25, 59, 45, .23);
+        }
+        .provider-notification-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border-radius: 15px;
+            background: #E8EFE7;
+            color: #244D3B;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+        .provider-notification-popup #notification-heading {
+            color: #244D3B;
+            font-size: 23px;
+            margin-bottom: 12px;
+        }
+        .provider-notification-popup #notification-message {
+            color: #526659;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+        .provider-notification-popup .portal-notification-actions {
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        .provider-notification-popup #popup-details,
+        .provider-notification-popup #notification-close {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 17px !important;
+            border-radius: 10px !important;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .provider-notification-popup #popup-details {
+            background: #244D3B;
+            border: 1px solid #244D3B !important;
+            color: #fff;
+        }
+        .provider-notification-popup #notification-close {
+            background: #E8EFE7;
+            border: 1px solid #DCE5DB;
+            color: #244D3B;
+        }
+        .provider-notification-popup.portal-notification-urgent {
+            background: #fff;
+            border: 1px solid #DCE5DB;
+            animation: none;
+        }
+        .provider-notification-popup.portal-notification-urgent #notification-heading {
+            color: #244D3B;
+        }
         .portal-notification-popup[hidden] {
             display: none;
         }
@@ -207,7 +277,32 @@
         const details = document.getElementById("popup-details");
         const detailsBase = details.href;
         const isProvider = root.dataset.provider === "true";
-        const shown = new Set();
+        // Sara: Husk viste varsler mellom sideskift i samme innloggingsøkt.
+        // Bruker-ID gjør at ulike kontoer ikke deler listen.
+        const shownKey = "provider-shown-notifications:" + root.dataset.user;
+        let previousShown = [];
+        if (isProvider) {
+            try {
+                previousShown = JSON.parse(sessionStorage.getItem(shownKey) || "[]");
+                if (!Array.isArray(previousShown)) previousShown = [];
+            } catch { previousShown = []; }
+        }
+        const shown = new Set(previousShown);
+        function rememberShown(id) {
+            shown.add(id);
+            if (isProvider) {
+                try { sessionStorage.setItem(shownKey, JSON.stringify([...shown])); }
+                catch { /* Varsler fungerer også dersom nettleseren blokkerer lagring. */ }
+            }
+        }
+        // Ny innlogging i samme fane skal kunne vise nye, uleste varsler.
+        if (isProvider) {
+            document.querySelectorAll('form[action*="Logout"]').forEach(form => {
+                form.addEventListener("submit", () => {
+                    try { sessionStorage.removeItem(shownKey); } catch { }
+                });
+            });
+        }
 
         let current = null;
         let busy = false;
@@ -256,9 +351,10 @@
                 if (!next) return;
 
                 current = next;
-                shown.add(next.id);
+                rememberShown(next.id);
 
-                const canRespond = isProvider && next.canRespond === true;
+                // Ressursleverandøren svarer på forespørselssiden, ikke i varselet.
+                const canRespond = !isProvider && next.canRespond === true;
                 approveForm.hidden = !canRespond;
                 rejectForm.hidden = !canRespond;
 
@@ -269,6 +365,11 @@
                     details.href =
                         '@Url.Action("Details", "Need")'
                         + "?id=" + encodeURIComponent(next.needId);
+                } else if (isProvider) {
+                    const providerDetailsUrl = '@Url.Action("RequestDetails", "ResourceProvider")';
+                    details.href = next.requestId
+                        ? providerDetailsUrl + "?id=" + encodeURIComponent(next.requestId)
+                        : '@Url.Action("Requests", "ResourceProvider")';
                 } else {
                     details.href = next.requestId
                         ? detailsBase + "#request-" + next.requestId
@@ -279,7 +380,9 @@
                 popup.classList.toggle("portal-notification-urgent", urgent);
 
                 document.getElementById("notification-heading").textContent =
-                    urgent ? "Akutt forespørsel" : "Nytt varsel";
+                    isProvider
+                        ? (urgent ? "Haster: Ny forespørsel" : "Du har en ny forespørsel!")
+                        : (urgent ? "Akutt forespørsel" : "Nytt varsel");
                 document.getElementById("notification-message").textContent =
                     next.message;
 

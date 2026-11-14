@@ -1,37 +1,173 @@
+
 @{
+    // Sara: Bruker ressursleverandørportalens egen layout.
     ViewData["Title"] = "Registrering bekreftet";
     Layout = "_ResourceProviderLayout";
 }
 
-<div style="max-width: 650px; margin: 80px auto; text-align: center; padding: 40px;">
+<style>
+    /* Sara: Hovedområdet for bekreftelsessiden. */
+    .confirmation-page {
+        min-height: 65vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 30px;
+        background-color: #F0F3EA;
+    }
 
-    <div style="font-size: 4rem; color: #244D3B;">
-        ✓
-    </div>
+    /* Sara: Hvit bekreftelsesboks i samme stil som dashboardet. */
+    .confirmation-card {
+        width: 100%;
+        max-width: 650px;
+        background-color: #FFFFFF;
+        border: 1px solid #DCE5DB;
+        border-radius: 18px;
+        padding: 55px 45px;
+        text-align: center;
+        box-shadow: 0 6px 24px rgba(36, 77, 59, 0.06);
+    }
 
-    <h1 style="color: #244D3B; margin-top: 20px;">
-        Opplysningene er bekreftet!
-    </h1>
+    /* Sara: Grønt ikon som viser vellykket registrering. */
+    .confirmation-icon {
+        width: 82px;
+        height: 82px;
+        margin: 0 auto 25px;
+        background-color: #E8F2E9;
+        color: #244D3B;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-    <p style="color: #66756B; font-size: 1.1rem; margin-top: 20px;">
-        Du har kontrollert og bekreftet informasjonen om ressursen.
-    </p>
+    .confirmation-icon svg {
+        width: 44px;
+        height: 44px;
+    }
 
-    <p style="color: #66756B;">
-        Ressursen din er registrert og lagret.
-        Den er nå tilgjengelig i ressursoversikten.
-    </p>
+    /* Sara: Overskrift og beskrivelse. */
+    .confirmation-title {
+        color: #244D3B;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
 
-    <div style="margin-top: 35px;">
+    .confirmation-description {
+        color: #66756B;
+        font-size: 16px;
+        line-height: 1.8;
+        margin-bottom: 12px;
+    }
+
+    /* Sara: Knapp tilbake til ressursleverandørens dashboard. */
+    .confirmation-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+        padding: 14px 28px;
+        background-color: #244D3B;
+        color: #FFFFFF;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+
+    .confirmation-button:hover {
+        background-color: #193B2D;
+        color: #FFFFFF;
+    }
+
+    .confirmation-button svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    /* Sara: Tilpasser bekreftelsessiden til mobil. */
+    @@media (max-width: 600px) {
+        .confirmation-page {
+            padding: 30px 15px;
+        }
+
+        .confirmation-card {
+            padding: 40px 22px;
+        }
+
+        .confirmation-title {
+            font-size: 24px;
+        }
+
+        .confirmation-button {
+            width: 100%;
+        }
+    }
+</style>
+
+<!-- Sara: Bekreftelse etter vellykket registrering av ressurs. -->
+<div class="confirmation-page">
+
+    <div class="confirmation-card">
+
+        <div class="confirmation-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m8 12 3 3 5-6"></path>
+
+            </svg>
+        </div>
+
+        <h1 class="confirmation-title">
+            Ressursen er registrert!
+        </h1>
+
+        <p class="confirmation-description">
+            Du har kontrollert og bekreftet informasjonen
+            om ressursen din.
+        </p>
+
+        <p class="confirmation-description">
+            Ressursen er nå lagret i systemet og vil være
+            tilgjengelig i ressursoversikten i henhold til
+            registrert tilgjengelighetsstatus.
+        </p>
+
+        <!-- Sara: Sender brukeren tilbake til sin egen portal. -->
         <a asp-controller="ResourceProvider"
            asp-action="Index"
-           style="background-color: #244D3B;
-              color: white;
-              padding: 14px 28px;
-              border-radius: 8px;
-              text-decoration: none;">
-            Tilbake til dashboard
+           class="confirmation-button">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+
+            </svg>
+
+            Tilbake til min oversikt
+
         </a>
+
     </div>
 
 </div>
