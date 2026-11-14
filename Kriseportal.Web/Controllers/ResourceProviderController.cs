@@ -240,13 +240,23 @@ public async Task<IActionResult> Index()
             return RedirectToAction(nameof(RequestDetails), new { id });
         }
 
-        // Sara: En transaksjon hindrer at to samtidige godkjenninger reserverer samme antall.
-        await using var transaction = await _context.Database.BeginTransactionAsync(
-            System.Data.IsolationLevel.Serializable);
+        // Hele transaksjonen kan forsøkes på nytt ved midlertidige databasefeil.
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
+            {
+                // Hvert forsøk skal hente ferske opplysninger fra databasen.
+                _context.ChangeTracker.Clear();
+
+                // Hindrer at samtidige godkjenninger reserverer samme antall.
+                await using var transaction = await _context.Database.BeginTransactionAsync(
+                    System.Data.IsolationLevel.Serializable);
 
         var request = await _context.Requests
             .Include(r => r.Match)
                 .ThenInclude(m => m!.Resource)
+            .Include(r => r.Match)
+                .ThenInclude(m => m!.Need)
             .FirstOrDefaultAsync(r =>
                 r.RequestId == id &&
                 r.Match != null &&
@@ -300,6 +310,23 @@ public async Task<IActionResult> Index()
             ? null
             : responseMessage.Trim();
         request.RespondedAt = DateTime.UtcNow;
+        
+        // Varsler offentlig aktør når leverandøren godkjenner eller avslår.
+        var need = request.Match!.Need!;
+
+        var notificationMessage = decision == "confirm"
+            ? $"Forespørselen om {request.Quantity} {resource.Unit} av {resource.Name} er godkjent."
+            : $"Forespørselen om {request.Quantity} {resource.Unit} av {resource.Name} er avslått.";
+
+        _context.Notifications.Add(new Notification
+        {
+            UserId = need.PublicAuthorityId,
+            RequestId = request.RequestId,
+            NeedId = need.NeedId,
+            Message = notificationMessage.Length > 200
+                ? notificationMessage[..200]
+                : notificationMessage
+        });
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
@@ -309,6 +336,7 @@ public async Task<IActionResult> Index()
             : "Forespørselen er avslått.";
 
         return RedirectToAction(nameof(RequestDetails), new { id });
+            });
     }
 
     // Sara: Henter bare ressurser som tilhører innlogget leverandør.
