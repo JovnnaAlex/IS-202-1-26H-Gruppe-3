@@ -236,6 +236,15 @@
                         @request.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
                     </p>
 
+                    @if (!string.IsNullOrWhiteSpace(request.ResponseMessage))
+                    {
+                        <div style="margin:16px 0; padding:14px; background:#EDF2EA;
+                border-radius:8px; overflow-wrap:anywhere;">
+                            <strong>Melding fra ressursleverandøren:</strong>
+                            <div style="white-space:pre-wrap; margin-top:6px;">@request.ResponseMessage</div>
+                        </div>
+                    }
+                    
                     @if (request.RespondedAt.HasValue)
                     {
                         <p class="request-date">
