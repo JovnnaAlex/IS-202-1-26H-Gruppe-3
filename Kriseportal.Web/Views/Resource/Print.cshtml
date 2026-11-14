@@ -1,0 +1,222 @@
+﻿@model List<Kriseportal.Web.Models.Entities.Resource>
+
+@{
+    // B21: Utskrift av tilgjengelige ressurser per kommune.
+    Layout = null;
+
+    ViewData["Title"] = "Ressursliste";
+
+    // Kommunen kommer fra ResourceController.Print().
+    var municipality = ViewData["Municipality"]?.ToString()
+        ?? "Ukjent kommune";
+}
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Ressursliste - @municipality</title>
+
+    <style>
+        /* B21: Enkel utskriftsvennlig side */
+        body {
+            font-family: Arial, sans-serif;
+            color: #293B33;
+            background: #F0F3EA;
+            margin: 0;
+            padding: 32px;
+        }
+
+        .print-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+        }
+
+        .print-header {
+            margin-bottom: 28px;
+        }
+
+        .print-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #244D3B;
+        }
+
+        .print-header p {
+            color: #66766B;
+            margin: 0;
+        }
+
+        .print-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .print-button {
+            background: #244D3B;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background: #E7EFE5;
+            color: #244D3B;
+            text-decoration: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .print-table th {
+            background: #F0F3EF;
+            padding: 14px;
+            text-align: left;
+            border-bottom: 2px solid #D8E2D7;
+        }
+
+        .print-table td {
+            padding: 14px;
+            border-bottom: 1px solid #E8E8E8;
+        }
+
+        .print-count {
+            margin-top: 24px;
+            color: #66766B;
+            font-size: 14px;
+        }
+
+        /* B21: Skjuler knapper når siden skrives ut */
+        @@media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .print-container {
+                max-width: none;
+                padding: 0;
+                border-radius: 0;
+            }
+
+            .print-actions {
+                display: none;
+            }
+
+            .print-table thead {
+                display: table-header-group;
+            }
+
+            .print-table tr {
+                break-inside: avoid;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .print-container {
+                padding: 16px;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="print-container">
+
+        <!-- Overskrift med valgt kommune -->
+        <div class="print-header">
+            <h1>Ressursliste – @municipality</h1>
+
+            <p>
+                Oversikt over tilgjengelige ressurser
+                i @municipality.
+            </p>
+        </div>
+
+        <!-- Knapper vises bare på skjerm -->
+        <div class="print-actions">
+
+            <button type="button"
+                    class="print-button"
+                    onclick="window.print()">
+                Skriv ut
+            </button>
+
+            <a asp-controller="Resource"
+               asp-action="Index"
+               class="back-button">
+                Tilbake til ressurser
+            </a>
+
+        </div>
+
+        <!-- Ressurser fra databasen -->
+        <table class="print-table">
+
+            <thead>
+                <tr>
+                    <th>Ressurs</th>
+                    <th>Kategori</th>
+                    <th>Antall</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var resource in Model)
+                {
+                    <tr>
+                        <td>@resource.Name</td>
+
+                        <td>
+                            @(resource.Category?.Name ?? "Ukjent")
+                        </td>
+
+                        <td>
+                            @resource.Quantity @resource.Unit
+                        </td>
+
+                        <td>Tilgjengelig</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+        @if (Model.Count == 0)
+        {
+            <p>
+                Ingen tilgjengelige ressurser
+                funnet i @municipality.
+            </p>
+        }
+
+        <!-- Antall ressurser -->
+        <p class="print-count">
+            Totalt: @Model.Count tilgjengelige ressurser
+        </p>
+
+    </main>
+
+</body>
+</html>

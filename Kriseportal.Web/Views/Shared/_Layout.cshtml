@@ -206,10 +206,28 @@
                 <!-- Innlogging og utlogging fra master -->
                 @if (User.Identity?.IsAuthenticated == true)
                 {
+<<<<<<< HEAD
                     <!-- Sara: Ingen utlogging før bekreftelse i dialogen. -->
                     <button type="button" class="bp-sidebar-link bp-logout" onclick="document.getElementById('bp-logout-dialog').showModal()">
                         <img src="~/icons/logg-ut.svg" alt="" class="sidebar-icon" /> Logg ut
                     </button>
+=======
+                    <form asp-controller="Account"
+                          asp-action="Logout"
+                          method="post"                       
+                          onsubmit="return confirm('Er du sikker på at du vil logge ut?');"> <!-- Bekreftelse på utlogging -->
+
+                     
+                        <button type="submit"
+                                class="sidebar-link sidebar-logout-button">
+
+                            <img src="~/icons/logg-ut.svg"
+                                 alt="" class="sidebar-icon" />
+                            Logg ut
+                        </button>
+
+                    </form>
+>>>>>>> origin/sara-integrering-etter-master
                 }
                 else
                 {

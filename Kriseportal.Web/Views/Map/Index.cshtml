@@ -144,6 +144,12 @@
         background: #6A1B9A;
     }
 
+        /* Totalforsvar: offentlige ressurser (kommune, HV) får en marineblå ring */
+    .km-public {
+        outline: 3px solid #1F3A93;
+        outline-offset: 1px;
+    }
+    
     .km-a-unavailable {
         background: #455A64;
         opacity: 0.7;
@@ -370,6 +376,94 @@
     .panel-description {
         margin: 12px 0 0;
         color: #333;
+    }
+
+    /* B31: kommunemerker for beredskap */
+    .cap-badge {
+        display: inline-block;
+        transform: translate(-50%, -50%);   /* midt på kommunesenteret */
+        padding: 4px 10px;
+        border: 2px solid white;
+        border-radius: 999px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        color: white;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .cap-ok {
+        background: #2E7D32;
+    }
+
+    .cap-medium {
+        background: #F9A825;
+        color: #1A1A1A;
+    }
+
+    .cap-missing {
+        background: #C62828;
+    }
+
+    .cap-popup h3 {
+        margin: 0 0 4px;
+        font-size: 1rem;
+    }
+
+    .cap-popup p {
+        margin: 6px 0 0;
+    }
+
+    .cap-summary {
+        font-weight: 600;
+    }
+
+    .cap-popup ul {
+        list-style: none;
+        margin: 6px 0 0;
+        padding: 0;
+    }
+
+    .cap-row-ok {
+        color: #2E7D32;
+    }
+
+    .cap-row-partial {
+        color: #B26A00;
+    }
+
+    .cap-row-missing {
+        color: #C62828;
+    }
+
+    .cap-weak {
+        font-weight: 600;
+        color: #C62828;
+    }
+
+    .cap-now {
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #FDECEA;
+        color: #C62828;
+        font-weight: 700;
+    }
+
+    .cap-mix {
+        color: #1F3A93;
+        font-size: 0.85rem;
+    }
+
+.cap-note {
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    /* Rute i tegnforklaring og lagvelger: rød, gul og grønn */
+    .lg-cap {
+        border-radius: 999px;
+        background: linear-gradient(90deg, #C62828 33%, #F9A825 33% 66%, #2E7D32 66%);
+        vertical-align: middle;
     }
 
     /* B20: ressurser i nærheten av et behov */
@@ -778,6 +872,7 @@
             <li><span class="lg lg-need km-p-planned"></span> Planlagt behov</li>
             <li><span class="lg lg-res km-a-available"></span> Tilgjengelig ressurs</li>
             <li><span class="lg lg-res km-a-reserved"></span> Reservert ressurs</li>
+            <li><span class="lg lg-res km-a-available km-public"></span> Offentlig ressurs (kommune, HV)</li>
         </ul>
         <!-- B30: vises bare når laget er slått på i lagvelgeren nede til høyre -->
         <p>Farelag fra NVE (aktsomhet):</p>
@@ -785,6 +880,10 @@
             <li><span class="lg lg-fare lg-flom"></span> Flomfare</li>
             <li><span class="lg lg-fare lg-skred"></span> Jord- og flomskred</li>
             <li><span class="lg lg-fare lg-kvikkleire"></span> Kvikkleireskred</li>
+        </ul>
+        <!-- B31: vises når «Beredskap per kommune» er slått på i lagvelgeren -->
+        <ul>
+            <li><span class="lg lg-cap"></span> Beredskap per innbygger: grønn = godt rustet, gul = middels, rød = trenger innsats</li>
         </ul>
         <p>Rund = behov · Firkantet = ressurs</p>
     </details>

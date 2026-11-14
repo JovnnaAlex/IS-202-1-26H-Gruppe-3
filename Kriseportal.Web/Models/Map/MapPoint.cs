@@ -18,4 +18,5 @@ public record MapPoint(
     string Municipality,
     string ContactName,
     string ContactPhone,
-    bool IsSimulated = false);
+    bool IsSimulated = false,
+    string? Owner = null);        // Bare for ressurser: «Privat», eller etaten som eier den (f.eks. «Kommune»)

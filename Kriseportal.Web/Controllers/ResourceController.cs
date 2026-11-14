@@ -84,6 +84,31 @@ public class ResourceController : Controller
 
         return View(resources);
     }
+    // B21: Utskrift av ressursliste per kommune
+    [Authorize(Roles = AppRoles.PublicAuthority)] //Bare offentlige aktører kan åpne utskriftssiden.
+    [HttpGet]
+    public async Task<IActionResult> Print(string? municipality)
+    {
+        if (string.IsNullOrWhiteSpace(municipality)) //Hvis brukeren ikke har valgt en kommune, sendes de tilbake til ressursoversikten.
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        municipality = municipality.Trim();
+
+        var resources = await _context.Resources
+            .AsNoTracking()
+            .Include(r => r.Category)
+            .Where(r =>
+                r.Availability == ResourceAvailability.Available &&
+                r.Municipality == municipality)
+            .OrderBy(r => r.Name)
+            .ToListAsync();
+
+        ViewData["Municipality"] = municipality; //Sender kommunenavnet til utskriftssiden, slik at det kan stå «Ressursliste – Kristiansand».
+
+        return View(resources); //Sender ressurslisten videre til Views/Resource/Print.cshtml.
+    }
 
     // Sara: Henter én bestemt ressurs fra databasen
     // og viser den på den nye detaljsiden.

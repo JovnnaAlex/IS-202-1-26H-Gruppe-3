@@ -193,6 +193,44 @@
         padding: 35px 15px;
         color: #7B847D;
     }
+    
+ 
+    /* B21: Overskrift og knapp på samme nivå */
+    .resources-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+        .resources-card-header .resources-card-title {
+            margin: 0;
+        }
+
+    .resources-print-button {
+        background: #527667;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .resources-print-button:hover {
+            background: #3E5E50;
+        }
+
+    @@media (max-width: 600px) {
+        .resources-card-header {
+            flex-wrap: wrap;
+        }
+    }
+
+
 </style>
 
 <div class="resources-page">
@@ -205,9 +243,19 @@
 
     <div class="resources-card">
 
-        <h2 class="resources-card-title">
-            Alle ressurser
-        </h2>
+        <div class="resources-card-header">
+
+            <h2 class="resources-card-title">
+                Alle ressurser
+            </h2>
+
+            <button type="button"
+                    id="printResourcesButton"
+                    class="resources-print-button">
+                Skriv ut ressursliste
+            </button>
+
+        </div>
 
         <!-- Sara: Søk og filtrering av ressurser. -->
         <div class="resources-filters">
@@ -368,6 +416,9 @@
             const municipalityFilter = document.getElementById("municipalityFilter");
             const categoryFilter = document.getElementById("categoryFilter");
 
+            // B21: Henter utskriftsknappen
+            const printButton = document.getElementById("printResourcesButton");
+
             const rows = document.querySelectorAll(".resource-row");
             const resourceCount = document.getElementById("resourceCount");
             const emptyMessage = document.getElementById("emptyMessage");
@@ -438,6 +489,27 @@
             categoryFilter.addEventListener("change", filterResources);
 
             filterResources();
+
+            
+            // B21: Åpner utskriftssiden for valgt kommune
+            printButton.addEventListener("click", function() {
+
+                const municipality = municipalityFilter.value;
+
+                // Brukeren må velge en kommune først
+                if (!municipality) {
+                    alert("Velg en kommune før du skriver ut ressurslisten.");
+                    municipalityFilter.focus();
+                    return;
+                }
+
+                // Sender valgt kommune til ResourceController.Print()
+                const printUrl = '@Url.Action("Print", "Resource")';
+
+                window.location.href =
+                    printUrl + "?municipality=" + encodeURIComponent(municipality);
+            });
+
         });
     </script>
 }
