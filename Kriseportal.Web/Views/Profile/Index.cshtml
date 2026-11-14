@@ -1,4 +1,6 @@
 ﻿
+@model Kriseportal.Web.Models.Entities.ApplicationUser
+
 @{
     ViewData["Title"] = "Min profil";
 }
@@ -18,11 +20,14 @@
     </header>
 
     <!-- Melding etter lagring -->
-    <div id="profile-message"
-         class="profile-feedback"
-         role="status"
-         hidden>
-    </div>
+    @if (TempData["ProfileSuccess"] != null)
+    {
+        <div id="profile-message"
+             class="profile-feedback"
+             role="status">
+            @TempData["ProfileSuccess"]
+        </div>
+    }
 
     <!-- Profilkort -->
     <section class="profile-card">
@@ -37,7 +42,7 @@
             </div>
 
             <div class="profile-identity-text">
-                <h2>Kriseledelsen Kristiansand</h2>
+                <h2>@Model.Name</h2>
                 <p>Offentlig aktør</p>
             </div>
 
@@ -56,7 +61,7 @@
                     </span>
 
                     <span class="profile-info-value">
-                        Kristiansand Kommune
+                        @(Model.Agency?.ToString() ?? "Ikke oppgitt")
                     </span>
                 </div>
 
@@ -88,7 +93,9 @@
 
                     <span id="profile-email-display"
                           class="profile-info-value">
-                        Ikke oppgitt
+                        @(string.IsNullOrWhiteSpace(Model.Email)
+                            ? "Ikke oppgitt"
+                            : Model.Email)
                     </span>
                 </div>
 
@@ -99,7 +106,9 @@
 
                     <span id="profile-phone-display"
                           class="profile-info-value">
-                        Ikke oppgitt
+                        @(string.IsNullOrWhiteSpace(Model.PhoneNumber)
+                            ? "Ikke oppgitt"
+                            : Model.PhoneNumber)
                     </span>
                 </div>
 
@@ -121,8 +130,3 @@
     </section>
 
 </div>
-
-@section Scripts {
-    <script src="~/js/profile.js"
-            asp-append-version="true"></script>
-}

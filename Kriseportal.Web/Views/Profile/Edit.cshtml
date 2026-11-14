@@ -1,4 +1,6 @@
 ﻿
+@model Kriseportal.Web.Models.Entities.ApplicationUser
+
 @{
     ViewData["Title"] = "Rediger profil";
 }
@@ -22,8 +24,11 @@
 
         <form id="profile-edit-form"
               class="profile-edit-form"
-              data-return-url="@Url.Action("Index", "Profile")"
-              novalidate>
+              asp-controller="Profile"
+              asp-action="Edit"
+              method="post">
+
+            @Html.AntiForgeryToken()
 
             <h2 class="profile-edit-heading">
                 Personlig informasjon
@@ -40,7 +45,7 @@
 
                     <input id="profile-organization"
                            type="text"
-                           value="Kristiansand kommune"
+                           value="@(Model.Agency?.ToString() ?? "Ikke oppgitt")"
                            class="profile-readonly-input"
                            readonly />
 
@@ -73,15 +78,19 @@
                     </label>
 
                     <input id="profile-email"
+                           name="email"
                            type="email"
+                           value="@Model.Email"
                            placeholder="Skriv inn e-postadresse"
-                           autocomplete="off"
+                           autocomplete="email"
                            maxlength="254"
+                           required
                            aria-describedby="profile-email-error" />
 
                     <span id="profile-email-error"
                           class="profile-error"
                           aria-live="polite">
+                        @Html.ValidationMessage("Email")
                     </span>
 
                 </div>
@@ -94,15 +103,18 @@
                     </label>
 
                     <input id="profile-phone"
+                           name="phone"
                            type="tel"
+                           value="@Model.PhoneNumber"
                            placeholder="Skriv inn telefonnummer"
-                           autocomplete="off"
+                           autocomplete="tel"
                            maxlength="30"
                            aria-describedby="profile-phone-error" />
 
                     <span id="profile-phone-error"
                           class="profile-error"
                           aria-live="polite">
+                        @Html.ValidationMessage("Phone")
                     </span>
 
                 </div>
@@ -110,11 +122,9 @@
             </div>
 
             <!-- Generell feilmelding -->
-            <p id="profile-form-error"
-               class="profile-form-error"
-               role="alert"
-               hidden>
-            </p>
+            <div class="profile-form-error"
+                 asp-validation-summary="ModelOnly">
+            </div>
 
             <!-- Knapper -->
             <div class="profile-actions">
@@ -137,8 +147,3 @@
     </section>
 
 </div>
-
-@section Scripts {
-    <script src="~/js/profile.js"
-            asp-append-version="true"></script>
-}
