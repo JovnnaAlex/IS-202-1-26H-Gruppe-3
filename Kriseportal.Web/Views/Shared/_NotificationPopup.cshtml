@@ -20,13 +20,10 @@
         </a>
 
         <aside id="notification-popup"
-       class="portal-notification-popup @(User.IsInRole(AppRoles.ResourceProvider) ? "provider-notification-popup" : "")"
+       class="portal-notification-popup @(User.IsInRole(AppRoles.ResourceProvider) ? "provider-notification-popup" : "public-actor-notification-popup")"
        aria-label="Nytt varsel"
        hidden>
-    @if (User.IsInRole(AppRoles.ResourceProvider))
-    {
-        <div class="provider-notification-icon" aria-hidden="true">✉</div>
-    }
+    <div class="provider-notification-icon" aria-hidden="true">✉</div>
     <div role="status" aria-live="polite">
         <strong id="notification-heading">Nytt varsel</strong>
         <p id="notification-message"></p>
@@ -157,7 +154,8 @@
         }
 
         /* Sara: Et rolig, profesjonelt varsel for ressursleverandører. */
-        .provider-notification-popup {
+        .provider-notification-popup,
+         .public-actor-notification-popup {
             top: 50%;
             transform: translate(-50%, -50%);
             width: min(470px, calc(100vw - 32px));
@@ -178,23 +176,29 @@
             font-size: 26px;
             margin-bottom: 20px;
         }
-        .provider-notification-popup #notification-heading {
+        .provider-notification-popup #notification-heading,
+         .public-actor-notification-popup #notification-heading {
             color: #244D3B;
             font-size: 23px;
             margin-bottom: 12px;
         }
-        .provider-notification-popup #notification-message {
+        .provider-notification-popup #notification-message,
+         .public-actor-notification-popup #notification-message {
             color: #526659;
             font-size: 15px;
             line-height: 1.7;
             margin-bottom: 8px;
         }
-        .provider-notification-popup .portal-notification-actions {
+        .provider-notification-popup .portal-notification-actions,
+         .public-actor-notification-popup .portal-notification-actions {
             justify-content: flex-end;
             margin-top: 24px;
         }
         .provider-notification-popup #popup-details,
-        .provider-notification-popup #notification-close {
+        .provider-notification-popup #notification-close,
+         .public-actor-notification-popup #popup-details,
+         .public-actor-notification-popup #notification-close,
+         .public-actor-notification-popup #notification-read {
             display: inline-flex !important;
             align-items: center;
             justify-content: center;
@@ -214,12 +218,14 @@
             border: 1px solid #DCE5DB;
             color: #244D3B;
         }
-        .provider-notification-popup.portal-notification-urgent {
+        .provider-notification-popup.portal-notification-urgent,
+         .public-actor-notification-popup.portal-notification-urgent {
             background: #fff;
             border: 1px solid #DCE5DB;
             animation: none;
         }
-        .provider-notification-popup.portal-notification-urgent #notification-heading {
+        .provider-notification-popup.portal-notification-urgent #notification-heading,
+         .public-actor-notification-popup.portal-notification-urgent #notification-heading {
             color: #244D3B;
         }
         .portal-notification-popup[hidden] {
@@ -277,11 +283,11 @@
         const details = document.getElementById("popup-details");
         const detailsBase = details.href;
         const isProvider = root.dataset.provider === "true";
-        // Sara: Husk viste varsler mellom sideskift i samme innloggingsøkt.
+        // Sara: Husk viste varsler mellom sideskift i begge portalene.
         // Bruker-ID gjør at ulike kontoer ikke deler listen.
-        const shownKey = "provider-shown-notifications:" + root.dataset.user;
+        const shownKey = "portal-shown-notifications:" + root.dataset.user;
         let previousShown = [];
-        if (isProvider) {
+        {
             try {
                 previousShown = JSON.parse(sessionStorage.getItem(shownKey) || "[]");
                 if (!Array.isArray(previousShown)) previousShown = [];
@@ -290,19 +296,15 @@
         const shown = new Set(previousShown);
         function rememberShown(id) {
             shown.add(id);
-            if (isProvider) {
-                try { sessionStorage.setItem(shownKey, JSON.stringify([...shown])); }
-                catch { /* Varsler fungerer også dersom nettleseren blokkerer lagring. */ }
-            }
+            try { sessionStorage.setItem(shownKey, JSON.stringify([...shown])); }
+            catch { /* Varsler fungerer også dersom nettleseren blokkerer lagring. */ }
         }
         // Ny innlogging i samme fane skal kunne vise nye, uleste varsler.
-        if (isProvider) {
-            document.querySelectorAll('form[action*="Logout"]').forEach(form => {
-                form.addEventListener("submit", () => {
-                    try { sessionStorage.removeItem(shownKey); } catch { }
-                });
+        document.querySelectorAll('form[action*="Logout"]').forEach(form => {
+            form.addEventListener("submit", () => {
+                try { sessionStorage.removeItem(shownKey); } catch { }
             });
-        }
+        });
 
         let current = null;
         let busy = false;
