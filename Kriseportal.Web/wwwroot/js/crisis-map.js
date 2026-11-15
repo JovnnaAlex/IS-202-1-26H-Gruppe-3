@@ -452,22 +452,26 @@
             // Kommunens beredskap = gjennomsnittlig dekning av de 10 funksjonene, i prosent
             const prosent = Math.round(100 * funksjoner.reduce((sum, f) => sum + f.dekning, 0) / funksjoner.length);
 
-            return Object.assign(k, { funksjoner: funksjoner, mal: mal, prosent: prosent, nivaa: beredskapsnivaa(prosent) });
+            return Object.assign(k, { funksjoner: funksjoner, mal: mal, prosent: prosent });
         });
     }
 
-    // Grønn: 70 % eller mer, gul: 40–69 %, rød: under 40 %
-    function beredskapsnivaa(prosent) {
-        if (prosent >= 70) {
-            return 'cap-ok';
-        }
-        if (prosent >= 40) {
-            return 'cap-medium';
-        }
-        return 'cap-missing';
-    }
+    // Søyle som viser hvor stor del av beredskapsmålet som er dekket.
+    // Den fylte delen er like bred som prosenten, f.eks. 30 % = 30 % av bredden.
+    function lagSoyle(prosent) {
+        const fyll = document.createElement('span');
+        fyll.className = 'cap-fill';
+        fyll.style.width = prosent + '%';
 
-    // Tegner ett merke per kommune, f.eks. «Vennesla · 30 %»
+        const soyle = document.createElement('span');
+        soyle.className = 'cap-bar';
+        soyle.setAttribute('aria-hidden', 'true');   // prosenten står allerede som tekst
+        soyle.appendChild(fyll);
+        return soyle;
+    }
+    // Tegner én nøytral etikett per kommune: navn, prosent og søyle.
+    // Én rolig farge og ikke rødt, fordi rødt på kartet betyr akutt behov.
+    // Dette laget er forebyggende: hvor godt rustet er kommunen FØR noe skjer?
     function renderCapacity() {
         if (!state.capacityLayer) {
             return;
@@ -475,17 +479,27 @@
         state.capacityLayer.clearLayers();
 
         beregnBeredskap(state.points).forEach(function (k) {
-            const badge = document.createElement('span');
-            badge.className = 'cap-badge ' + k.nivaa;
             const navn = document.createElement('strong');
             navn.textContent = k.navn;
-            badge.append(navn, document.createTextNode(' · ' + k.prosent + ' %'));
+
+            const tall = document.createElement('span');
+            tall.className = 'cap-pct';
+            tall.textContent = k.prosent + ' %';
+
+            // Øverste linje: «Vennesla        30 %»
+            const topp = document.createElement('span');
+            topp.className = 'cap-top';
+            topp.append(navn, tall);
+
+            const badge = document.createElement('span');
+            badge.className = 'cap-badge';
+            badge.append(topp, lagSoyle(k.prosent));
 
             const marker = L.marker([k.lat, k.lng], {
                 icon: L.divIcon({ className: '', html: badge.outerHTML, iconSize: null, iconAnchor: [0, 0] }),
                 zIndexOffset: 2000,   // over punktene, så merket kan trykkes på
                 keyboard: true,
-                title: k.navn + ': beredskap ' + k.prosent + ' prosent'
+                title: k.navn + ': ' + k.prosent + ' prosent av beredskapsmålet'
             });
 
             marker.bindPopup(lagBeredskapPopup(k));
@@ -503,24 +517,22 @@
 
         const summary = document.createElement('p');
         summary.className = 'cap-summary';
-        summary.textContent = 'Beredskap: ' + k.prosent + ' %' +
+        summary.textContent = k.prosent + ' % av beredskapsmålet' +
             (k.innbyggere ? ' · ' + k.innbyggere.toLocaleString('nb-NO') + ' innbyggere' : '');
 
-        // ✓ = målet er nådd, ◐ = delvis, ✗ = ingen ressurser
+        // ✓ = målet er nådd, ◐ = delvis, ○ = ingen registrert
         const list = document.createElement('ul');
         k.funksjoner.forEach(function (f) {
             const item = document.createElement('li');
-            let tegn = '✗ ';
-            item.className = 'cap-row-missing';
-            if (f.dekning >= 1) {
-                tegn = '✓ ';
-                item.className = 'cap-row-ok';
-            } else if (f.antall > 0) {
-                tegn = '◐ ';
-                item.className = 'cap-row-partial';
+            let tegn = '○ ';
+            let tekst = 'ingen registrert';
+            item.className = 'cap-row-none';
+            if (f.antall > 0) {
+                tegn = f.dekning >= 1 ? '✓ ' : '◐ ';
+                tekst = f.antall + ' av ' + f.mal + ' (' + f.offentlig + ' off. / ' + (f.antall - f.offentlig) + ' priv.)';
+                item.className = '';
             }
-            item.textContent = tegn + f.navn + ': ' + f.antall + ' av ' + f.mal +
-                (f.antall > 0 ? ' (' + f.offentlig + ' off. / ' + (f.antall - f.offentlig) + ' priv.)' : '');
+            item.textContent = tegn + f.navn + ': ' + tekst;
             list.appendChild(item);
         });
 
@@ -531,7 +543,7 @@
         mix.textContent = 'Ressurser: ' + offentligeTotalt + ' offentlige · ' +
             (k.ressurser.length - offentligeTotalt) + ' private';
 
-        box.append(title, summary, mix, list);
+        box.append(title, summary, lagSoyle(k.prosent), mix, list);
 
         // De tre funksjonene med lavest dekning er det HV bør se på først
         const svakest = k.funksjoner
@@ -541,7 +553,7 @@
         if (svakest.length > 0) {
             const weak = document.createElement('p');
             weak.className = 'cap-weak';
-            weak.textContent = 'Trenger innsats: ' + svakest.slice(0, 3).join(', ') + (svakest.length > 3 ? ' …' : '');
+            weak.textContent = 'Svakest dekket: ' + svakest.slice(0, 3).join(', ') + (svakest.length > 3 ? ' …' : '');
             box.appendChild(weak);
         }
 
