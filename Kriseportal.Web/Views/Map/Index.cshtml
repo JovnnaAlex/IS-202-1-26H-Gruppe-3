@@ -858,6 +858,19 @@
             transition: none;
         }
     }
+    /* Gir kartet plass i den nye layouten for offentlig aktør. */
+    .public-actor-portal .bp-main {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0;
+    }
+
+    .public-actor-portal .crisis-map-page {
+        flex: 1;
+        min-height: 600px;
+        min-height: max(600px, calc(100dvh - 94px));
+    }
 </style>
 
 

@@ -12,12 +12,7 @@
         <form id="notification-token" hidden>
             @Html.AntiForgeryToken()
         </form>
-
-        <a asp-controller="Notifications"
-           asp-action="Index"
-           class="portal-notification-link">
-            Varsler <span id="notification-count">0</span>
-        </a>
+        
 
         <aside id="notification-popup"
        class="portal-notification-popup @(User.IsInRole(AppRoles.ResourceProvider) ? "provider-notification-popup" : "public-actor-notification-popup")"
@@ -275,7 +270,6 @@
     (() => {
         const root = document.getElementById("portal-notifications");
         const popup = document.getElementById("notification-popup");
-        const count = document.getElementById("notification-count");
         const error = document.getElementById("notification-error");
         const readButton = document.getElementById("notification-read");
         const approveForm = document.getElementById("popup-confirm-form");
@@ -327,7 +321,6 @@
                 if (!response.ok || response.redirected) return;
 
                 const data = await response.json();
-                count.textContent = data.count;
 
                 const responseBadge = document.getElementById("request-response-count");
 
