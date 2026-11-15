@@ -423,6 +423,18 @@ public static class DataSeeder
             Ressurs("Dieselaggregat 40 kVA", "Strøm", 1, "stk", 58.180000m, 7.990000m, "Kristiansand", entreprenor),
             Ressurs("Drone med varmekamera", "Drone", 1, "stk", 58.130000m, 7.920000m, "Kristiansand", droneoperator));
 
+        // Totalforsvar: offentlige ressurser ved siden av de private og frivillige.
+        // Vennesla kommune får egen bruker, slik at kommunens egne ressurser vises med eier på kartet.
+        var vennesla = await EnsureUserAsync(userManager, "vennesla@kriseportal.test",
+            "Vennesla kommune beredskap", "38000020", AppRoles.PublicAuthority, agency: Agency.Kommune);
+
+        db.Resources.AddRange(
+            Ressurs("Kommunalt nødstrømsaggregat 100 kVA", "Strøm", 1, "stk", 58.272500m, 7.973500m, "Vennesla", vennesla),
+            Ressurs("Varmestue i rådhuset", "Lokaler", 1, "stk", 58.270500m, 7.976000m, "Vennesla", vennesla),
+            Ressurs("HV-07 feltsamband", "Samband", 4, "stk", 58.276000m, 7.985000m, "Vennesla", heimevernet),
+            Ressurs("HV-07 innsatsstyrke", "Mannskap", 20, "personer", 58.200000m, 8.080000m, "Kristiansand", heimevernet),
+            Ressurs("Kommunal nødvanntank", "Vann", 10000, "liter", 58.160000m, 7.990000m, "Kristiansand", kommune));
+
         await db.SaveChangesAsync();
     }
 }
