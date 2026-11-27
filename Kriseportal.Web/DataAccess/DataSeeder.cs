@@ -20,7 +20,7 @@ public static class DataSeeder
         "Evakuering", "Samband", "Mannskap", "Lokaler", "Båt", "Annet",
         "Vann", "Mat", "Varme"
     };
-
+    
     public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();

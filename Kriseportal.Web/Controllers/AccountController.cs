@@ -1,11 +1,12 @@
-﻿
+﻿using System.Security.Claims;
 using System.Text;
 using Kriseportal.Web.Models;
-using Microsoft.AspNetCore.Mvc;
 using Kriseportal.Web.Models.Entities;
 using Kriseportal.Web.Services;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Kriseportal.Web.Controllers;
@@ -49,9 +50,10 @@ public class AccountController(
 
         var user = await userManager.FindByEmailAsync(model.Email);
 
-        // Sara: Kontrollerer at brukeren har ressursleverandørrollen.
+        // B25: Kontoer med begge roller må bruke offentlig innlogging.
         if (user is not null &&
-            await userManager.IsInRoleAsync(user, AppRoles.ResourceProvider))
+            await userManager.IsInRoleAsync(user, AppRoles.ResourceProvider) &&
+            !await userManager.IsInRoleAsync(user, AppRoles.PublicAuthority))
         {
             var result = await signInManager.PasswordSignInAsync(
                 user,
@@ -73,8 +75,7 @@ public class AccountController(
         return View(model);
     }
 
-    // B12: Håndterer innlogging kun for offentlige aktører.
-    // Samme feilmelding som vanlig innlogging, så ingen kan finne ut hvilke kontoer som finnes.
+    // B25: Sjekker passordet før offentlig aktør går videre til tofaktor.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PublicLogin(LoginViewModel model)
@@ -86,26 +87,166 @@ public class AccountController(
 
         var user = await userManager.FindByEmailAsync(model.Email);
 
-        // B12: Kontrollerer at brukeren har rollen offentlig aktør.
         if (user is not null &&
             await userManager.IsInRoleAsync(user, AppRoles.PublicAuthority))
         {
-            var result = await signInManager.PasswordSignInAsync(
+            var result = await signInManager.CheckPasswordSignInAsync(
                 user,
                 model.Password,
-                isPersistent: false,
                 lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
-                // B12: Sender den offentlige aktøren til beredskapsoversikten.
-                return RedirectToAction("Index", "Home");
+                var key = await userManager.GetAuthenticatorKeyAsync(user);
+
+                if (string.IsNullOrEmpty(key) ||
+                    (!await userManager.GetTwoFactorEnabledAsync(user) &&
+                     key.Any(character => !(character is >= 'A' and <= 'Z' or >= '2' and <= '7'))))
+                {
+                    var keyResult = await userManager.ResetAuthenticatorKeyAsync(user);
+
+                    if (!keyResult.Succeeded)
+                    {
+                        ModelState.AddModelError(
+                            string.Empty,
+                            "Kunne ikke klargjøre tofaktor. Prøv igjen.");
+
+                        return View(model);
+                    }
+                }
+
+                // B25: Lagrer kontoen midlertidig mens brukeren bekrefter appkoden.
+                var scheme = IdentityConstants.TwoFactorUserIdScheme;
+                var identity = new ClaimsIdentity(scheme);
+                identity.AddClaim(new Claim(
+                    ClaimTypes.Name,
+                    await userManager.GetUserIdAsync(user)));
+                identity.AddClaim(new Claim(
+                    userManager.Options.ClaimsIdentity.SecurityStampClaimType,
+                    await userManager.GetSecurityStampAsync(user)));
+
+                await HttpContext.SignInAsync(scheme, new ClaimsPrincipal(identity));
+
+                return RedirectToAction(nameof(PublicLoginCode));
             }
         }
 
         ModelState.AddModelError(
             string.Empty,
             "Feil e-postadresse eller passord");
+
+        return View(model);
+    }
+
+    // B25: Viser kodeskjemaet, med oppsettsnøkkel første gang.
+    [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> PublicLoginCode()
+    {
+        var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+
+        if (user is null ||
+            !await userManager.IsInRoleAsync(user, AppRoles.PublicAuthority) ||
+            await userManager.IsLockedOutAsync(user))
+        {
+            return RedirectToAction(nameof(PublicLogin));
+        }
+
+        if (!await userManager.GetTwoFactorEnabledAsync(user))
+        {
+            ViewData["AuthenticatorSetupKey"] =
+                await userManager.GetAuthenticatorKeyAsync(user);
+        }
+
+        return View(new AuthenticatorCodeViewModel());
+    }
+
+    // B25: Bekrefter førstegangsoppsettet eller fullfører innloggingen.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> PublicLoginCode(AuthenticatorCodeViewModel model)
+    {
+        var user = await signInManager.GetTwoFactorAuthenticationUserAsync();
+
+        if (user is null ||
+            !await userManager.IsInRoleAsync(user, AppRoles.PublicAuthority) ||
+            await userManager.IsLockedOutAsync(user))
+        {
+            return RedirectToAction(nameof(PublicLogin));
+        }
+
+        var needsSetup = !await userManager.GetTwoFactorEnabledAsync(user);
+
+        if (needsSetup)
+        {
+            ViewData["AuthenticatorSetupKey"] =
+                await userManager.GetAuthenticatorKeyAsync(user);
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (needsSetup)
+        {
+            var validCode = await userManager.VerifyTwoFactorTokenAsync(
+                user,
+                userManager.Options.Tokens.AuthenticatorTokenProvider,
+                model.Code);
+            
+            if (!validCode)
+            {
+                var failure = await userManager.AccessFailedAsync(user);
+
+                if (!failure.Succeeded || await userManager.IsLockedOutAsync(user))
+                {
+                    await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+                    return RedirectToAction(nameof(PublicLogin));
+                }
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Koden kunne ikke bekreftes. Prøv en ny kode fra appen.");
+
+                return View(model);
+            }
+
+            var enabled = await userManager.SetTwoFactorEnabledAsync(user, true);
+
+            if (!enabled.Succeeded)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Kunne ikke aktivere tofaktor. Prøv igjen.");
+
+                return View(model);
+            }
+
+            await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+
+            TempData["TwoFactorSetupMessage"] =
+                "Tofaktor er aktivert. Logg inn med passord og en kode fra appen.";
+
+            return RedirectToAction(nameof(PublicLogin));
+        }
+
+        var result = await signInManager.TwoFactorAuthenticatorSignInAsync(
+            model.Code,
+            isPersistent: false,
+            rememberClient: false);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        ModelState.AddModelError(
+            string.Empty,
+            result.IsLockedOut
+                ? "Kontoen er midlertidig sperret. Prøv igjen senere."
+                : "Koden kunne ikke bekreftes. Prøv en ny kode fra appen.");
 
         return View(model);
     }
