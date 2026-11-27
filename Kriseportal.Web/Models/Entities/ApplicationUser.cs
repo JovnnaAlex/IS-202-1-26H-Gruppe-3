@@ -18,6 +18,9 @@ public class ApplicationUser : IdentityUser
 
     // Settes bare for ressursleverandører (rollen ResourceProvider).
     public ProviderType? ProviderType { get; set; }
+    
+    // B25: Husker om ressursleverandøren har valgt å hoppe over tofaktor.
+    public bool HasDismissedTwoFactorPrompt { get; set; }
 
     // Sara: Viser om ressursleverandøren har deaktivert kontoen midlertidig.
     public bool IsDeactivated { get; set; } = false;

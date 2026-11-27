@@ -128,6 +128,33 @@
                 </div>
                 <button type="button" class="profile-button outline" disabled>Endre passord</button>
             </div>
+
+            <div class="profile-account-row">
+                <div>
+                    <h3>Tofaktorautentisering</h3>
+                    @if (Model.TwoFactorEnabled)
+                    {
+                        <p>Du bruker en kode fra autentiseringsappen når du logger inn.</p>
+                    }
+                    else
+                    {
+                        <p>Beskytt kontoen med en kode fra en autentiseringsapp i tillegg til passordet.</p>
+                    }
+                </div>
+
+                @if (Model.TwoFactorEnabled)
+                {
+                    <span class="profile-status">Tofaktor aktivert</span>
+                }
+                else
+                {
+                    <a asp-controller="Account"
+                       asp-action="ProviderTwoFactorSetup"
+                       class="profile-button outline">
+                        Sett opp tofaktor
+                    </a>
+                }
+            </div>
         </section>
 
         <section class="profile-card">
