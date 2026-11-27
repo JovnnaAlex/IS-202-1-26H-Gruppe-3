@@ -1,0 +1,59 @@
+@model Kriseportal.Web.Models.AuthenticatorCodeViewModel
+
+@{
+    Layout = "_PublicLayout";
+    var setupKey = ViewData["AuthenticatorSetupKey"] as string;
+    var isSetup = !string.IsNullOrEmpty(setupKey);
+    ViewData["Title"] = isSetup ? "Sett opp tofaktor" : "Bekreft innlogging";
+}
+
+<partial name="_PublicLoginStyles" />
+
+<section class="public-login-section">
+    <div class="public-login-card">
+        <div class="public-login-heading">
+            <h1 class="public-login-title">@ViewData["Title"]</h1>
+            @if (isSetup)
+            {
+                <p class="public-login-description">
+                    Legg til en konto manuelt i autentiseringsappen.
+                    Velg tidsbasert kode, bruk Kriseportalen som kontonavn,
+                    og legg inn oppsettsnøkkelen under.
+                </p>
+                <p><code>@setupKey</code></p>
+            }
+            <p class="public-login-description">
+                Skriv inn den sekssifrede koden fra autentiseringsappen din.
+            </p>
+        </div>
+
+        <form asp-controller="Account" asp-action="PublicLoginCode" method="post">
+            <div asp-validation-summary="ModelOnly"
+                 class="public-login-validation-summary"></div>
+
+            <div class="public-login-field">
+                <label asp-for="Code" class="public-login-label"></label>
+                <input asp-for="Code"
+                       type="text"
+                       inputmode="numeric"
+                       autocomplete="one-time-code"
+                       maxlength="6"
+                       class="public-login-input" />
+                <span asp-validation-for="Code"
+                      class="public-login-validation"></span>
+            </div>
+
+            <button type="submit" class="public-login-button">
+                @(isSetup ? "Aktiver tofaktor" : "Bekreft og logg inn")
+            </button>
+        </form>
+
+        <hr class="public-login-divider" />
+
+        <a asp-controller="Account"
+           asp-action="PublicLogin"
+           class="public-login-back">
+            Tilbake til innlogging
+        </a>
+    </div>
+</section>

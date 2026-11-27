@@ -1,0 +1,55 @@
+@model Kriseportal.Web.Models.AuthenticatorCodeViewModel
+
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Sett opp tofaktor";
+    var setupKey = ViewData["AuthenticatorSetupKey"] as string;
+}
+
+<partial name="_PublicLoginStyles" />
+
+<section class="public-login-section">
+    <div class="public-login-card">
+        <h1 class="public-login-title">Vil du aktivere tofaktor?</h1>
+
+        <div asp-validation-summary="ModelOnly"
+             class="public-login-validation-summary"></div>
+
+        @if (string.IsNullOrEmpty(setupKey))
+        {
+            <p class="public-login-description">
+                Med tofaktor bruker du en kode fra en autentiseringsapp i tillegg til passordet.
+            </p>
+
+            <form asp-controller="Account" asp-action="ProviderTwoFactorSetup" method="post">
+                <button type="submit" name="choice" value="start" class="public-login-button">
+                    Sett opp tofaktor
+                </button>
+            </form>
+        }
+        else
+        {
+            <p class="public-login-description">
+                Legg nøkkelen inn i autentiseringsappen og skriv inn den sekssifrede koden.
+            </p>
+            <p><code>@setupKey</code></p>
+
+            <form asp-controller="Account" asp-action="ProviderTwoFactorSetup" method="post">
+                <label asp-for="Code" class="public-login-label"></label>
+                <input asp-for="Code" type="text" inputmode="numeric"
+                       autocomplete="one-time-code" maxlength="6" class="public-login-input" />
+                <span asp-validation-for="Code" class="public-login-validation"></span>
+
+                <button type="submit" name="choice" value="confirm" class="public-login-button">
+                    Aktiver tofaktor
+                </button>
+            </form>
+        }
+
+        <form asp-controller="Account" asp-action="ProviderTwoFactorSetup" method="post">
+            <button type="submit" name="choice" value="skip" class="public-login-button">
+                Hopp over
+            </button>
+        </form>
+    </div>
+</section>

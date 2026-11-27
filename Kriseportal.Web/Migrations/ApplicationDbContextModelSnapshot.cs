@@ -55,6 +55,9 @@ namespace Kriseportal.Web.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("HasDismissedTwoFactorPrompt")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<bool>("IsDeactivated")
                         .HasColumnType("tinyint(1)");
 
